@@ -1,0 +1,36 @@
+/**
+* user definition & override CSS
+* date 190425
+* by jongmin Kim
+**/
+.sidebar{height: 100%;}
+/*
+.history-table {
+  margin-top: 10px;
+}
+
+.menu-container {
+  background: #212529;
+}
+
+@media (min-width: 576px) {
+  .modal-dialog {
+    max-width: 800px;
+    margin: 1.75rem auto;
+  }
+}
+
+.jqte {
+  width: 600px;
+  margin: 0px 5px;
+}
+
+.jqte_tool.jqte_tool_1 .jqte_tool_label {
+  height: 25px;
+}
+
+.jqte_editor,
+jqte_source{
+  height: 200px;
+}
+*/
