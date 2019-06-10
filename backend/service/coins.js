@@ -1,10 +1,10 @@
-let bitwebUsers = require('./impl/users');
+let bitwebCoins = require('./impl/coins');
 let db = require('../utils/db');
 
 function list(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebUsers.list(condition))
+            .then(() => bitwebCoins.list(condition))
             .then((result) => {
                 resolve(result)
             }).catch((err) => {
@@ -16,7 +16,7 @@ function list(country, condition) {
 function detail(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebUsers.detail(condition))
+            .then(() => bitwebCoins.detail(condition))
             .then((result) => {
                 resolve(result)
             }).catch((err) => {
@@ -28,7 +28,7 @@ function detail(country, condition) {
 function add(country, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebUsers.add(data))
+            .then(() => bitwebCoins.add(data))
             .then((result) => {
                 resolve(result)
             }).catch((err) => {
@@ -40,7 +40,7 @@ function add(country, data) {
 function modify(country, condition, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebUsers.modify(condition, data))
+            .then(() => bitwebCoins.modify(condition, data))
             .then((result) => {
                 resolve(result)
             }).catch((err) => {
@@ -52,7 +52,7 @@ function modify(country, condition, data) {
 function remove(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebUsers.remove(condition))
+            .then(() => bitwebCoins.remove(condition))
             .then((result) => {
                 resolve(result)
             }).catch((err) => {

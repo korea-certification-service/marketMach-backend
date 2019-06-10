@@ -1,10 +1,10 @@
-let bitwebUsers = require('./impl/users');
+let bitwebEscrows = require('./impl/escrows');
 let db = require('../utils/db');
 
 function list(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebUsers.list(condition))
+            .then(() => bitwebEscrows.list(condition))
             .then((result) => {
                 resolve(result)
             }).catch((err) => {
@@ -16,7 +16,7 @@ function list(country, condition) {
 function detail(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebUsers.detail(condition))
+            .then(() => bitwebEscrows.detail(condition))
             .then((result) => {
                 resolve(result)
             }).catch((err) => {
@@ -28,7 +28,7 @@ function detail(country, condition) {
 function add(country, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebUsers.add(data))
+            .then(() => bitwebEscrows.add(data))
             .then((result) => {
                 resolve(result)
             }).catch((err) => {
@@ -40,7 +40,7 @@ function add(country, data) {
 function modify(country, condition, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebUsers.modify(condition, data))
+            .then(() => bitwebEscrows.modify(condition, data))
             .then((result) => {
                 resolve(result)
             }).catch((err) => {
@@ -52,7 +52,7 @@ function modify(country, condition, data) {
 function remove(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebUsers.remove(condition))
+            .then(() => bitwebEscrows.remove(condition))
             .then((result) => {
                 resolve(result)
             }).catch((err) => {

@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
-var agreementsSchema = require('../model/agreements');
+var agreementsSchema = require('../dao/agreements');
 
 module.exports = mongoose.model('Agreements', agreementsSchema);
