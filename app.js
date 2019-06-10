@@ -5,26 +5,8 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
 
-var indexs = require('./backend/routes/indexs');
 var usersRouter = require('./backend/routes/users');
-var vtrsRouter = require('./backend/routes/vtrs');
-var tradePointsRouter = require('./backend/routes/pointTrades');
-var gamesRouter = require('./backend/routes/games');
-var itemsRouter = require('./backend/routes/items');
-var coinsRouter = require('./backend/routes/coins');
-var pointsRouter = require('./backend/routes/points');
-var notificationsRouter = require('./backend/routes/notifications');
-var smsRouter = require('./backend/routes/sms');
-var faqsRouter = require('./backend/routes/faqs');
-var countryCodesRouter = require('./backend/routes/countryCodes');
-var batchesRouter = require('./backend/routes/batches');
-var communitysRouter = require('./backend/routes/communitys');
-var noticesRouter = require('./backend/routes/notices');
-var eventsRouter = require('./backend/routes/events');
-var categoriesRouter = require('./backend/routes/categories');
-var oppositionsRouter = require('./backend/routes/oppositions');
-var personalsRouter = require('./backend/routes/personals');
-var gameStationsRouter = require('./backend/routes/gameStations');
+//var vtrsRouter = require('./backend/routes/vtrs');
 
 var app = express();
 
@@ -61,30 +43,10 @@ app.use(function (req, res, next) {
 //     }
 // }));
 
-
-app.use('/', indexs);
-
 //backend API
 let version = "/v2";
 app.use(version + '/users', usersRouter);
-app.use(version + '/games', gamesRouter);
-app.use(version + '/categories', categoriesRouter);
-app.use(version + '/items', itemsRouter);
-app.use(version + '/vtrs', vtrsRouter);
-app.use(version + '/tradePoints', tradePointsRouter);
-app.use(version + '/coins', coinsRouter);
-app.use(version + '/points', pointsRouter);
-app.use(version + '/notifications', notificationsRouter);
-app.use(version + '/sms', smsRouter);
-app.use(version + '/countryCodes',countryCodesRouter);
-app.use(version + '/community',communitysRouter);
-app.use(version + '/notices',noticesRouter);
-app.use(version + '/faq',faqsRouter);
-app.use(version + '/events', eventsRouter);
-app.use(version + '/batches',batchesRouter);
-app.use(version + '/oppositions', oppositionsRouter);
-app.use(version + '/personals', personalsRouter);
-app.use(version + '/gameStations', gameStationsRouter);
+// app.use(version + '/vtrs', vtrsRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
