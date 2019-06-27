@@ -46,7 +46,7 @@ app.use(function (req, res, next) {
 //backend API
 let version = "/v2";
 app.use(version + '/users', usersRouter);
-//app.use(version + '/vtrs', vtrsRouter);
+app.use(version + '/vtrs', vtrsRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

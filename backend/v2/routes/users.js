@@ -5,8 +5,9 @@ let CryptoJS = require("crypto-js");
 let request = require('request');
 let md5 = require('md5');
 let dbconfig = require('../../../config/dbconfig');
-let util = require('../utils/util')
-let validation = require('../utils/validation')
+let util = require('../utils/util');
+let validation = require('../utils/validation');
+let logger = require('../utils/log');
 let BitwebResponse = require('../utils/BitwebResponse')
 let serviceUsers = require('../service/users')
 let serviceAgreements = require('../service/agreements.js');
@@ -65,8 +66,10 @@ router.post('/login', function (req, res, next) {
                     "userInfo": updateUser,
                     "agreement": agreement
                 }
+                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(resData));
+
                 bitwebResponse.code = 200;
-                bitwebResponse.data = resData;
+                bitwebResponse.data = resData;                
                 res.status(200).send(bitwebResponse.create())
 
             }).catch((err) => {        

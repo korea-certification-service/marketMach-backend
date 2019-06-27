@@ -1,7 +1,6 @@
 var express = require('express');
 var router = express.Router();
 //let shortUrl = require('node-url-shortener');
-let request = require('request');
 let dbconfig = require('../../../config/dbconfig');
 let util = require('../utils/util');
 let serviceItems = require('../service/items');
@@ -470,3 +469,5 @@ router.put('/:itemId/trade/:tradeType', function (req, res, next) {
         res.status(500).send(bitwebResponse.create())
     })
 })
+
+module.exports = router;
