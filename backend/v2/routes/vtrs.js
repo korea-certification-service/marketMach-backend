@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
-let shortUrl = require('node-url-shortener');
+//let shortUrl = require('node-url-shortener');
 let request = require('request');
-let dbconfig = require('../../config/dbconfig');
+let dbconfig = require('../../../config/dbconfig');
 let util = require('../utils/util');
 let serviceItems = require('../service/items');
 let serviceUsers = require('../service/users');
@@ -12,7 +12,7 @@ let serviceCoinHistory = require('../service/coinHistorys');
 let serviceEscrow = require('../service/escrows');
 let serviceEscrowHistory = require('../service/escrowHistorys');
 let smsController = require('../service/sms');
-let smsContent = require('../config/sms');
+let smsContent = require('../../../config/smsMessage');
 
 //chatbot 에서 VTR 방 생성 시 사용하는 API
 router.put('/updateStatus/:itemId', function (req, res, next) {

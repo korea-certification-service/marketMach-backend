@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 var Schema = mongoose.Schema;
-
 var agreementsSchema = new Schema({
     use: Boolean,       // 약관 동의서
     teenager: Boolean,  // 미성년자 확인
@@ -10,4 +10,4 @@ var agreementsSchema = new Schema({
     authPhone: Boolean
 });
 
-module.exports = agreementsSchema;
+module.exports = mongoose.model('Agreements', agreementsSchema);

@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 var Schema = mongoose.Schema;
-
 var coinHistorysSchema = new Schema({
     extType: String,
     coinId: String,
@@ -14,5 +14,4 @@ var coinHistorysSchema = new Schema({
     regDate: String  
 });
 
-
-module.exports = coinHistorysSchema;
+module.exports = mongoose.model('CoinHistorys', coinHistorysSchema);

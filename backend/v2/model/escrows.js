@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 var Schema = mongoose.Schema;
-
 var escrowsSchema = new Schema({
     itemId: String,
     currencyCode: String,    
@@ -10,4 +10,5 @@ var escrowsSchema = new Schema({
     regDate: String
 });
 
-module.exports = escrowsSchema;
+
+module.exports = mongoose.model('Escrows', escrowsSchema);

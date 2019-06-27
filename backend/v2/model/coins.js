@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 var Schema = mongoose.Schema;
-
 var coinsSchema = new Schema({
     userId: String,
     mach_address: String,               //bitweb block chain address
@@ -15,4 +15,4 @@ var coinsSchema = new Schema({
     firstVtr: Boolean
 });
 
-module.exports = coinsSchema;
+module.exports = mongoose.model('Coins', coinsSchema);

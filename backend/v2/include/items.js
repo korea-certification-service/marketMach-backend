@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var Image = require('./image');
-var ObjectId = Schema.Types.ObjectId;
+//var ObjectId = Schema.Types.ObjectId;
 var Mixed = Schema.Types.Mixed;
 
 var itemsSchema = new Schema({

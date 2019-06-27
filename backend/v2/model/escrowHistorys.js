@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 var Schema = mongoose.Schema;
-
-var escrowsSchema = new Schema({
+var escrowHistorysSchema = new Schema({
     escrowId: String,
     itemId: String,
     state: String, 
@@ -13,4 +13,4 @@ var escrowsSchema = new Schema({
     regDate: String
 });
 
-module.exports = escrowsSchema;
+module.exports = mongoose.model('EscrowHistorys', escrowHistorysSchema);
