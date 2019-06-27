@@ -70,7 +70,10 @@ function setUserInfoForVtr(users) {
         return group._doc.userTag == req.body.to_userId;
     });
 
-    let result = {};
+    let result = {
+        "from_userId": users[from_findIndex]._doc._id,
+        "to_userId": users[to_findIndex]._doc._id
+    };
 
     //휴대전화번호 추가
     result['seller_phone'] = users[from_findIndex]._doc.phone;
