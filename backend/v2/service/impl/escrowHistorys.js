@@ -1,4 +1,4 @@
-let EscrowHistorys = require('../../../model/escrowHistorys');
+let EscrowHistorys = require('../../model/escrowHistorys');
 
 function list(condition) {
     return new Promise((resolve, reject) => {

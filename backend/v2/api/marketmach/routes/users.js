@@ -9,8 +9,8 @@ let util = require('../utils/util');
 let validation = require('../utils/validation');
 let logger = require('../utils/log');
 let BitwebResponse = require('../utils/BitwebResponse')
-let serviceUsers = require('../service/users')
-let serviceAgreements = require('../service/agreements.js');
+let serviceUsers = require('../../service/users')
+let serviceAgreements = require('../../service/agreements.js.js');
 // let controllerCoins = require('../service/coins');
 // let controllerPoints = require('../service/points');
 
