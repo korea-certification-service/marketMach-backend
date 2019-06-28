@@ -5,8 +5,12 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
 
-var usersRouter = require('./backend/v2/routes/users');
-var vtrsRouter = require('./backend/v2/routes/vtrs');
+//admin
+
+
+//marketmach 
+var usersRouter = require('./backend/v2/marketmach/routes/users');
+var vtrsRouter = require('./backend/v2/marketmach/routes/vtrs');
 
 var app = express();
 

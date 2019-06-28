@@ -1,8 +1,8 @@
-let VtrTemps = require('../../model/vtrTemps');
+let EscrowHistorys = require('../../../model/escrowHistorys');
 
 function list(condition) {
     return new Promise((resolve, reject) => {
-        VtrTemps.find(
+        EscrowHistorys.find(
             condition,
             function(err, result) {
                 if (err) {
@@ -16,7 +16,7 @@ function list(condition) {
 
 function detail(condition) {
     return new Promise((resolve, reject) => {
-        VtrTemps.findOne(
+        EscrowHistorys.findOne(
             condition,
             function(err, result) {
                 if (err) {
@@ -30,8 +30,8 @@ function detail(condition) {
 
 function add(data) {
     return new Promise((resolve, reject) => {
-        var vtrTemps = new VtrTemps(data)
-        vtrTemps.save(function (err, result) {
+        var escrowHistorys = new EscrowHistorys(data)
+        escrowHistorys.save(function (err, result) {
             if (err) {
                 reject(err);
             } else {
@@ -43,7 +43,7 @@ function add(data) {
 
 function modify(condition, setData) {
     return new Promise((resolve, reject) => {
-        VtrTemps.findOneAndUpdate(
+        EscrowHistorys.findOneAndUpdate(
             condition,
             setData,
             {upsert: false, new: true},
@@ -59,7 +59,7 @@ function modify(condition, setData) {
 
 function remove(condition) {
     return new Promise((resolve, reject) => {
-        VtrTemps.findByIdAndRemove(
+        EscrowHistorys.findByIdAndRemove(
             condition,
             function(err, user) {
                 if (err) {

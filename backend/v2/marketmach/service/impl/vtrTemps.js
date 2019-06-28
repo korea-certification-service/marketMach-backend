@@ -1,8 +1,8 @@
-let Items = require('../../model/items');
+let VtrTemps = require('../../../model/vtrTemps');
 
 function list(condition) {
     return new Promise((resolve, reject) => {
-        Items.find(
+        VtrTemps.find(
             condition,
             function(err, result) {
                 if (err) {
@@ -16,7 +16,7 @@ function list(condition) {
 
 function detail(condition) {
     return new Promise((resolve, reject) => {
-        Items.findOne(
+        VtrTemps.findOne(
             condition,
             function(err, result) {
                 if (err) {
@@ -30,8 +30,8 @@ function detail(condition) {
 
 function add(data) {
     return new Promise((resolve, reject) => {
-        var items = new Items(data)
-        items.save(function (err, result) {
+        var vtrTemps = new VtrTemps(data)
+        vtrTemps.save(function (err, result) {
             if (err) {
                 reject(err);
             } else {
@@ -43,7 +43,7 @@ function add(data) {
 
 function modify(condition, setData) {
     return new Promise((resolve, reject) => {
-        Items.findOneAndUpdate(
+        VtrTemps.findOneAndUpdate(
             condition,
             setData,
             {upsert: false, new: true},
@@ -59,7 +59,7 @@ function modify(condition, setData) {
 
 function remove(condition) {
     return new Promise((resolve, reject) => {
-        Items.findByIdAndRemove(
+        VtrTemps.findByIdAndRemove(
             condition,
             function(err, user) {
                 if (err) {

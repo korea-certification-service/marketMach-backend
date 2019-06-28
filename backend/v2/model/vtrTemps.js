@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 var Schema = mongoose.Schema;
-var Item = require('../include/items');
+var Item = require('./include/items');
 
 var vtrTempsSchema = new Schema({
     country: String,

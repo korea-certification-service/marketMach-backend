@@ -3,7 +3,7 @@ const request = require('request');
 const P2WSH_over_P2SH = "P2WSH-over-P2SH";
 const NETWORK = bitcoin.networks.testnet; //bitcoin.networks.bitcoin
 var NETWORK_EXPLORER = ""
-let config = require('../../../config/dbconfig');
+let config = require('../../../../config/dbconfig');
 const url = config.testnet.url.btc + "/unspent?active=";
 const broadcastURL = config.testnet.url.btc + "/pushtx";
 var privateKeys = config.testnet.privateKey.btc;

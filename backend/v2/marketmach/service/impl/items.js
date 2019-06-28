@@ -1,8 +1,8 @@
-let Coins = require('../../model/Coins');
+let Items = require('../../../model/items');
 
 function list(condition) {
     return new Promise((resolve, reject) => {
-        Coins.find(
+        Items.find(
             condition,
             function(err, result) {
                 if (err) {
@@ -16,7 +16,7 @@ function list(condition) {
 
 function detail(condition) {
     return new Promise((resolve, reject) => {
-        Coins.findOne(
+        Items.findOne(
             condition,
             function(err, result) {
                 if (err) {
@@ -30,8 +30,8 @@ function detail(condition) {
 
 function add(data) {
     return new Promise((resolve, reject) => {
-        var coins = new Coins(data)
-        coins.save(function (err, result) {
+        var items = new Items(data)
+        items.save(function (err, result) {
             if (err) {
                 reject(err);
             } else {
@@ -43,7 +43,7 @@ function add(data) {
 
 function modify(condition, setData) {
     return new Promise((resolve, reject) => {
-        Coins.findOneAndUpdate(
+        Items.findOneAndUpdate(
             condition,
             setData,
             {upsert: false, new: true},
@@ -59,7 +59,7 @@ function modify(condition, setData) {
 
 function remove(condition) {
     return new Promise((resolve, reject) => {
-        Coins.findByIdAndRemove(
+        Items.findByIdAndRemove(
             condition,
             function(err, user) {
                 if (err) {

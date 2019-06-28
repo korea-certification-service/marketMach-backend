@@ -1,5 +1,5 @@
 let db = require('../utils/db');
-let Users = require('../model/users');
+let Users = require('../../model/users');
 
 function count(country, condition) {
     return new Promise((resolve, reject) => {
