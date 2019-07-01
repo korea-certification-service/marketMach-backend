@@ -1,5 +1,5 @@
 let bitwebEscrowHistorys = require('./impl/escrowHistorys');
-let db = require('../marketmach/utils/db');
+let db = require('../utils/db');
 
 function list(country, condition) {
     return new Promise((resolve, reject) => {

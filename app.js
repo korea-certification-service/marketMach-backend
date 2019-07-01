@@ -9,8 +9,8 @@ var session = require('express-session');
 
 
 //marketmach 
-var usersRouter = require('./backend/v2/marketmach/routes/users');
-var vtrsRouter = require('./backend/v2/marketmach/routes/vtrs');
+var usersRouter = require('./backend/v2/api/marketmach/routes/users');
+var vtrsRouter = require('./backend/v2/api/marketmach/routes/vtrs');
 
 var app = express();
 

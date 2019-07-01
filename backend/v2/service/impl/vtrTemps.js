@@ -1,4 +1,4 @@
-let VtrTemps = require('../../../model/vtrTemps');
+let VtrTemps = require('../../model/vtrTemps');
 
 function list(condition) {
     return new Promise((resolve, reject) => {

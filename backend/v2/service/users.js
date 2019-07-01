@@ -1,4 +1,4 @@
-let db = require('../marketmach/utils/db');
+let db = require('../utils/db');
 let Users = require('../model/users');
 
 function count(country, condition) {

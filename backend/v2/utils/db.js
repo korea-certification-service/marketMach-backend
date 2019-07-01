@@ -1,6 +1,6 @@
 var Promise = require('promise');
 var mongoose = require('mongoose');
-var config = require('../../../../config/dbconfig')
+var config = require('../../../config/dbconfig')
 var DB_FILE = config.db.db_name;
 var DB_USER = config.db.mongodb_user;
 

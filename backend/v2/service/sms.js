@@ -1,5 +1,5 @@
 let AWS = require('aws-sdk');
-let credentials = require('../../../../config/aws-credentials');
+let credentials = require('../../../config/aws-credentials');
 
 function sendSms(phone, message) {
     return new Promise((resolve, reject) => {

@@ -1,4 +1,4 @@
-let Items = require('../../../model/items');
+let Items = require('../../model/items');
 
 function list(condition) {
     return new Promise((resolve, reject) => {

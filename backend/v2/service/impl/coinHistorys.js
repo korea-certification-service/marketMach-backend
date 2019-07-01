@@ -1,4 +1,4 @@
-let CoinHistorys = require('../../../model/CoinHistorys');
+let CoinHistorys = require('../../model/CoinHistorys');
 
 function list(condition) {
     return new Promise((resolve, reject) => {

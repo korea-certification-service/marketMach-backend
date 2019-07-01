@@ -1,4 +1,4 @@
-let Escrows = require('../../../model/escrows');
+let Escrows = require('../../model/escrows');
 
 function list(condition) {
     return new Promise((resolve, reject) => {
