@@ -13,7 +13,7 @@ router.get("/list", (req, res) => {
     let bitwebResponse = new BitwebResponse();
     serviceUsers.list(country, condition)
     .then(data => {
-        res.send(data);
+        res.status(200).send(data);
         console.log(data);
     })
     .catch(err => {
@@ -34,11 +34,10 @@ router.get("/count", (req, res) => {
     let bitwebResponse = new BitwebResponse();
     serviceUsers.count(country, condition)
     .then(data => {
-        res.send(data);
+        res.status(200).send({"result": data});
     })
     .catch(err => {
         console.error('data error =>', err);
-        let resErr = "there is no data";
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
         res.status(500).send(bitwebResponse.create())
