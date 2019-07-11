@@ -12,6 +12,9 @@ var session = require('express-session');
 var usersRouter = require('./backend/v2/api/marketmach/routes/users');
 var vtrsRouter = require('./backend/v2/api/marketmach/routes/vtrs');
 
+//management
+var aboutUsers = require('./backend/v2/api/management/aboutusers');
+
 var app = express();
 
 // view engine setup
@@ -51,6 +54,9 @@ app.use(function (req, res, next) {
 let version = "/v2";
 app.use(version + '/users', usersRouter);
 app.use(version + '/vtrs', vtrsRouter);
+
+//management API
+app.use('/about_users', aboutUsers);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
