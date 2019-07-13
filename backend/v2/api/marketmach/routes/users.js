@@ -8,6 +8,7 @@ let dbconfig = require('../../../../../config/dbconfig');
 let util = require('../../../utils/util');
 let validation = require('../../../utils/validation');
 let logger = require('../../../utils/log');
+let tokens = require('../../../utils/token');
 let BitwebResponse = require('../../../utils/BitwebResponse')
 let serviceUsers = require('../../../service/users')
 let serviceAgreements = require('../../../service/agreements');
@@ -43,7 +44,6 @@ router.post('/login', function (req, res, next) {
         .then((updateUser) => {
             serviceAgreements.detail(country, search)
             .then((agreement) => {
-                console.log('res user info => ', updateUser, agreement);
                 // //로그인 확인을 위한 쿠키 생성
                 // let key = CryptoJS.enc.Hex.parse("0123456789abcdef0123456789abcdef"); // key 값 > 변경가능
                 // let iv =  CryptoJS.enc.Hex.parse("abcdef9876543210abcdef9876543210"); // iv 값 > 변경가능
@@ -58,6 +58,9 @@ router.post('/login', function (req, res, next) {
                 // res.cookie("orange__F",orange__F, {
                 //     expires: new Date(Date.now() + (60 * 60 * 1000)), //1시간
                 // });
+                res.cookie("login_token", tokens.makeLoginToken(loginToken), {
+                    expires: new Date(Date.now() + (60 * 60 * 1000)), //1시간
+                });
 
                 let resData = {
                     "userTag": updateUser.userTag, 
@@ -66,6 +69,7 @@ router.post('/login', function (req, res, next) {
                     "userInfo": updateUser,
                     "agreement": agreement
                 }
+                //
                 logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(resData));
 
                 bitwebResponse.code = 200;
@@ -74,6 +78,7 @@ router.post('/login', function (req, res, next) {
 
             }).catch((err) => {        
                 console.error('login token update error =>', err);
+                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
                 let resErr = "처리중 에러 발생";
                 bitwebResponse.code = 500;
                 bitwebResponse.message = resErr;
@@ -81,6 +86,7 @@ router.post('/login', function (req, res, next) {
             })
         }).catch((err) => {        
             console.error('login token update error =>', err);
+            logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
             let resErr = "처리중 에러 발생";
             bitwebResponse.code = 500;
             bitwebResponse.message = resErr;
@@ -88,6 +94,7 @@ router.post('/login', function (req, res, next) {
         })
     }).catch((err) => {        
         console.error('login error =>', err);
+        logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
         let resErr = "Incorrect ID or password";
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
@@ -95,8 +102,8 @@ router.post('/login', function (req, res, next) {
     })
 });
 
-
-// router.post('/list', function (req, res, next) {
+// router.get('/:user', function (req, res, next) {
 //     serviceUsers.list
 // });
+
 module.exports = router;

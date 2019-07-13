@@ -9,6 +9,7 @@ var session = require('express-session');
 
 
 //marketmach 
+var commonRouter = require('./backend/v2/api/marketmach/routes/common');
 var usersRouter = require('./backend/v2/api/marketmach/routes/users');
 var vtrsRouter = require('./backend/v2/api/marketmach/routes/vtrs');
 
@@ -52,6 +53,7 @@ app.use(function (req, res, next) {
 
 //backend API
 let version = "/v2";
+app.use('/', commonRouter);
 app.use(version + '/users', usersRouter);
 app.use(version + '/vtrs', vtrsRouter);
 
