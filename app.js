@@ -38,19 +38,6 @@ app.use(function (req, res, next) {
     next();
 });
 
-// app.use(session({
-//     secret: 'bitweb123', //Only enable https
-//     name: 'bitweb_sid',
-//     // store: new MongoStore({ url: DB_URI}), // connect-mongo session store
-//     proxy: false,
-//     resave: true,
-//     saveUninitialized: true,
-//     cookie: {
-//         // maxAge: 60 * 60 * 24 * 30 * 10000 // 쿠키 유효기간 하루 (24시간) * 30일 //현재 무기한
-//         expires: 60 * 60 * 24 * 30 * 10000 // 쿠키 유효기간 하루 (24시간) * 30일 //현재 무기한
-//     }
-// }));
-
 //backend API
 let version = "/v2";
 app.use(version + '/', commonRouter);

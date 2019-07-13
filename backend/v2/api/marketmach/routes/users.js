@@ -1,3 +1,8 @@
+/**
+ * 사용자 API
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-07-11
+ */
 var express = require('express');
 var router = express.Router();
 let crypto = require('crypto');
@@ -44,20 +49,7 @@ router.post('/login', function (req, res, next) {
         .then((updateUser) => {
             serviceAgreements.detail(country, search)
             .then((agreement) => {
-                // //로그인 확인을 위한 쿠키 생성
-                // let key = CryptoJS.enc.Hex.parse("0123456789abcdef0123456789abcdef"); // key 값 > 변경가능
-                // let iv =  CryptoJS.enc.Hex.parse("abcdef9876543210abcdef9876543210"); // iv 값 > 변경가능
-                // let cookie_string = user._doc.userTag+'|'+ loginToken; // "|" 로 구분
-                // let orange__F = CryptoJS.AES.encrypt(cookie_string, key, {iv:iv}); // 쿠키명 = orange__T
-                // orange__F = orange__F.ciphertext.toString(CryptoJS.enc.Base64);  //and the ciphertext put to base64
-                // res.cookie("orange__F",orange__F, {
-                //     domain: 'marketmach.com',
-                //     expires: new Date(Date.now() + (60 * 60 * 1000)), //1시간
-                // });
-
-                // res.cookie("orange__F",orange__F, {
-                //     expires: new Date(Date.now() + (60 * 60 * 1000)), //1시간
-                // });
+                //로그인 확인을 위한 쿠키 생성
                 res.cookie("login_token", tokens.makeLoginToken(loginToken), {
                     expires: new Date(Date.now() + (60 * 60 * 1000)), //1시간
                 });
@@ -69,7 +61,7 @@ router.post('/login', function (req, res, next) {
                     "userInfo": updateUser,
                     "agreement": agreement
                 }
-                //
+                //API 처리 결과 별도 LOG로 남김
                 logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(resData));
 
                 bitwebResponse.code = 200;
@@ -78,6 +70,7 @@ router.post('/login', function (req, res, next) {
 
             }).catch((err) => {        
                 console.error('login token update error =>', err);
+                //API 처리 결과 별도 LOG로 남김
                 logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
                 let resErr = "처리중 에러 발생";
                 bitwebResponse.code = 500;
@@ -86,6 +79,7 @@ router.post('/login', function (req, res, next) {
             })
         }).catch((err) => {        
             console.error('login token update error =>', err);
+            //API 처리 결과 별도 LOG로 남김
             logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
             let resErr = "처리중 에러 발생";
             bitwebResponse.code = 500;
@@ -94,6 +88,7 @@ router.post('/login', function (req, res, next) {
         })
     }).catch((err) => {        
         console.error('login error =>', err);
+        //API 처리 결과 별도 LOG로 남김
         logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
         let resErr = "Incorrect ID or password";
         bitwebResponse.code = 500;

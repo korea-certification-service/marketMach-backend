@@ -1,3 +1,9 @@
+/**
+ * Token 생성 및 체크 모듈
+ * - Login Token 
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-07-11
+ */
 let CryptoJS = require("crypto-js");
 let dbconfig = require('../../../config/dbconfig');
 let querystring = require('querystring'); 

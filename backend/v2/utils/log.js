@@ -1,3 +1,8 @@
+/**
+ * 별도 LOG 파일을 생성하는 모듈
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-07-11
+ */
 var winston = require('winston'); 
 require('winston-daily-rotate-file');
 require('date-utils');
@@ -6,8 +11,6 @@ var logDir = 'logs';
 if (!fs.existsSync(logDir)) { 
     fs.mkdirSync(logDir); 
 }
-
-const tsFormat = () => (new Date()).toString();
 
 var logger = winston.createLogger({ 
     transports: [ 
