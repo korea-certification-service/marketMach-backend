@@ -53,7 +53,7 @@ app.use(function (req, res, next) {
 
 //backend API
 let version = "/v2";
-app.use('/', commonRouter);
+app.use(version + '/', commonRouter);
 app.use(version + '/users', usersRouter);
 app.use(version + '/vtrs', vtrsRouter);
 

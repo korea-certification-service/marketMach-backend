@@ -5,7 +5,8 @@ let dbconfig = require('../../../../../config/dbconfig');
 let logger = require('../../../utils/log');
 let tokens = require('../../../utils/token');
 
-router.get('/', tokens.checkLoginToken, function(req, res, next){
+//Login Token 체크 API
+router.get('/check/token', tokens.checkLoginToken, function(req, res, next){
     res.status(200).send('login 화면');
 });
 
