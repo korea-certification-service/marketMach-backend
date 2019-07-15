@@ -9,12 +9,13 @@ var session = require('express-session');
 
 
 //marketmach 
-var commonRouter = require('./backend/v2/api/marketmach/routes/common');
 var usersRouter = require('./backend/v2/api/marketmach/routes/users');
 var vtrsRouter = require('./backend/v2/api/marketmach/routes/vtrs');
 
 //management
-var aboutUsers = require('./backend/v2/api/management/aboutusers');
+var maUsers = require('./backend/v2/api/management/ma_users');
+var maWithdrawusers = require('./backend/v2/api/management/ma_withdrawusers');
+var blacklist = require('./backend/v2/api/management/ma_blacklist');
 
 var app = express();
 
@@ -40,12 +41,13 @@ app.use(function (req, res, next) {
 
 //backend API
 let version = "/v2";
-app.use(version + '/', commonRouter);
 app.use(version + '/users', usersRouter);
 app.use(version + '/vtrs', vtrsRouter);
 
 //management API
-app.use('/about_users', aboutUsers);
+app.use('/ma_users', maUsers);
+app.use('/ma_withdrawusers', maWithdrawusers);
+app.use('/ma_blacklist', blacklist);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

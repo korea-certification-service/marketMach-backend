@@ -4,7 +4,7 @@ let dbconfig = require('../../../../config/dbconfig');
 let BitwebResponse = require('../../utils/BitwebResponse');
 let serviceUsers = require('../../service/users');
 
-/*GET List*/
+/*GET User List*/
 router.get("/list", (req, res) => {
     let country = dbconfig.country;
     let condition = {
@@ -13,7 +13,7 @@ router.get("/list", (req, res) => {
     let bitwebResponse = new BitwebResponse();
     serviceUsers.list(country, condition)
     .then(data => {
-        res.status(200).send(data);
+        res.send(200, data);
         console.log(data);
     })
     .catch(err => {
@@ -25,7 +25,7 @@ router.get("/list", (req, res) => {
     })
 });
 
-/*GET Count*/
+/*GET User Count*/
 router.get("/count", (req, res) => {
     let country = dbconfig.country;
     let condition = {
@@ -34,7 +34,7 @@ router.get("/count", (req, res) => {
     let bitwebResponse = new BitwebResponse();
     serviceUsers.count(country, condition)
     .then(data => {
-        res.status(200).send({"result": data});
+        res.send(200, data);
     })
     .catch(err => {
         console.error('data error =>', err);
