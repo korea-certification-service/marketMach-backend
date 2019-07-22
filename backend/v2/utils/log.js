@@ -32,8 +32,8 @@ function addLog(country, url, reqData, resData) {
     logger.info('===============================');
     logger.info('country' + ':' + country);
     logger.info('url' + ':' + url);
-    logger.info('reqData' + ':' + reqData);
-    logger.info('resData' + ':' + resData);
+    logger.info('reqData : ', reqData);
+    logger.info('resData : ', resData);
     logger.info('===============================');
 }
 

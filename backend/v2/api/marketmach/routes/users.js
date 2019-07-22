@@ -71,7 +71,7 @@ router.post('/login', function (req, res, next) {
             }).catch((err) => {        
                 console.error('login token update error =>', err);
                 //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
+                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), err);
                 let resErr = "처리중 에러 발생";
                 bitwebResponse.code = 500;
                 bitwebResponse.message = resErr;
@@ -80,7 +80,7 @@ router.post('/login', function (req, res, next) {
         }).catch((err) => {        
             console.error('login token update error =>', err);
             //API 처리 결과 별도 LOG로 남김
-            logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
+            logger.addLog(country, req.originalUrl, JSON.stringify(req.body), err);
             let resErr = "처리중 에러 발생";
             bitwebResponse.code = 500;
             bitwebResponse.message = resErr;
@@ -89,7 +89,7 @@ router.post('/login', function (req, res, next) {
     }).catch((err) => {        
         console.error('login error =>', err);
         //API 처리 결과 별도 LOG로 남김
-        logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
+        logger.addLog(country, req.originalUrl, JSON.stringify(req.body), err);
         let resErr = "Incorrect ID or password";
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
