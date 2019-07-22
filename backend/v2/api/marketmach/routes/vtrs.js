@@ -314,7 +314,7 @@ function _startTrade(req, res, bitwebResponse) {
                             logger.addLog(country, req.originalUrl, req.body, resData);
                             
                             bitwebResponse.code = 200;
-                            bitwebResponse.data = updateItem;
+                            bitwebResponse.data = Object.assign({}, updateItem);
                             res.status(200).send(bitwebResponse.create())
                         }).catch((err) => {
                             console.error('add vtr error =>', err);
@@ -381,7 +381,23 @@ function _reqBuy(req, res, bitwebResponse) {
     }
     
     serviceVtrs.detail(country, {"item._id": itemId})
-    .then((vtr) => {            
+    .then((vtr) => {    
+        //아이템 status 값이 2 이상인 경우면 실패로 처리
+        if(vtr._doc.item.status >= 2) {
+            let msg = {
+                "successYn": "N",
+                "code" : "E002",
+                "msg" : "해당 아이템은 거래 진행 중입니다. 해당 거래에 에스크로를 할 수 없습니다."
+            };
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, req.body, msg);
+
+            bitwebResponse.code = 200;
+            bitwebResponse.data = msg;
+            res.status(200).send(bitwebResponse.create());
+            return;
+        }
+        
         let conditionUser = {
             "_id":vtr._doc.to_userId
         }
@@ -493,7 +509,7 @@ function _reqBuy(req, res, bitwebResponse) {
                                 logger.addLog(country, req.originalUrl, req.body, resData);
     
                                 bitwebResponse.code = 200;
-                                bitwebResponse.data = updateItem;
+                                bitwebResponse.data = Object.assign({}, updateItem);
                                 res.status(200).send(bitwebResponse.create())
                             }).catch((err) => {
                                 console.error('add escrow error =>', err);
@@ -558,6 +574,22 @@ function _reqSell(req, res, bitwebResponse) {
     
     serviceVtrs.detail(country, {"item._id": itemId})
     .then((vtr) => {    
+        //아이템 status 값이 1이거나 4 이상인 경우면 실패로 처리
+        if(vtr._doc.item.status == 1 || vtr._doc.item.status >= 4) {
+            let msg = {
+                "successYn": "N",
+                "code" : "E001",
+                "msg" : "해당 아이템의 구매 확인을 진행 중이거나 거래가 완료되었습니다."
+            };
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, req.body, msg);
+
+            bitwebResponse.code = 200;
+            bitwebResponse.data = msg;
+            res.status(200).send(bitwebResponse.create());
+            return;
+        }
+
         let currentDate = new Date().toString();
         let auto_completed_confirm_date = util.calculateDate(currentDate, "D", 7);
         if(vtr._doc.item.category == "game") {
@@ -588,7 +620,7 @@ function _reqSell(req, res, bitwebResponse) {
                 logger.addLog(country, req.originalUrl, req.body, resData);
 
                 bitwebResponse.code = 200;
-                bitwebResponse.data = updateItem;
+                bitwebResponse.data = Object.assign({}, updateItem);
                 res.status(200).send(bitwebResponse.create())
             }).catch((err) => {
                 console.error('add vtr error =>', err);
@@ -631,6 +663,22 @@ function _reqComplete(req, res, bitwebResponse) {
     
     serviceVtrs.detail(country, {"item._id": itemId})
     .then((vtr) => {            
+    //아이템 status 값이 2 이하거나 5 이상인 경우면 실패로 처리
+    if(vtr._doc.item.status <= 2 || vtr._doc.item.status > 4) {
+        let msg = {
+            "successYn": "N",
+            "code" : "E001",
+            "msg" : "해당 아이템의 구매 확인을 진행 중이거나 거래가 완료되었습니다."
+        };
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, msg);
+
+        bitwebResponse.code = 200;
+        bitwebResponse.data = msg;
+        res.status(200).send(bitwebResponse.create());
+        return;
+    }
+
         let conditionUser = {
             "_id":vtr._doc.from_userId
         }
@@ -724,7 +772,7 @@ function _reqComplete(req, res, bitwebResponse) {
                                 logger.addLog(country, req.originalUrl, req.body, resData);
     
                                 bitwebResponse.code = 200;
-                                bitwebResponse.data = updateItem;
+                                bitwebResponse.data = Object.assign({}, updateItem);
                                 res.status(200).send(bitwebResponse.create())
                             }).catch((err) => {
                                 console.error('add escrow error =>', err);
@@ -855,14 +903,14 @@ function _reqCancel(req, res, bitwebResponse) {
                         let msg = {
                             "successYn":"Y",
                             "code": 31,
-                            "msg": '구매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.'
+                            "msg": '구매자님이 거래를 취소 하였습니다.'
                         }
 
                         if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
                             msg = {
                                 "successYn":"Y",
                                 "code": 41,
-                                "msg": '판매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.'
+                                "msg": '판매자님이 거래를 취소 하였습니다.'
                             }
                         }
 
