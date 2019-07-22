@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 var Schema = mongoose.Schema;
 var escrowInfosSchema = new Schema({
+    vtrId: String,
     itemId: String,
     price: Number,
     sellerUser: String,
