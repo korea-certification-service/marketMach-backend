@@ -86,7 +86,7 @@ function _createVTR(req, res, bitwebResponse) {
             if (users[i]._doc.phone == undefined || users[i]._doc.phone == "") {
                 let errMsg = "There is no phone."
                 //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), errMsg);
+                logger.addLog(country, req.originalUrl, req.body, errMsg);
                             
                 bitwebResponse.code = 403;
                 bitwebResponse.data = errMsg;
@@ -146,7 +146,7 @@ function _createVTR(req, res, bitwebResponse) {
                             "sms": "no"
                         }
                         //API 처리 결과 별도 LOG로 남김
-                        logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(resData));
+                        logger.addLog(country, req.originalUrl, req.body, resData);
 
                         bitwebResponse.data = url.replace('undefined','http://localhost:3000').replace('/sms','');
                         res.status(200).send(bitwebResponse.create())
@@ -163,7 +163,7 @@ function _createVTR(req, res, bitwebResponse) {
                                 "sms": sms
                             }
                             //API 처리 결과 별도 LOG로 남김
-                            logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(resData));
+                            logger.addLog(country, req.originalUrl, req.body, resData);
                             
                             bitwebResponse.data = url.replace('/sms','');
                             res.status(200).send(bitwebResponse.create())
@@ -187,7 +187,7 @@ function _createVTR(req, res, bitwebResponse) {
                                     "sms": sms
                                 }
                                 //API 처리 결과 별도 LOG로 남김
-                                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(resData));
+                                logger.addLog(country, req.originalUrl, req.body, resData);
                                 
                                 bitwebResponse.data = url.replace('/sms','');
                                 res.status(200).send(bitwebResponse.create())
@@ -195,7 +195,7 @@ function _createVTR(req, res, bitwebResponse) {
                                 console.error('send sms error =>', err)
                                 bitwebResponse.code = 500;
                                 //API 처리 결과 별도 LOG로 남김
-                                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
+                                logger.addLog(country, req.originalUrl, req.body, err);
                                 
                                 bitwebResponse.message = err;
                                 res.status(500).send(bitwebResponse.create())
@@ -206,7 +206,7 @@ function _createVTR(req, res, bitwebResponse) {
                     console.error('update item error =>', err);
                     let resErr = "처리중 에러 발생";
                     //API 처리 결과 별도 LOG로 남김
-                    logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
+                    logger.addLog(country, req.originalUrl, req.body, err);
                             
                     bitwebResponse.code = 500;
                     bitwebResponse.message = resErr;
@@ -216,7 +216,7 @@ function _createVTR(req, res, bitwebResponse) {
                 console.error('add vtrTemp error =>', err);
                 let resErr = "처리중 에러 발생";
                 //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
+                logger.addLog(country, req.originalUrl, req.body, err);
                             
                 bitwebResponse.code = 500;
                 bitwebResponse.message = resErr;
@@ -226,7 +226,7 @@ function _createVTR(req, res, bitwebResponse) {
             console.error('add vtrTemp error =>', err);
             let resErr = "처리중 에러 발생";
             //API 처리 결과 별도 LOG로 남김
-            logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
+            logger.addLog(country, req.originalUrl, req.body, err);
                         
             bitwebResponse.code = 500;
             bitwebResponse.message = resErr;
@@ -236,7 +236,7 @@ function _createVTR(req, res, bitwebResponse) {
         console.error('get user error =>', err);
         let resErr = "처리중 에러 발생";
         //API 처리 결과 별도 LOG로 남김
-        logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
+        logger.addLog(country, req.originalUrl, req.body, err);
             
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
@@ -301,7 +301,7 @@ function _startTrade(req, res, bitwebResponse) {
                                 "item": updateItem
                             }
                             //API 처리 결과 별도 LOG로 남김
-                            logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(resData));
+                            logger.addLog(country, req.originalUrl, req.body, resData);
                             
                             bitwebResponse.code = 200;
                             bitwebResponse.data = updateItem;
@@ -310,7 +310,7 @@ function _startTrade(req, res, bitwebResponse) {
                             console.error('add vtr error =>', err);
                             let resErr = "처리중 에러 발생";
                             //API 처리 결과 별도 LOG로 남김
-                            logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
+                            logger.addLog(country, req.originalUrl, req.body, err);
                             
                             bitwebResponse.code = 500;
                             bitwebResponse.message = resErr;
@@ -320,7 +320,7 @@ function _startTrade(req, res, bitwebResponse) {
                         console.error('add vtr error =>', err);
                         let resErr = "처리중 에러 발생";
                         //API 처리 결과 별도 LOG로 남김
-                        logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
+                        logger.addLog(country, req.originalUrl, req.body, err);
                         
                         bitwebResponse.code = 500;
                         bitwebResponse.message = resErr;
@@ -336,7 +336,7 @@ function _startTrade(req, res, bitwebResponse) {
                 };
                 bitwebResponse.code = 200;
                 //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(msg));
+                logger.addLog(country, req.originalUrl, req.body, msg);
                     
                 bitwebResponse.data = msg;
                 res.status(200).send(bitwebResponse.create())
@@ -345,7 +345,7 @@ function _startTrade(req, res, bitwebResponse) {
             console.error('get vtr error =>', err);
             let resErr = "처리중 에러 발생";
             //API 처리 결과 별도 LOG로 남김
-            logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
+            logger.addLog(country, req.originalUrl, req.body, err);
                     
             bitwebResponse.code = 500;
             bitwebResponse.message = resErr;
@@ -355,7 +355,7 @@ function _startTrade(req, res, bitwebResponse) {
         console.error('get user error =>', err);
         let resErr = "처리중 에러 발생";
         //API 처리 결과 별도 LOG로 남김
-        logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));
+        logger.addLog(country, req.originalUrl, req.body, err);
                     
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
@@ -398,7 +398,7 @@ function _reqBuy(req, res, bitwebResponse) {
                         "msg" : "거래금액이 구매자의 보유 금액보다 클 수 없습니다."
                     };
                     //API 처리 결과 별도 LOG로 남김
-                    logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(msg));                
+                    logger.addLog(country, req.originalUrl, req.body, msg);
     
                     bitwebResponse.code = 200;
                     bitwebResponse.data = msg;
@@ -478,7 +478,7 @@ function _reqBuy(req, res, bitwebResponse) {
                                     "coinHistory": reqCoinHistoryData
                                 }
                                 //API 처리 결과 별도 LOG로 남김
-                                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(resData));                
+                                logger.addLog(country, req.originalUrl, req.body, resData);
     
                                 bitwebResponse.code = 200;
                                 bitwebResponse.data = updateItem;
@@ -487,7 +487,7 @@ function _reqBuy(req, res, bitwebResponse) {
                                 console.error('add escrow error =>', err);
                                 let resErr = "처리중 에러 발생";
                                 //API 처리 결과 별도 LOG로 남김
-                                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));                
+                                logger.addLog(country, req.originalUrl, req.body, err);             
     
                                 bitwebResponse.code = 500;
                                 bitwebResponse.message = resErr;
@@ -497,7 +497,7 @@ function _reqBuy(req, res, bitwebResponse) {
                             console.error('update coin error =>', err);
                             let resErr = "처리중 에러 발생";
                             //API 처리 결과 별도 LOG로 남김
-                            logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));                
+                            logger.addLog(country, req.originalUrl, req.body, err);
     
                             bitwebResponse.code = 500;
                             bitwebResponse.message = resErr;
@@ -507,7 +507,7 @@ function _reqBuy(req, res, bitwebResponse) {
                         console.error('add vtr error =>', err);
                         let resErr = "처리중 에러 발생";
                         //API 처리 결과 별도 LOG로 남김
-                        logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));                
+                        logger.addLog(country, req.originalUrl, req.body, err);
     
                         bitwebResponse.code = 500;
                         bitwebResponse.message = resErr;
@@ -518,7 +518,7 @@ function _reqBuy(req, res, bitwebResponse) {
                 console.error('get coin error =>', err);
                 let resErr = "처리중 에러 발생";
                 //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));                
+                logger.addLog(country, req.originalUrl, req.body, err);
     
                 bitwebResponse.code = 500;
                 bitwebResponse.message = resErr;
@@ -529,7 +529,7 @@ function _reqBuy(req, res, bitwebResponse) {
         console.error('get vtr error =>', err);
         let resErr = "처리중 에러 발생";
         //API 처리 결과 별도 LOG로 남김
-        logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));                
+        logger.addLog(country, req.originalUrl, req.body, err);
 
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
@@ -572,7 +572,7 @@ function _reqSell(req, res, bitwebResponse) {
                     "item": updateItem
                 }
                 //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(resData));                
+                logger.addLog(country, req.originalUrl, req.body, resData);
 
                 bitwebResponse.code = 200;
                 bitwebResponse.data = updateItem;
@@ -581,7 +581,7 @@ function _reqSell(req, res, bitwebResponse) {
                 console.error('add vtr error =>', err);
                 let resErr = "처리중 에러 발생";
                 //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));                
+                logger.addLog(country, req.originalUrl, req.body, err);
 
                 bitwebResponse.code = 500;
                 bitwebResponse.message = resErr;
@@ -591,7 +591,7 @@ function _reqSell(req, res, bitwebResponse) {
             console.error('add vtr error =>', err);
             let resErr = "처리중 에러 발생";
             //API 처리 결과 별도 LOG로 남김
-            logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));                
+            logger.addLog(country, req.originalUrl, req.body, err);
 
             bitwebResponse.code = 500;
             bitwebResponse.message = resErr;
@@ -601,7 +601,7 @@ function _reqSell(req, res, bitwebResponse) {
         console.error('add vtr error =>', err);
         let resErr = "처리중 에러 발생";
         //API 처리 결과 별도 LOG로 남김
-        logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));                
+        logger.addLog(country, req.originalUrl, req.body, err);
 
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
@@ -707,7 +707,7 @@ function _reqComplete(req, res, bitwebResponse) {
                                     "coinHistory": reqCoinHistoryData
                                 }
                                 //API 처리 결과 별도 LOG로 남김
-                                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(resData));                
+                                logger.addLog(country, req.originalUrl, req.body, resData);
     
                                 bitwebResponse.code = 200;
                                 bitwebResponse.data = updateItem;
@@ -716,7 +716,7 @@ function _reqComplete(req, res, bitwebResponse) {
                                 console.error('add escrow error =>', err);
                                 let resErr = "처리중 에러 발생";
                                 //API 처리 결과 별도 LOG로 남김
-                                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));                
+                                logger.addLog(country, req.originalUrl, req.body, err);
     
                                 bitwebResponse.code = 500;
                                 bitwebResponse.message = resErr;
@@ -726,7 +726,7 @@ function _reqComplete(req, res, bitwebResponse) {
                             console.error('update coin error =>', err);
                             let resErr = "처리중 에러 발생";
                             //API 처리 결과 별도 LOG로 남김
-                            logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));                
+                            logger.addLog(country, req.originalUrl, req.body, err);
     
                             bitwebResponse.code = 500;
                             bitwebResponse.message = resErr;
@@ -736,7 +736,7 @@ function _reqComplete(req, res, bitwebResponse) {
                         console.error('add vtr error =>', err);
                         let resErr = "처리중 에러 발생";
                         //API 처리 결과 별도 LOG로 남김
-                        logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));                
+                        logger.addLog(country, req.originalUrl, req.body, err);
     
                         bitwebResponse.code = 500;
                         bitwebResponse.message = resErr;
@@ -747,7 +747,7 @@ function _reqComplete(req, res, bitwebResponse) {
                 console.error('get coin error =>', err);
                 let resErr = "처리중 에러 발생";
                 //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));                
+                logger.addLog(country, req.originalUrl, req.body, err);
     
                 bitwebResponse.code = 500;
                 bitwebResponse.message = resErr;
@@ -758,7 +758,7 @@ function _reqComplete(req, res, bitwebResponse) {
         console.error('get vtr error =>', err);
         let resErr = "처리중 에러 발생";
         //API 처리 결과 별도 LOG로 남김
-        logger.addLog(country, req.originalUrl, JSON.stringify(req.body), JSON.stringify(err));                
+        logger.addLog(country, req.originalUrl, req.body, err);
 
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
