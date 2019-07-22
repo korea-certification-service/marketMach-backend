@@ -1,11 +1,11 @@
-let Agreements = require('../model/agreements');
+let Vtrs = require('../model/vtrs');
 let db = require('../utils/db');
 
 function list(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Agreements.find(
+            Vtrs.find(
                 condition,
                 function(err, result) {
                     if (err) {
@@ -24,7 +24,7 @@ function detail(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Agreements.findOne(
+            Vtrs.findOne(
                 condition,
                 function(err, result) {
                     if (err) {
@@ -43,15 +43,16 @@ function add(country, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            var agreements = new Agreements(data)
-            agreements.save(function (err, result) {
+            var vtrs = new Vtrs(data)
+            vtrs.save(function (err, result) {
                 if (err) {
                     reject(err);
                 } else {
                     resolve(result);
                 }
             })
-        }).catch((err) => {
+        })
+        .catch((err) => {
             reject(err)
         })
     })
@@ -61,7 +62,7 @@ function modify(country, condition, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Agreements.findOneAndUpdate(
+            Vtrs.findOneAndUpdate(
             condition,
             data,
             {upsert: false, new: true},
@@ -82,7 +83,7 @@ function remove(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Agreements.findByIdAndRemove(
+            Vtrs.findByIdAndRemove(
                 condition,
                 function(err, user) {
                     if (err) {

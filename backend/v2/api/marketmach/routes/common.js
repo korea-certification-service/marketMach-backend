@@ -11,7 +11,7 @@ let logger = require('../../../utils/log');
 let tokens = require('../../../utils/token');
 
 //Login Token 체크 API
-router.get('/checking/token', tokens.checkLoginToken, function(req, res, next){
+router.get('/', tokens.checkLoginToken, function(req, res, next){
     res.status(200).send('login 화면');
 });
 

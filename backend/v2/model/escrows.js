@@ -1,12 +1,18 @@
 var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 var Schema = mongoose.Schema;
+var Mixed = Schema.Types.Mixed;
 var escrowsSchema = new Schema({
+    escrowId: String,
+    type: String, //deposit/withdraw/cancel
     itemId: String,
-    currencyCode: String,    
+    vtr: Mixed,
+    pointTrade: Mixed,
+    cryptoCurrencyCode: String,
     price: Number,
-    sellerUser: String,
-    buyerUser: String,
+    mach: Number, 
+    point: Number,
+    reqUser: String,
     regDate: String
 });
 

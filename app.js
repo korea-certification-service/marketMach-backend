@@ -11,6 +11,7 @@ var session = require('express-session');
 //marketmach 
 var usersRouter = require('./backend/v2/api/marketmach/routes/users');
 var vtrsRouter = require('./backend/v2/api/marketmach/routes/vtrs');
+var commonRouter = require('./backend/v2/api/marketmach/routes/common');
 
 //management
 var maUsers = require('./backend/v2/api/management/ma_users');
@@ -38,6 +39,8 @@ app.use(function (req, res, next) {
     // Pass to next layer of middleware
     next();
 });
+
+app.use('/', commonRouter);
 
 //backend API
 let version = "/v2";

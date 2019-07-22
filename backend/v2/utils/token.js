@@ -58,12 +58,13 @@ function checkLoginToken(req, res, next) {
                         "userInfo": user,
                         "agreement": agreement
                     }
-                    //
+                    //log 생성
                     logger.addLog(country, req.originalUrl, JSON.stringify(condition), JSON.stringify(resData));
 
-                    bitwebResponse.code = 200;
-                    bitwebResponse.data = resData;                
-                    res.status(200).send(bitwebResponse.create())
+                    // bitwebResponse.code = 200;
+                    // bitwebResponse.data = resData;                
+                    // res.status(200).send(bitwebResponse.create())
+                    next();
                 });
             }
         }).catch((err) => {        
@@ -82,9 +83,22 @@ function checkLoginToken(req, res, next) {
         bitwebResponse.message = resErr;
         res.status(500).send(bitwebResponse.create())
     }
-    
+}
 
+function checkInternalToken(req, res, next) {
+    let bitwebResponse = new BitwebResponse();
+    let header = req.headers;
+    //header의 token 값 체크
+    if(dbconfig.APIToken == header.token) {
+        next();
+    } else {
+        bitwebResponse.code = 500;
+        bitwebResponse.message = "Please check the token.";
+        res.status(500).send(bitwebResponse.create())
+        return;
+    }
 }
 
 exports.makeLoginToken = makeLoginToken;
 exports.checkLoginToken = checkLoginToken;
+exports.checkInternalToken = checkInternalToken;
