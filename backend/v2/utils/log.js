@@ -33,7 +33,7 @@ function addLog(country, url, reqData, resData) {
     logger.info('country' + ':' + country);
     logger.info('url' + ':' + url);
     logger.info('reqData :' + JSON.stringify(reqData));
-    logger.info('resData :' + typeof(resData) == "object" ? JSON.stringify(resData) : resData);
+    logger.info('resData :' + (typeof(resData) == "object" ? JSON.stringify(resData) : resData));
     logger.info('===============================');
 }
 
