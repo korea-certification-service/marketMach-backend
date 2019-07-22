@@ -15,7 +15,9 @@ var vtrsRouter = require('./backend/v2/api/marketmach/routes/vtrs');
 //management
 var maUsers = require('./backend/v2/api/management/ma_users');
 var maWithdrawusers = require('./backend/v2/api/management/ma_withdrawusers');
-var blacklist = require('./backend/v2/api/management/ma_blacklist');
+var maBlacklist = require('./backend/v2/api/management/ma_blacklist');
+var maCoins = require('./backend/v2/api/management/ma_coins');
+var maEscrows = require('./backend/v2/api/management/ma_escrows');
 
 var app = express();
 
@@ -47,7 +49,9 @@ app.use(version + '/vtrs', vtrsRouter);
 //management API
 app.use('/ma_users', maUsers);
 app.use('/ma_withdrawusers', maWithdrawusers);
-app.use('/ma_blacklist', blacklist);
+app.use('/ma_blacklist', maBlacklist);
+app.use('/ma_coins', maCoins);
+app.use('/ma_escrows', maEscrows);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

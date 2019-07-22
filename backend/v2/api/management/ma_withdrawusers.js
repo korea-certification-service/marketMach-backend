@@ -35,6 +35,7 @@ router.get("/count", (req, res) => {
     serviceWithdrawUsers.count(country, condition)
     .then(data => {
         res.send(200, data);
+        console.log(data);
     })
     .catch(err => {
         console.error('data error =>', err);

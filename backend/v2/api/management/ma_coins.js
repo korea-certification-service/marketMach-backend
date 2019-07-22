@@ -2,16 +2,13 @@ var express = require('express');
 var router = express.Router();
 let dbconfig = require('../../../../config/dbconfig');
 let BitwebResponse = require('../../utils/BitwebResponse');
-let serviceUsers = require('../../service/users');
+let serviceCoins = require('../../service/coins');
 
-/*GET User List*/
+/*GET Coin List*/
 router.get("/list", (req, res) => {
-    let country = dbconfig.country;
-    let condition = {
-        'country': country
-    }
+    let condition = { }
     let bitwebResponse = new BitwebResponse();
-    serviceUsers.list(country, condition)
+    serviceCoins.list(condition)
     .then(data => {
         res.send(200, data);
         console.log(data);
@@ -25,24 +22,25 @@ router.get("/list", (req, res) => {
     })
 });
 
-/*GET User Count*/
-router.get("/count", (req, res) => {
+/*GET Coin Detail*/
+router.get("/detail/:userId", (req, res) => {
     let country = dbconfig.country;
     let condition = {
-        'country': country
+        'userId': req.params.userId
     }
-    let bitwebResponse = new BitwebResponse();
-    serviceUsers.count(country, condition)
-    .then(data => {
-        res.send(200, data);
-        console.log(data);
-    })
-    .catch(err => {
-        console.error('data error =>', err);
-        bitwebResponse.code = 500;
-        bitwebResponse.message = resErr;
-        res.status(500).send(bitwebResponse.create())
-    })
+    console.log(req.params.userId);
+    // let bitwebResponse = new BitwebResponse();
+    // serviceCoins.detail(country, condition)
+    // .then(data => {
+    //     res.send(200, data);
+    //     console.log(data);
+    // })
+    // .catch(err => {
+    //     console.error('data error =>', err);
+    //     bitwebResponse.code = 500;
+    //     bitwebResponse.message = resErr;
+    //     res.status(500).send(bitwebResponse.create())
+    // })
 });
 
 module.exports = router; 
