@@ -1,11 +1,11 @@
-let Agreements = require('../model/agreements');
+let CancelHistorys = require('../model/cancelHistorys');
 let db = require('../utils/db');
 
 function list(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Agreements.find(
+            CancelHistorys.find(
                 condition,
                 function(err, result) {
                     if (err) {
@@ -24,7 +24,7 @@ function detail(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Agreements.findOne(
+            CancelHistorys.findOne(
                 condition,
                 function(err, result) {
                     if (err) {
@@ -43,8 +43,8 @@ function add(country, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            var agreements = new Agreements(data)
-            agreements.save(function (err, result) {
+            var cancelHistorys = new CancelHistorys(data)
+            cancelHistorys.save(function (err, result) {
                 if (err) {
                     reject(err);
                 } else {
@@ -61,7 +61,7 @@ function modify(country, condition, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Agreements.findOneAndUpdate(
+            CancelHistorys.findOneAndUpdate(
             condition,
             data,
             {upsert: false, new: true},
@@ -82,7 +82,7 @@ function remove(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Agreements.findByIdAndRemove(
+            CancelHistorys.findByIdAndRemove(
                 condition,
                 function(err, user) {
                     if (err) {

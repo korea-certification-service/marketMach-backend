@@ -1,14 +1,21 @@
-let bitwebEscrowHistorys = require('./impl/escrowHistorys');
+let EscrowHistorys = require('../model/escrows');
 let db = require('../utils/db');
 
 function list(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebEscrowHistorys.list(condition))
-            .then((result) => {
-                resolve(result)
-            }).catch((err) => {
-                reject(err)
+        .then(() => {
+            EscrowHistorys.find(
+                condition,
+                function(err, result) {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(result)
+                }
+            )
+        }).catch((err) => {
+            reject(err)
         })
     })
 }
@@ -16,9 +23,16 @@ function list(country, condition) {
 function detail(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebEscrowHistorys.detail(condition))
-            .then((result) => {
-                resolve(result)
+            .then(() => {
+                EscrowHistorys.findOne(
+                    condition,
+                    function(err, result) {
+                        if (err) {
+                            reject(err)
+                        }
+                        resolve(result)
+                    }
+                )
             }).catch((err) => {
                 reject(err)
         })
@@ -28,11 +42,17 @@ function detail(country, condition) {
 function add(country, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebEscrowHistorys.add(data))
-            .then((result) => {
-                resolve(result)
-            }).catch((err) => {
-                reject(err)
+        .then(() => {
+            var escrowHistorys = new EscrowHistorys(data)
+            escrowHistorys.save(function (err, result) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
+            })
+        }).catch((err) => {
+            reject(err)
         })
     })
 }
@@ -40,11 +60,20 @@ function add(country, data) {
 function modify(country, condition, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebEscrowHistorys.modify(condition, data))
-            .then((result) => {
-                resolve(result)
-            }).catch((err) => {
-                reject(err)
+        .then(() => {
+            EscrowHistorys.findOneAndUpdate(
+            condition,
+            data,
+            {upsert: false, new: true},
+            function(err, result) {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve(result)
+                }
+            })
+        }).catch((err) => {
+            reject(err)
         })
     })
 }
@@ -52,11 +81,18 @@ function modify(country, condition, data) {
 function remove(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebEscrowHistorys.remove(condition))
-            .then((result) => {
-                resolve(result)
-            }).catch((err) => {
-                reject(err)
+        .then(() => {
+            EscrowHistorys.findByIdAndRemove(
+                condition,
+                function(err, user) {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(user)
+                }
+            )
+        }).catch((err) => {
+            reject(err)
         })
     })
 }

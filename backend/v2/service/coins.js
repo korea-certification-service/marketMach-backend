@@ -1,14 +1,21 @@
-let bitwebCoins = require('./impl/coins');
+let Coins = require('../model/coins');
 let db = require('../utils/db');
 
 function list(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebCoins.list(condition))
-            .then((result) => {
-                resolve(result)
-            }).catch((err) => {
-                reject(err)
+        .then(() => {
+            Coins.find(
+                condition,
+                function(err, result) {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(result)
+                }
+            )
+        }).catch((err) => {
+            reject(err)
         })
     })
 }
@@ -16,11 +23,18 @@ function list(country, condition) {
 function detail(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebCoins.detail(condition))
-            .then((result) => {
-                resolve(result)
-            }).catch((err) => {
-                reject(err)
+        .then(() => {
+            Coins.findOne(
+                condition,
+                function(err, result) {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(result)
+                }
+            )
+        }).catch((err) => {
+            reject(err)
         })
     })
 }
@@ -28,11 +42,17 @@ function detail(country, condition) {
 function add(country, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebCoins.add(data))
-            .then((result) => {
-                resolve(result)
-            }).catch((err) => {
-                reject(err)
+        .then(() => {
+            var coins = new Coins(data)
+            coins.save(function (err, result) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
+            })
+        }).catch((err) => {
+            reject(err)
         })
     })
 }
@@ -40,11 +60,20 @@ function add(country, data) {
 function modify(country, condition, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebCoins.modify(condition, data))
-            .then((result) => {
-                resolve(result)
-            }).catch((err) => {
-                reject(err)
+        .then(() => {
+            Coins.findOneAndUpdate(
+            condition,
+            data,
+            {upsert: false, new: true},
+            function(err, result) {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve(result)
+                }
+            })
+        }).catch((err) => {
+            reject(err)
         })
     })
 }
@@ -52,11 +81,18 @@ function modify(country, condition, data) {
 function remove(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
-            .then(() => bitwebCoins.remove(condition))
-            .then((result) => {
-                resolve(result)
-            }).catch((err) => {
-                reject(err)
+        .then(() => {
+            Coins.findByIdAndRemove(
+                condition,
+                function(err, user) {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(user)
+                }
+            )
+        }).catch((err) => {
+            reject(err)
         })
     })
 }
