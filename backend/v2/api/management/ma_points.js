@@ -2,16 +2,17 @@ var express = require('express');
 var router = express.Router();
 let dbconfig = require('../../../../config/dbconfig');
 let BitwebResponse = require('../../utils/BitwebResponse');
-let serviceEscrows = require('../../service/escrows');
+let servicePoints = require('../../service/points');
 
 
-/*GET Escrow Detail*/
-router.get("/detail/:userTag", (req, res) => {
+/*GET Points Detail*/
+router.get("/detail/:pointId", (req, res) => {
+    let country = dbconfig.country;
     let condition = {
-        'reqUser': req.params.userTag
+        '_id': req.params.pointId
     }
     let bitwebResponse = new BitwebResponse();
-    serviceEscrows.detail(condition)
+    servicePoints.detail(country, condition)
     .then(data => {
         res.send(200, data);
         console.log(data);

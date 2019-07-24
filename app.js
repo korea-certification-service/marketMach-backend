@@ -19,6 +19,7 @@ var maWithdrawusers = require('./backend/v2/api/management/ma_withdrawusers');
 var maBlacklist = require('./backend/v2/api/management/ma_blacklist');
 var maCoins = require('./backend/v2/api/management/ma_coins');
 var maEscrows = require('./backend/v2/api/management/ma_escrows');
+var maPoints = require('./backend/v2/api/management/ma_points');
 
 var app = express();
 
@@ -55,6 +56,7 @@ app.use('/ma_withdrawusers', maWithdrawusers);
 app.use('/ma_blacklist', maBlacklist);
 app.use('/ma_coins', maCoins);
 app.use('/ma_escrows', maEscrows);
+app.use('/ma_points', maPoints);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

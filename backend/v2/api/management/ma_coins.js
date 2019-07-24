@@ -23,24 +23,23 @@ router.get("/list", (req, res) => {
 });
 
 /*GET Coin Detail*/
-router.get("/detail/:userId", (req, res) => {
+router.get("/detail/:coinId", (req, res) => {
     let country = dbconfig.country;
     let condition = {
-        'userId': req.params.userId
+        '_id': req.params.coinId
     }
-    console.log(req.params.userId);
-    // let bitwebResponse = new BitwebResponse();
-    // serviceCoins.detail(country, condition)
-    // .then(data => {
-    //     res.send(200, data);
-    //     console.log(data);
-    // })
-    // .catch(err => {
-    //     console.error('data error =>', err);
-    //     bitwebResponse.code = 500;
-    //     bitwebResponse.message = resErr;
-    //     res.status(500).send(bitwebResponse.create())
-    // })
+    let bitwebResponse = new BitwebResponse();
+    serviceCoins.detail(country, condition)
+    .then(data => {
+        res.send(200, data);
+        console.log(data);
+    })
+    .catch(err => {
+        console.error('data error =>', err);
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    })
 });
 
 module.exports = router; 
