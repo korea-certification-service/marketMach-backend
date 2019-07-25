@@ -281,21 +281,6 @@ function _startTrade(req, res, bitwebResponse) {
                 }
                 serviceItems.detail(country, conditionItem)
                 .then((item) => {    
-                    if(vtr._doc.item.status != 50) {
-                        let msg = {
-                            "successYn": "N",
-                            "code" : "E002",
-                            "msg" : "해당 아이템의 거래를 진행 할 수 없습니다."
-                        };
-                        //API 처리 결과 별도 LOG로 남김
-                        logger.addLog(country, req.originalUrl, req.body, msg);
-            
-                        bitwebResponse.code = 200;
-                        bitwebResponse.data = msg;
-                        res.status(200).send(bitwebResponse.create());
-                        return;
-                    }
-
                     //vtr 정보를 추가한다.
                     //아이템 상태 정보 update, 거래 요청 시 요청 가격이 틀리면 가격도 update한다.        
                     let userInfo = serviceItems.setUserInfoForVtr(users, body);
