@@ -263,8 +263,8 @@ function _startTrade(req, res, bitwebResponse) {
     let country = dbconfig.country;
     let itemId = req.params.itemId;
     let body = req.body;
-    if(body.country == "KR") {
-        delete reqData["country"];
+    if(body.country != "KR") {
+        body["country"] = body.country;
     }
     let conditionUser = {
         "userTag": {$in:[body.sellerTag, body.buyerTag]}
