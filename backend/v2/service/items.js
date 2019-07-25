@@ -112,8 +112,8 @@ function setUserInfoForVtr(users, body) {
     };
 
     //휴대전화번호 추가
-    result['seller_phone'] = users[from_findIndex]._doc.phone;
-    result['buyer_phone'] = users[to_findIndex]._doc.phone;
+    result['seller_phone'] = users[from_findIndex]._doc.countryCode + users[from_findIndex]._doc.phone;
+    result['buyer_phone'] = users[from_findIndex]._doc.countryCode + users[to_findIndex]._doc.phone;
 
     return result;
 }

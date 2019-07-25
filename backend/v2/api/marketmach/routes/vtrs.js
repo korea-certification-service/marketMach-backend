@@ -140,20 +140,7 @@ function _createVTR(req, res, bitwebResponse) {
                     } 
                     
                     if(req.headers.origin == undefined) {
-                        bitwebResponse.code = 200;
-                        updateItem._doc['successYn'] = "Y";
-                        let resData = {
-                            "item": updateItem, 
-                            "vtrTemp": addVtrTemp,
-                            "sms": "no"
-                        }
-                        //API 처리 결과 별도 LOG로 남김
-                        logger.addLog(country, req.originalUrl, req.body, resData);
-                        updateItem._doc['successYn'] = "Y";
-                        bitwebResponse.data = updateItem
-                        res.status(200).send(bitwebResponse.create())
-                    } else if(req.headers.origin.indexOf("marketmach") > 0) {
-                        let message = whoReqUser + smsMessage;
+                        let message = whoReqUser + smsMessage + itemId;
                         console.log("Send SMS Message => ", message);
                         smsController.sendSms(phone, message, 'no')
                         .then(sms => {
@@ -183,7 +170,7 @@ function _createVTR(req, res, bitwebResponse) {
                             bitwebResponse.data = updateItem
                             res.status(200).send(bitwebResponse.create())
                         });
-                    } else {
+                    } else if(req.headers.origin.indexOf("marketmach") > 0) {
                         shortUrl.short(encodeURIComponent(url), function (err, resultUrl) {
                             let message = whoReqUser + smsMessage + resultUrl;
                             console.log("Send SMS Message => ", message);
@@ -215,7 +202,20 @@ function _createVTR(req, res, bitwebResponse) {
                                 bitwebResponse.data = updateItem
                                 res.status(200).send(bitwebResponse.create())
                             });
-                        });
+                        });              
+                    } else {
+                        bitwebResponse.code = 200;
+                        updateItem._doc['successYn'] = "Y";
+                        let resData = {
+                            "item": updateItem, 
+                            "vtrTemp": addVtrTemp,
+                            "sms": "no"
+                        }
+                        //API 처리 결과 별도 LOG로 남김
+                        logger.addLog(country, req.originalUrl, req.body, resData);
+                        updateItem._doc['successYn'] = "Y";
+                        bitwebResponse.data = updateItem
+                        res.status(200).send(bitwebResponse.create())
                     }
                 }).catch((err) => {
                     console.error('update item error =>', err);
@@ -1321,7 +1321,7 @@ function _buynow(req, res, bitwebResponse) {
                                         } 
 
                                         if(req.headers.origin == undefined) {
-                                            let message = whoReqUser + smsMessage;
+                                            let message = whoReqUser + smsMessage + itemId;
                                             console.log("Send SMS Message => ", message);
                                             smsController.sendSms(phone, message, 'no')
                                             .then(sms => {
