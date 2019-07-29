@@ -43,7 +43,8 @@ var itemsSchema = new Schema({
     clicked: Number,
     primeService: String,
     vtr: Mixed,
-    pointTrade: Mixed
+    pointTrade: Mixed,
+    country: String
 });
 
 module.exports = itemsSchema;
