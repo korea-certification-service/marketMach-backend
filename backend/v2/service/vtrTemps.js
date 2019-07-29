@@ -86,7 +86,7 @@ function remove(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            VtrTemps.findByIdAndRemove(
+            VtrTemps.findOneAndRemove(
                 condition,
                 function(err, user) {
                     if (err) {

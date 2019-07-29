@@ -3,7 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var session = require('express-session');
+let cors = require('cors');
 
 //admin
 
@@ -11,6 +11,7 @@ var session = require('express-session');
 //marketmach 
 var usersRouter = require('./backend/v2/api/marketmach/routes/users');
 var vtrsRouter = require('./backend/v2/api/marketmach/routes/vtrs');
+var itemsRouter = require('./backend/v2/api/marketmach/routes/items');
 var commonRouter = require('./backend/v2/api/marketmach/routes/common');
 
 //management
@@ -33,20 +34,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(function (req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-    res.setHeader('Access-Control-Allow-Credentials', true);
-
-    // Pass to next layer of middleware
-    next();
-});
+app.use(cors());
 
 app.use('/', commonRouter);
 
 //backend API
 let version = "/v2";
+app.use(version + '/items', itemsRouter);
 app.use(version + '/users', usersRouter);
 app.use(version + '/vtrs', vtrsRouter);
 
