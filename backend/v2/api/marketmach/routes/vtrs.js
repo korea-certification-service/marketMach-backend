@@ -858,25 +858,17 @@ function _reqCancel(req, res, bitwebResponse) {
         .then(vtr => {
             if(vtr._doc.buy_status != undefined && user._doc._id.toString() == vtr._doc.to_userId.toString()) {
                 let msg = {};
-                if(vtr._doc.sell_status == undefined) {
+                if(vtr._doc.completed == undefined) {
                     msg = {
                         "successYn":"N",
-                        "code": 32,
-                        "msg": '현재 상태에서는 거래취소가 불가능합니다. 판매자님에게 환불을 요청하세요.'
+                        "code": 42,
+                        "msg": '현재 상태에서는 거래취소가 불가능합니다. 판매자님에게 환불을 요청하거나 사이트에서 이의신청 해주세요.'
                     }
                 } else {
-                    if(vtr._doc.completed == undefined) {
-                        msg = {
-                            "successYn":"N",
-                            "code": 42,
-                            "msg": '현재 상태에서는 거래취소가 불가능합니다. 판매자님에게 환불을 요청하거나 사이트에서 이의신청 해주세요.'
-                        }
-                    } else {
-                        msg = {
-                            "successYn":"N",
-                            "code": 52,
-                            "msg": '거래가 완료되어 거래취소하실 수 없습니다.'
-                        }
+                    msg = {
+                        "successYn":"N",
+                        "code": 52,
+                        "msg": '거래가 완료되어 거래취소하실 수 없습니다.'
                     }
                 }
 

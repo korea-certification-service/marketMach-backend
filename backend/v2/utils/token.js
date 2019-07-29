@@ -23,7 +23,7 @@ function makeLoginToken(value) {
 function checkLoginToken(req, res, next) {
     let country = dbconfig.country;
     let passphrase = dbconfig.cryptoJS.passphrase;
-    let value = req.cookies.login_token;
+    let value = req.headers.logintoken;
     let bitwebResponse = new BitwebResponse();
 
     if(value) {
@@ -47,9 +47,9 @@ function checkLoginToken(req, res, next) {
                 }
                 serviceAgreements.detail(country, search)
                 .then((agreement) => {
-                    res.cookie("login_token", value, {
-                        expires: new Date(Date.now() + (60 * 60 * 1000)), //1시간
-                    });
+                    // res.cookie("login_token", value, {
+                    //     expires: new Date(Date.now() + (60 * 60 * 1000)), //1시간
+                    // });
 
                     let resData = {
                         "userTag": user.userTag, 
@@ -90,7 +90,8 @@ function checkInternalToken(req, res, next) {
     let header = req.headers;
     //header의 token 값 체크
     if(dbconfig.APIToken == header.token) {
-        next();
+        //로그인 token 체크
+        checkLoginToken(req, res, next);
     } else {
         bitwebResponse.code = 500;
         bitwebResponse.message = "Please check the token.";
