@@ -110,8 +110,10 @@ function _createVTR(req, res, bitwebResponse) {
                 "item": item,
                 "regDate": util.formatDate(new Date().toString())
             }
-            if(dbconfig.country != "KR") {
-                reqData["country"] = country;
+            if(body.country != undefined) {
+                if(body.country != "KR") {
+                    reqData["country"] = body.country;
+                }
             }
             console.log('req VtrTemp data =>', reqData);
             
@@ -267,9 +269,7 @@ function _startTrade(req, res, bitwebResponse) {
     let country = dbconfig.country;
     let itemId = req.params.itemId;
     let body = req.body;
-    if(body.country != "KR") {
-        body["country"] = body.country;
-    }
+
     let conditionUser = {
         "userTag": {$in:[body.sellerTag, body.buyerTag]}
     }
@@ -1173,10 +1173,7 @@ function _buynow(req, res, bitwebResponse) {
     let conditionItem = {
         "_id": itemId
     }
-    if(dbconfig.country != "KR") {
-        body['country']= dbconfig.country;
-    }
-    
+
     //사용자 조회
     serviceUsers.list(country, conditionUser)
     .then((users) => {
