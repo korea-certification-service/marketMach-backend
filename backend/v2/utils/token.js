@@ -91,7 +91,8 @@ function checkInternalToken(req, res, next) {
     //header의 token 값 체크
     if(dbconfig.APIToken == header.token) {
         //로그인 token 체크
-        checkLoginToken(req, res, next);
+        //checkLoginToken(req, res, next);
+        next();
     } else {
         bitwebResponse.code = 500;
         bitwebResponse.message = "Please check the token.";
