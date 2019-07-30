@@ -249,7 +249,7 @@ function _createVTR(req, res, bitwebResponse) {
                 } else {
                     //vtrTemp 존재 시 item정보만 return
                     bitwebResponse.code = 200;
-                    updateItem._doc['successYn'] = "Y";
+                    item._doc['successYn'] = "Y";
                     let resData = {
                         "item": item, 
                         "vtrTemp": vtrTemp,
