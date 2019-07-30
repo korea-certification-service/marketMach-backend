@@ -117,131 +117,150 @@ function _createVTR(req, res, bitwebResponse) {
             }
             console.log('req VtrTemp data =>', reqData);
             
-            //vtr 방 생성
-            serviceVtrTemps.add(country, reqData)
-            .then((addVtrTemp) => {
-                let updateData = {
-                    "roomToken": roomToken,
-                    "status": 50,
-                    "vtrTempId": addVtrTemp._doc._id,
-                };
-                if(item._doc.catrgory == "game") {
-                    updateData['target_game_character'] = body.target_game_character;
-                }
-                console.log('update item data =>', updateData);
-    
-                //vtr 방 넘버,상태, roomToken값 update
-                serviceItems.modify(country, conditionItem, updateData)
-                .then((updateItem) => {
-                    console.log("HOST : ", req.headers.origin);
-                    
-                    //SMS전송
-                    let phone = userInfo.seller_phone;
-                    let whoReqUser = body.buyerTag;
-                    let smsMessage = smsContent.sms.ko;
-                    let url = req.headers.origin + '/sms/room?roomToken='+updateItem._doc.roomToken+'&itemId=' + updateItem._doc._id + '&user_id=' + updateItem._doc.userTag + '&vtrTempId=' + addVtrTemp._doc._id;
-                    if(updateItem._doc.trade_type == "buy") {
-                        whoReqUser = sellerTag;
-                        phone = userInfo.buyer_phone;
-                    } 
-                    
-                    if(req.headers.origin == undefined) {
-                        let message = whoReqUser + smsMessage + itemId;
-                        console.log("Send SMS Message => ", message);
-                        smsController.sendSms(phone, message, 'no')
-                        .then(sms => {
-                            bitwebResponse.code = 200;
-                            updateItem._doc['successYn'] = "Y";
-                            let resData = {
-                                "item": updateItem, 
-                                "vtrTemp": addVtrTemp,
-                                "sms": sms
-                            }
-                            //API 처리 결과 별도 LOG로 남김
-                            logger.addLog(country, req.originalUrl, req.body, resData);
-                            updateItem._doc['successYn'] = "Y";
-                            bitwebResponse.data = updateItem
-                            res.status(200).send(bitwebResponse.create())
-                        }).catch((err) => {
-                            console.error('send sms error =>', err)
-                            updateItem._doc['successYn'] = "Y";
-                            let resData = {
-                                "item": updateItem, 
-                                "vtrTemp": addVtrTemp,
-                                "sms": err
-                            }
-                            //API 처리 결과 별도 LOG로 남김
-                            logger.addLog(country, req.originalUrl, req.body, resData);
-                            updateItem._doc['successYn'] = "Y";
-                            bitwebResponse.data = updateItem
-                            res.status(200).send(bitwebResponse.create())
-                        });
-                    } else if(req.headers.origin.indexOf("marketmach") > 0) {
-                        shortUrl.short(encodeURIComponent(url), function (err, resultUrl) {
-                            let message = whoReqUser + smsMessage + resultUrl;
-                            console.log("Send SMS Message => ", message);
-                            smsController.sendSms(phone, message)
-                            .then(sms => {
+            serviceVtrTemps.detail(country, {"roomToken":roomToken})
+            .then(vtrTemp => {
+                if(vtrTemp == null) {
+                    //vtr 방 생성
+                    serviceVtrTemps.add(country, reqData)
+                    .then((addVtrTemp) => {
+                        let updateData = {
+                            "roomToken": roomToken,
+                            "status": 50,
+                            "vtrTempId": addVtrTemp._doc._id,
+                        };
+                        if(item._doc.catrgory == "game") {
+                            updateData['target_game_character'] = body.target_game_character;
+                        }
+                        console.log('update item data =>', updateData);
+
+                        //vtr 방 넘버,상태, roomToken값 update
+                        serviceItems.modify(country, conditionItem, updateData)
+                        .then((updateItem) => {
+                            console.log("HOST : ", req.headers.origin);
+                            
+                            //SMS전송
+                            let phone = userInfo.seller_phone;
+                            let whoReqUser = body.buyerTag;
+                            let smsMessage = smsContent.sms.ko;
+                            let url = req.headers.origin + '/sms/room?roomToken='+updateItem._doc.roomToken+'&itemId=' + updateItem._doc._id + '&user_id=' + updateItem._doc.userTag + '&vtrTempId=' + addVtrTemp._doc._id;
+                            if(updateItem._doc.trade_type == "buy") {
+                                whoReqUser = sellerTag;
+                                phone = userInfo.buyer_phone;
+                            } 
+                            
+                            if(req.headers.origin == undefined) {
+                                let message = whoReqUser + smsMessage + itemId;
+                                console.log("Send SMS Message => ", message);
+                                smsController.sendSms(phone, message, 'no')
+                                .then(sms => {
+                                    bitwebResponse.code = 200;
+                                    updateItem._doc['successYn'] = "Y";
+                                    let resData = {
+                                        "item": updateItem, 
+                                        "vtrTemp": addVtrTemp,
+                                        "sms": sms
+                                    }
+                                    //API 처리 결과 별도 LOG로 남김
+                                    logger.addLog(country, req.originalUrl, req.body, resData);
+                                    updateItem._doc['successYn'] = "Y";
+                                    bitwebResponse.data = updateItem
+                                    res.status(200).send(bitwebResponse.create())
+                                }).catch((err) => {
+                                    console.error('send sms error =>', err)
+                                    updateItem._doc['successYn'] = "Y";
+                                    let resData = {
+                                        "item": updateItem, 
+                                        "vtrTemp": addVtrTemp,
+                                        "sms": err
+                                    }
+                                    //API 처리 결과 별도 LOG로 남김
+                                    logger.addLog(country, req.originalUrl, req.body, resData);
+                                    updateItem._doc['successYn'] = "Y";
+                                    bitwebResponse.data = updateItem
+                                    res.status(200).send(bitwebResponse.create())
+                                });
+                            } else if(req.headers.origin.indexOf("marketmach") > 0) {
+                                shortUrl.short(encodeURIComponent(url), function (err, resultUrl) {
+                                    let message = whoReqUser + smsMessage + resultUrl;
+                                    console.log("Send SMS Message => ", message);
+                                    smsController.sendSms(phone, message)
+                                    .then(sms => {
+                                        bitwebResponse.code = 200;
+                                        updateItem._doc['successYn'] = "Y";
+                                        let resData = {
+                                            "item": updateItem, 
+                                            "vtrTemp": addVtrTemp,
+                                            "sms": sms
+                                        }
+                                        //API 처리 결과 별도 LOG로 남김
+                                        logger.addLog(country, req.originalUrl, req.body, resData);
+                                        updateItem._doc['successYn'] = "Y";
+                                        bitwebResponse.data = updateItem
+                                        res.status(200).send(bitwebResponse.create())
+                                    }).catch((err) => {
+                                        console.error('send sms error =>', err)
+                                        updateItem._doc['successYn'] = "Y";
+                                        let resData = {
+                                            "item": updateItem, 
+                                            "vtrTemp": addVtrTemp,
+                                            "sms": err
+                                        }
+                                        //API 처리 결과 별도 LOG로 남김
+                                        logger.addLog(country, req.originalUrl, req.body, resData);
+                                        updateItem._doc['successYn'] = "Y";
+                                        bitwebResponse.data = updateItem
+                                        res.status(200).send(bitwebResponse.create())
+                                    });
+                                });              
+                            } else {
                                 bitwebResponse.code = 200;
                                 updateItem._doc['successYn'] = "Y";
                                 let resData = {
                                     "item": updateItem, 
                                     "vtrTemp": addVtrTemp,
-                                    "sms": sms
+                                    "sms": "no"
                                 }
                                 //API 처리 결과 별도 LOG로 남김
                                 logger.addLog(country, req.originalUrl, req.body, resData);
                                 updateItem._doc['successYn'] = "Y";
                                 bitwebResponse.data = updateItem
                                 res.status(200).send(bitwebResponse.create())
-                            }).catch((err) => {
-                                console.error('send sms error =>', err)
-                                updateItem._doc['successYn'] = "Y";
-                                let resData = {
-                                    "item": updateItem, 
-                                    "vtrTemp": addVtrTemp,
-                                    "sms": err
-                                }
-                                //API 처리 결과 별도 LOG로 남김
-                                logger.addLog(country, req.originalUrl, req.body, resData);
-                                updateItem._doc['successYn'] = "Y";
-                                bitwebResponse.data = updateItem
-                                res.status(200).send(bitwebResponse.create())
-                            });
-                        });              
-                    } else {
-                        bitwebResponse.code = 200;
-                        updateItem._doc['successYn'] = "Y";
-                        let resData = {
-                            "item": updateItem, 
-                            "vtrTemp": addVtrTemp,
-                            "sms": "no"
-                        }
+                            }
+                        }).catch((err) => {
+                            console.error('update item error =>', err);
+                            let resErr = "처리중 에러 발생";
+                            //API 처리 결과 별도 LOG로 남김
+                            logger.addLog(country, req.originalUrl, req.body, err);
+                                    
+                            bitwebResponse.code = 500;
+                            bitwebResponse.message = resErr;
+                            res.status(500).send(bitwebResponse.create())
+                        })
+                    }).catch((err) => {
+                        console.error('add vtrTemp error =>', err);
+                        let resErr = "처리중 에러 발생";
                         //API 처리 결과 별도 LOG로 남김
-                        logger.addLog(country, req.originalUrl, req.body, resData);
-                        updateItem._doc['successYn'] = "Y";
-                        bitwebResponse.data = updateItem
-                        res.status(200).send(bitwebResponse.create())
+                        logger.addLog(country, req.originalUrl, req.body, err);
+                                    
+                        bitwebResponse.code = 500;
+                        bitwebResponse.message = resErr;
+                        res.status(500).send(bitwebResponse.create())
+                    })
+                } else {
+                    //vtrTemp 존재 시 item정보만 return
+                    bitwebResponse.code = 200;
+                    updateItem._doc['successYn'] = "Y";
+                    let resData = {
+                        "item": item, 
+                        "vtrTemp": vtrTemp,
+                        "sms": "skip"
                     }
-                }).catch((err) => {
-                    console.error('update item error =>', err);
-                    let resErr = "처리중 에러 발생";
                     //API 처리 결과 별도 LOG로 남김
-                    logger.addLog(country, req.originalUrl, req.body, err);
-                            
-                    bitwebResponse.code = 500;
-                    bitwebResponse.message = resErr;
-                    res.status(500).send(bitwebResponse.create())
-                })
-            }).catch((err) => {
-                console.error('add vtrTemp error =>', err);
-                let resErr = "처리중 에러 발생";
-                //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, req.body, err);
-                            
-                bitwebResponse.code = 500;
-                bitwebResponse.message = resErr;
-                res.status(500).send(bitwebResponse.create())
+                    logger.addLog(country, req.originalUrl, req.body, resData);
+                    item._doc['successYn'] = "Y";
+                    bitwebResponse.data = item
+                    res.status(200).send(bitwebResponse.create())
+                }
             })
         }).catch((err) => {
             console.error('add vtrTemp error =>', err);
