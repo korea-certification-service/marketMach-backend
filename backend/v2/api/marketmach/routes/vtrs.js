@@ -1622,33 +1622,43 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                 if(vtr._doc.buy_status == undefined) {
                     serviceVtrs.remove(country, {"_id":vtr._doc._id})
                     .then(deletedVtr => {
-                        serviceVtrTemps.remove(country, {"item._id":itemId});
-
-                        let msg = {
-                            "successYn":"Y",
-                            "code": 31,
-                            "msg": '구매자님이 거래를 취소 하였습니다.'
-                        }
-
-                        if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
-                            msg = {
+                        serviceVtrTemps.remove(country, {"item._id":itemId})
+                        .then(deletedVtrTemp => {
+                            let msg = {
                                 "successYn":"Y",
-                                "code": 41,
-                                "msg": '판매자님이 거래를 취소 하였습니다.'
+                                "code": 31,
+                                "msg": '구매자님이 거래를 취소 하였습니다.'
                             }
-                        }
 
-                        let resData = {
-                            "result":msg,
-                            "vtr": deletedVtr,
-                            "item": updatedItem
-                        }
-                        //API 처리 결과 별도 LOG로 남김
-                        logger.addLog(country, req.originalUrl, req.body, resData);
+                            if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
+                                msg = {
+                                    "successYn":"Y",
+                                    "code": 41,
+                                    "msg": '판매자님이 거래를 취소 하였습니다.'
+                                }
+                            }
 
-                        bitwebResponse.code = 200;
-                        bitwebResponse.data = msg;
-                        res.status(200).send(bitwebResponse.create())
+                            let resData = {
+                                "result":msg,
+                                "vtr": deletedVtr,
+                                "item": updatedItem
+                            }
+                            //API 처리 결과 별도 LOG로 남김
+                            logger.addLog(country, req.originalUrl, req.body, resData);
+
+                            bitwebResponse.code = 200;
+                            bitwebResponse.data = msg;
+                            res.status(200).send(bitwebResponse.create())
+                        }).catch((err) => {
+                            console.error('delete vtr temp error =>', err);
+                            let resErr = "처리중 에러 발생";
+                            //API 처리 결과 별도 LOG로 남김
+                            logger.addLog(country, req.originalUrl, req.body, err);
+                    
+                            bitwebResponse.code = 500;
+                            bitwebResponse.message = resErr;
+                            res.status(500).send(bitwebResponse.create())
+                        })  
                     }).catch((err) => {
                         console.error('delete vtr error =>', err);
                         let resErr = "처리중 에러 발생";
@@ -1735,36 +1745,48 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                         .then(() => {
                                             serviceVtrs.remove(country, {"_id":vtr._doc._id})
                                             .then(deletedVtr => {
-                                                serviceVtrTemps.remove(country, {"item._id":itemId});
-                                                let msg = {
-                                                    "successYn":"Y",
-                                                    "code": 31,
-                                                    "msg": '구매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.'
-                                                }
-                        
-                                                if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
-                                                    msg = {
-                                                        "successYn":"Y",
-                                                        "code": 41,
-                                                        "msg": '판매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.'
-                                                    }
-                                                }
+                                                serviceVtrTemps.remove(country, {"item._id":itemId})
+                                                .then(deletedVtrTemp => {
                                                 
-                                                let resData = {
-                                                    "result":msg,
-                                                    "vtr": deletedVtr,
-                                                    "item": updateItem,
-                                                    "coin": updateCoin,
-                                                    "escrow": modifyEscrow,
-                                                    "escrowHistory": reqDataEscrow,
-                                                    "coinHistory": reqCoinHistoryData
-                                                }
-                                                //API 처리 결과 별도 LOG로 남김
-                                                logger.addLog(country, req.originalUrl, req.body, resData);
-                    
-                                                bitwebResponse.code = 200;
-                                                bitwebResponse.data = msg;
-                                                res.status(200).send(bitwebResponse.create())
+                                                    let msg = {
+                                                        "successYn":"Y",
+                                                        "code": 31,
+                                                        "msg": '구매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.'
+                                                    }
+                            
+                                                    if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
+                                                        msg = {
+                                                            "successYn":"Y",
+                                                            "code": 41,
+                                                            "msg": '판매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.'
+                                                        }
+                                                    }
+                                                    
+                                                    let resData = {
+                                                        "result":msg,
+                                                        "vtr": deletedVtr,
+                                                        "item": updateItem,
+                                                        "coin": updateCoin,
+                                                        "escrow": modifyEscrow,
+                                                        "escrowHistory": reqDataEscrow,
+                                                        "coinHistory": reqCoinHistoryData
+                                                    }
+                                                    //API 처리 결과 별도 LOG로 남김
+                                                    logger.addLog(country, req.originalUrl, req.body, resData);
+                        
+                                                    bitwebResponse.code = 200;
+                                                    bitwebResponse.data = msg;
+                                                    res.status(200).send(bitwebResponse.create())
+                                                }).catch((err) => {
+                                                    console.error('delete vtr temp error =>', err);
+                                                    let resErr = "처리중 에러 발생";
+                                                    //API 처리 결과 별도 LOG로 남김
+                                                    logger.addLog(country, req.originalUrl, req.body, err);
+                                            
+                                                    bitwebResponse.code = 500;
+                                                    bitwebResponse.message = resErr;
+                                                    res.status(500).send(bitwebResponse.create())
+                                                })  
                                             }).catch((err) => {
                                                 console.error('delete vtr error =>', err);
                                                 let resErr = "처리중 에러 발생";
