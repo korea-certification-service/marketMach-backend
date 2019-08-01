@@ -900,7 +900,7 @@ function _reqCancel(req, res, bitwebResponse) {
                 // }
                 if(vtr._doc.completed == undefined) {
                     let message = '현재 상태에서는 거래취소가 불가능합니다. 판매자님에게 환불을 요청해주세요.';
-                    if(dbconfig.country != "KR") {
+                    if(req.body.country != "KR") {
                         message = 'You can not cancel your transaction at this time. Please request a refund from the seller.';
                     }
                     msg = {
@@ -910,7 +910,7 @@ function _reqCancel(req, res, bitwebResponse) {
                     }
                 } else {
                     let message = '거래가 완료되어 거래취소하실 수 없습니다.';
-                    if(dbconfig.country != "KR") {
+                    if(req.body.country != "KR") {
                         message = 'Your transaction is complete and you can not cancel your transaction.';
                     }
                     msg = {
@@ -932,7 +932,7 @@ function _reqCancel(req, res, bitwebResponse) {
             if(vtr._doc.completed != undefined) {
                 //거래 완료된 경우 취소 요청 불가
                 let message = '거래가 완료되어 거래취소하실 수 없습니다.';
-                if(dbconfig.country != "KR") {
+                if(req.body.country != "KR") {
                     message = 'Your transaction is complete and you can not cancel your transaction.';
                 }
                 let msg = {
@@ -961,7 +961,7 @@ function _reqCancel(req, res, bitwebResponse) {
                     serviceVtrs.remove(country, {"_id":vtr._doc._id})
                     .then(deletedVtr => {
                         let from_message = '구매자님이 거래를 취소 하였습니다.';
-                        if(dbconfig.country != "KR") {
+                        if(req.body.country != "KR") {
                             from_message = 'The Buyer canceled the transaction.';
                         }
                         let msg = {
@@ -972,7 +972,7 @@ function _reqCancel(req, res, bitwebResponse) {
 
                         if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
                             let to_message = '판매자님이 거래를 취소 하였습니다.';
-                            if(dbconfig.country != "KR") {
+                            if(req.body.country != "KR") {
                                 to_message = 'The seller canceled the transaction.';
                             }
                             msg = {
@@ -1080,7 +1080,7 @@ function _reqCancel(req, res, bitwebResponse) {
                                             serviceVtrs.remove(country, {"_id":vtr._doc._id})
                                             .then(deletedVtr => {
                                                 let from_message = '구매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.';
-                                                if(dbconfig.country != "KR") {
+                                                if(req.body.country != "KR") {
                                                     from_message = 'The buyer has canceled the transaction. The transaction amount held in the escrow has been refunded to the buyer\'s wallet.';
                                                 }
                                                 let msg = {
@@ -1091,7 +1091,7 @@ function _reqCancel(req, res, bitwebResponse) {
                         
                                                 if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
                                                     let to_message = '판매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.';
-                                                    if(dbconfig.country != "KR") {
+                                                    if(req.body.country != "KR") {
                                                         to_message = 'The seller has canceled the transaction. The transaction amount held in the escrow has been refunded to the buyer\'s wallet.';
                                                     }
                                                     msg = {
@@ -1606,7 +1606,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                     serviceVtrTemps.remove(country, {"item._id":itemId})
                     .then(deletedVtrTemp => {
                         let message = '구매자님이 거래를 취소 하였습니다.';
-                        if(dbconfig.country != "KR") {
+                        if(req.body.country != "KR") {
                             message = 'The Buyer canceled the transaction.';
                         }
 
@@ -1618,7 +1618,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
 
                         if(user._doc.userTag != deletedVtrTemp._doc.buyer_id) {
                             let to_message = '판매자님이 거래를 취소 하였습니다.';
-                            if(dbconfig.country != "KR") {
+                            if(req.body.country != "KR") {
                                 to_message = 'The seller canceled the transaction.';
                             }
 
@@ -1686,7 +1686,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                     // }
                     if(vtr._doc.completed == undefined) {
                         let message = '현재 상태에서는 거래취소가 불가능합니다. 판매자님에게 환불을 요청해주세요.';
-                        if(dbconfig.country != "KR") {
+                        if(req.body.country != "KR") {
                             message = 'You can not cancel your transaction at this time. Please request a refund from the seller.';
                         }
     
@@ -1697,7 +1697,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                         }
                     } else {
                         let message = '거래가 완료되어 거래취소하실 수 없습니다.';
-                        if(dbconfig.country != "KR") {
+                        if(req.body.country != "KR") {
                             message = 'Your transaction is complete and you can not cancel your transaction.';
                         }
     
@@ -1720,7 +1720,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                 if(vtr._doc.completed != undefined) {
                     //거래 완료된 경우 취소 요청 불가
                     let message = '거래가 완료되어 거래취소하실 수 없습니다.';
-                    if(dbconfig.country != "KR") {
+                    if(req.body.country != "KR") {
                         message = 'Your transaction is complete and you can not cancel your transaction.';
                     }
                     
@@ -1752,7 +1752,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                             serviceVtrTemps.remove(country, {"item._id":itemId})
                             .then(deletedVtrTemp => {
                                 let from_message = '구매자님이 거래를 취소 하였습니다.';
-                                if(dbconfig.country != "KR") {
+                                if(req.body.country != "KR") {
                                     from_message = 'The buyer canceled the transaction.';
                                 }
         
@@ -1764,7 +1764,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
 
                                 if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
                                     let to_message = '판매자님이 거래를 취소 하였습니다.';
-                                    if(dbconfig.country != "KR") {
+                                    if(req.body.country != "KR") {
                                         to_message = 'The seller canceled the transaction.';
                                     }
                                     msg = {
@@ -1884,7 +1884,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                                     serviceVtrTemps.remove(country, {"item._id":itemId})
                                                     .then(deletedVtrTemp => {
                                                         let from_message = '구매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.';
-                                                        if(dbconfig.country != "KR") {
+                                                        if(req.body.country != "KR") {
                                                             from_message = 'The buyer has canceled the transaction. The transaction amount held in the escrow has been refunded to the buyer\'s wallet.';
                                                         }
         
@@ -1896,7 +1896,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                 
                                                         if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
                                                             let to_message = '판매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.';
-                                                            if(dbconfig.country != "KR") {
+                                                            if(req.body.country != "KR") {
                                                                 to_message = 'The seller has canceled the transaction. The transaction amount held in the escrow has been refunded to the buyer\'s wallet.';
                                                             }
         
