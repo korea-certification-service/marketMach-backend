@@ -12,6 +12,7 @@ let cors = require('cors');
 var usersRouter = require('./backend/v2/api/marketmach/routes/users');
 var vtrsRouter = require('./backend/v2/api/marketmach/routes/vtrs');
 var itemsRouter = require('./backend/v2/api/marketmach/routes/items');
+var communityRouter = require('./backend/v2/api/marketmach/routes/communitys');
 var commonRouter = require('./backend/v2/api/marketmach/routes/common');
 
 //management
@@ -40,6 +41,7 @@ let version = "/v2";
 app.use(version + '/items', itemsRouter);
 app.use(version + '/users', usersRouter);
 app.use(version + '/vtrs', vtrsRouter);
+app.use(version + '/community', communityRouter);
 
 //management API
 app.use('/ma_users', maUsers);

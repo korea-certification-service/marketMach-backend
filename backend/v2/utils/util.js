@@ -123,6 +123,45 @@ function checkEmail(value) {
     return true;
 }
 
+function fileUpload(req, res, callback) {
+    let awsS3 = require('../utils/awsS3');
+    let multiUpload = awsS3.multiUpload();
+
+    multiUpload(req, res, function (err, result) {
+        if (err) {
+            res.status(422).send({errors: [{title: 'Image Upload Error', detail: err.message}]});
+            return;
+        }
+
+        console.log('req.file=>', JSON.stringify(req.files))
+        let data = {
+            "images": []
+        }
+        for(var i =0; i< req.files.length; i++) {
+            let image = {
+                "path": req.files[i].location,
+                "bucket": req.files[i].bucket,
+                "key": req.files[i].key,
+                "origin_name": req.files[i].originalname,
+                "size": req.files[i].size,
+                "mimetype": req.files[i].mimetype,
+                "regDate": util.formatDate(new Date().toLocaleString('ko-KR'))
+            }
+
+            data['images'].push(image);
+        }
+
+        for(var i=0; i<data['images'].length; i++) {
+            if(data['images'][i] == null) {
+                data['images'].splice(i,1);
+                i--;
+            }
+        }
+
+        callback(data);
+    });
+}
+
 exports.formatDate = formatDate;
 exports.formatDate2 = formatDate2;
 exports.getEnvLocale = getEnvLocale;
@@ -134,3 +173,4 @@ exports.checkStrNum = checkStrNum;
 exports.checkPassword = checkPassword;
 exports.checkEmail = checkEmail;
 exports.checkAdult = checkAdult;
+exports.fileUpload = fileUpload;
