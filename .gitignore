@@ -152,3 +152,6 @@ aws-credentials.js
 
 #vscode 
 .vscode/launch.json
+
+#bin/www
+bin/www
