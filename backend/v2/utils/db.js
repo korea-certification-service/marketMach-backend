@@ -10,20 +10,8 @@ mongoose.set('debug, true');
 function connect (DB_URI) {
     return new Promise((resolve, reject) => {
         if (mongoose.connection.readyState) {
-            if(DB_URI.indexOf(mongoose.connection.host +":"+mongoose.connection.port) == -1) {
-                mongoose.connection.close()
-                mongoose.connect(DB_URI)
-                    .then( (connection) => {
-                        resolve(connection)
-                    })
-                    .catch( (err) => {
-                        console.error(err)
-                        reject(err)
-                    })
-            } else {
-                console.log('reuse connection')
-                resolve(mongoose.connection)
-            }
+            console.log('reuse connection')
+            resolve(mongoose.connection)
         } else {
             console.log('new connection')
             mongoose.connect(DB_URI)
