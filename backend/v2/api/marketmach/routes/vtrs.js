@@ -125,7 +125,7 @@ function _createVTR(req, res, bitwebResponse) {
                     .then((addVtrTemp) => {
                         let updateData = {
                             "roomToken": roomToken,
-                            //"status": 50,
+                            "status": 50,
                             "vtrTempId": addVtrTemp._doc._id,
                         };
                         if(item._doc.catrgory == "game") {
@@ -972,7 +972,7 @@ function _reqCancel(req, res, bitwebResponse) {
 
             //단순 거래 취소
             let reqItem = {
-                "status": 0
+                "status": 50
             };
 
             serviceItems.modify(country, conditionItem, reqItem)
@@ -1037,7 +1037,7 @@ function _reqCancel(req, res, bitwebResponse) {
                             }
 
                             let reqData = {
-                                'status': 0,
+                                'status': 50,
                                 'vtr': ''
                             };
 
