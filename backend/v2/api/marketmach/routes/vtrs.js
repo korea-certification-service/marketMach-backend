@@ -125,7 +125,7 @@ function _createVTR(req, res, bitwebResponse) {
                     .then((addVtrTemp) => {
                         let updateData = {
                             "roomToken": roomToken,
-                            "status": 50,
+                            //"status": 50,
                             "vtrTempId": addVtrTemp._doc._id,
                         };
                         if(item._doc.catrgory == "game") {
@@ -972,7 +972,7 @@ function _reqCancel(req, res, bitwebResponse) {
 
             //단순 거래 취소
             let reqItem = {
-                "status": 50
+                "status": 0
             };
 
             serviceItems.modify(country, conditionItem, reqItem)
@@ -1037,7 +1037,7 @@ function _reqCancel(req, res, bitwebResponse) {
                             }
 
                             let reqData = {
-                                'status': 50,
+                                'status': 0,
                                 'vtr': ''
                             };
 
@@ -1635,7 +1635,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                 .then(updatedItem => {
                     serviceVtrTemps.remove(country, {"item._id":itemId})
                     .then(deletedVtrTemp => {
-                        let message = '구매자님이 거래를 취소 하였습니다.';
+                        let message = '거래를 취소 하였습니다.';
                         if(req.body.country != "KR") {
                             message = 'The Buyer canceled the transaction.';
                         }
@@ -1646,22 +1646,22 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                             "msg": message
                         }
 
-                        if(user._doc.userTag != deletedVtrTemp._doc.buyer_id) {
-                            let to_message = '판매자님이 거래를 취소 하였습니다.';
-                            if(req.body.country != "KR") {
-                                to_message = 'The seller canceled the transaction.';
-                            }
+                        // if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
+                        //     let to_message = '판매자님이 거래를 취소 하였습니다.';
+                        //     if(req.body.country != "KR") {
+                        //         to_message = 'The seller canceled the transaction.';
+                        //     }
 
-                            msg = {
-                                "successYn":"Y",
-                                "code": 41,
-                                "msg": to_message
-                            }
-                        }
+                        //     msg = {
+                        //         "successYn":"Y",
+                        //         "code": 41,
+                        //         "msg": to_message
+                        //     }
+                        // }
 
                         let resData = {
                             "result":msg,
-                            "vtrTemp": deletedVtrTemp,
+                            //"vtrTemp": deletedVtrTemp,
                             "item": updatedItem
                         }
                         //API 처리 결과 별도 LOG로 남김
@@ -1671,7 +1671,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                         bitwebResponse.data = msg;
                         res.status(200).send(bitwebResponse.create())
                     }).catch((err) => {
-                        console.error('delete vtr temp error =>', err);
+                        console.error('modify item error =>', err);
                         let resErr = "처리중 에러 발생";
                         //API 처리 결과 별도 LOG로 남김
                         logger.addLog(country, req.originalUrl, req.body, err);
