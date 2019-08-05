@@ -30,16 +30,41 @@ router.post('/list', tokens.checkInternalToken, function(req, res, next){
     .then(count => {
         serviceCommunity.list(country, body, option)
         .then(communitys => {
-            bitwebResponse.code = 200;
-            let resData = {
-                "successYn":"Y",
-                "count": count,
-                "list": communitys
+            let communityIds = [];
+            for(var i in communitys) {
+                communityIds.push(communitys[i]._doc._id);
             }
-            //API 처리 결과 별도 LOG로 남김
-            logger.addLog(country, req.originalUrl, req.body, resData);
-            bitwebResponse.data = resData
-            res.status(200).send(bitwebResponse.create())
+            serviceReplys.list(country, {"communityId":communityIds}, option)
+            .then(replys => {
+                for(var i in communitys) {
+                    communitys[i]._doc['replyCount'] = 0;
+                    for(var j in replys) {
+                        if(communitys[i]._doc._id.toString() == replys[j]._doc.communityId) {
+                            communitys[i]._doc['replyCount']++;
+                        }
+                    }
+                }
+                
+                bitwebResponse.code = 200;
+                let resData = {
+                    "successYn":"Y",
+                    "count": count,
+                    "list": communitys
+                }
+                //API 처리 결과 별도 LOG로 남김
+                logger.addLog(country, req.originalUrl, req.body, resData);
+                bitwebResponse.data = resData
+                res.status(200).send(bitwebResponse.create())
+            }).catch((err) => {
+                console.error('get community reply count error =>', err);
+                let resErr = "처리중 에러 발생";
+                //API 처리 결과 별도 LOG로 남김
+                logger.addLog(country, req.originalUrl, req.body, err);
+                    
+                bitwebResponse.code = 500;
+                bitwebResponse.message = resErr;
+                res.status(500).send(bitwebResponse.create())
+            })
         }).catch((err) => {
             console.error('get community list error =>', err);
             let resErr = "처리중 에러 발생";
@@ -63,9 +88,10 @@ router.post('/list', tokens.checkInternalToken, function(req, res, next){
 });
 
 //커뮤니티 상세조회 API
-router.get('/detail/:communityId', tokens.checkInternalToken, function(req, res, next){
+router.get('/detail/:communityId/:userTag', tokens.checkInternalToken, function(req, res, next){
     let bitwebResponse = new BitwebResponse();
     let condition = {"_id":req.params.communityId};
+    let userTag = req.params.userTag;
     let country = dbconfig.country;
     let option = {
         "pageIdx": 0,
@@ -77,9 +103,16 @@ router.get('/detail/:communityId', tokens.checkInternalToken, function(req, res,
         let count = community._doc.count == undefined ? 0 : community._doc.count;
         serviceCommunity.modify(country, condition, {"count": count + 1}) 
         .then(modityCommunity => {
-            serviceReplys.count(country, {}, option)
+            if(userTag != undefined && modityCommunity._doc.recommand != undefined) {
+                let recommandedUser = modityCommunity._doc.recommand.findIndex(function(group) {
+                    return group == userTag;
+                })                
+                modityCommunity._doc['recommandedUser'] = recommandedUser == -1 ? false : true;
+            }
+            modityCommunity._doc['recommandCount'] = modityCommunity._doc.recommand == undefined ? 0 : modityCommunity._doc.recommand.length;
+            serviceReplys.count(country, {"communityId":req.params.communityId}, option)
             .then(replyCount => {
-                serviceReplys.list(country, {}, option)
+                serviceReplys.list(country, {"communityId":req.params.communityId}, option)
                 .then(replys => {
                     bitwebResponse.code = 200;
                     modityCommunity._doc['successYn'] = "Y";
@@ -138,6 +171,7 @@ router.get('/detail/:communityId', tokens.checkInternalToken, function(req, res,
 router.post('/', tokens.checkInternalToken, function(req, res, next){
     let bitwebResponse = new BitwebResponse();
     let body = req.body.param;
+    body['regDate'] = utils.formatDate(new Date().toString());
     if(req.body.param.country == "KR") {
         delete body.country;
     }
@@ -177,6 +211,13 @@ router.put('/:communityId', tokens.checkInternalToken, function(req, res, next){
     .then(community => {
         bitwebResponse.code = 200;
         community._doc['successYn'] = "Y";
+        if(community._doc.recommand != undefined) {
+            let recommandedUser = community._doc.recommand.findIndex(function(group) {
+                return group == req.session.userTag;
+            })                
+            community._doc['recommandedUser'] = recommandedUser == -1 ? false : true;
+        }
+        community._doc['recommandCount'] = community._doc.recommand == undefined ? 0 : community._doc.recommand.length;
         let resData = {
             "modifyCommunity": community
         }
@@ -371,19 +412,34 @@ router.put('/detail/:communityId/:recommandYn', tokens.checkInternalToken, funct
         }
     }
     
-    serviceCommunity.modify(country, condition, body)
-    .then(community => {
-        bitwebResponse.code = 200;
-        community._doc['successYn'] = "Y";
-        let resData = {
-            "modifyCommunity": community
-        }
-        //API 처리 결과 별도 LOG로 남김
-        logger.addLog(country, req.originalUrl, req.body, resData);
-        bitwebResponse.data = community;
-        res.status(200).send(bitwebResponse.create())
-    }).catch((err) => {
-        console.error('modify community error =>', err);
+    if(req.body.param.reqUser != undefined) {
+        serviceCommunity.modify(country, condition, body)
+        .then(community => {
+            bitwebResponse.code = 200;
+            community._doc['successYn'] = "Y";
+            let recommandedUser = community._doc.recommand.findIndex(function(group) {
+                return group == req.body.param.reqUser;
+            })                
+            community._doc['recommandedUser'] = recommandedUser == -1 ? false : true;
+            community._doc['recommandCount'] = community._doc.recommand == undefined ? 0 : community._doc.recommand.length;
+            let resData = {
+                "modifyCommunity": community
+            }
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, req.body, resData);
+            bitwebResponse.data = community;
+            res.status(200).send(bitwebResponse.create())
+        }).catch((err) => {
+            console.error('modify community error =>', err);
+            let resErr = "처리중 에러 발생";
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, req.body, err);
+                
+            bitwebResponse.code = 500;
+            bitwebResponse.message = resErr;
+            res.status(500).send(bitwebResponse.create())
+        })
+    } else {
         let resErr = "처리중 에러 발생";
         //API 처리 결과 별도 LOG로 남김
         logger.addLog(country, req.originalUrl, req.body, err);
@@ -391,7 +447,7 @@ router.put('/detail/:communityId/:recommandYn', tokens.checkInternalToken, funct
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
         res.status(500).send(bitwebResponse.create())
-    })
+    }
 });
 
 //댓글 공감 추가/해제 API 
@@ -416,6 +472,7 @@ router.put('/reply/:replyId/:recommandYn', tokens.checkInternalToken, function (
     .then(reply => {
         bitwebResponse.code = 200;
         reply._doc['successYn'] = "Y";
+        reply._doc['recommandCount'] =  reply._doc.recommand == undefined ? 0 : reply._doc.recommand.length;
         let resData = {
             "modifyReply": reply
         }
