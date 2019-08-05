@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var Image = require('./include/image');
+var Mixed = Schema.Types.Mixed;
 
 var CommunitySchema = new Schema({
     country:String,
@@ -11,8 +12,8 @@ var CommunitySchema = new Schema({
     count: Number,
     regDate: String,
     reporter: String,
-    recommandCount: Number,
-    nottobeCount: Number,
+    recommand: Mixed,
+    nottobe: Mixed,
     images: [Image]               // s3
 });
 

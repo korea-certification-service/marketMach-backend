@@ -10,6 +10,7 @@ let dbconfig = require('../../../../../config/dbconfig');
 let utils = require('../../../utils/util');
 let logger = require('../../../utils/log');
 let serviceCommunity = require('../../../service/communitys');
+let serviceReplys = require('../../../service/replys');
 let tokens = require('../../../utils/token');
 
 //커뮤니티 목록 조회 API
@@ -65,18 +66,48 @@ router.get('/detail/:communityId', tokens.checkInternalToken, function(req, res,
     let bitwebResponse = new BitwebResponse();
     let body = {"_id":req.params.communityId};
     let country = dbconfig.country;
+    let option = {
+        "pageIdx": 0,
+        "perPage": 100
+    }
 
     serviceCommunity.detail(country, body)
     .then(community => {
-        bitwebResponse.code = 200;
-        community._doc['successYn'] = "Y";
-        let resData = {
-            "detail": community
-        }
-        //API 처리 결과 별도 LOG로 남김
-        logger.addLog(country, req.originalUrl, req.body, resData);
-        bitwebResponse.data = community;
-        res.status(200).send(bitwebResponse.create())
+        serviceReplys.count(country, {}, option)
+        .then(replyCount => {
+            serviceReplys.list(country, {}, option)
+            .then(replys => {
+                bitwebResponse.code = 200;
+                community._doc['successYn'] = "Y";
+                community._doc['replyCount'] = replyCount;
+                community._doc['reply'] = replys;
+                let resData = {
+                    "detail": community
+                }
+                //API 처리 결과 별도 LOG로 남김
+                logger.addLog(country, req.originalUrl, req.body, resData);
+                bitwebResponse.data = community;
+                res.status(200).send(bitwebResponse.create())
+            }).catch((err) => {
+                console.error('get community reply list error =>', err);
+                let resErr = "처리중 에러 발생";
+                //API 처리 결과 별도 LOG로 남김
+                logger.addLog(country, req.originalUrl, req.body, err);
+                    
+                bitwebResponse.code = 500;
+                bitwebResponse.message = resErr;
+                res.status(500).send(bitwebResponse.create())
+            })
+        }).catch((err) => {
+            console.error('get community reply count error =>', err);
+            let resErr = "처리중 에러 발생";
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, req.body, err);
+                
+            bitwebResponse.code = 500;
+            bitwebResponse.message = resErr;
+            res.status(500).send(bitwebResponse.create())
+        })
     }).catch((err) => {
         console.error('get community list error =>', err);
         let resErr = "처리중 에러 발생";
