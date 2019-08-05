@@ -219,7 +219,7 @@ router.delete('/:communityId', tokens.checkInternalToken, function(req, res, nex
 });
 
 //파일 업로드 API
-router.post('/:communityId/images', function (req, res, next) {
+router.post('/:communityId/images', tokens.checkInternalToken, function (req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let condition = {"_id":req.params.communityId};
     let country = dbconfig.country;
@@ -246,6 +246,104 @@ router.post('/:communityId/images', function (req, res, next) {
             res.status(500).send(bitwebResponse.create())
         })
     });
+});
+
+// 댓글 등록 API
+router.post('/reply', tokens.checkInternalToken, function (req, res, next) {
+    let bitwebResponse = new BitwebResponse();
+    let country = dbconfig.country;
+    let data = req.body;
+    data['regDate'] = utils.formatDate(new Date().toString());
+
+    serviceReplys.add(country, data)
+    .then(result => {
+        bitwebResponse.code = 200;
+        result._doc['successYn'] = "Y";
+        let resData = {
+            "addReply": result
+        }
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, resData);
+        bitwebResponse.data = result;
+        res.status(200).send(bitwebResponse.create())
+    }).catch((err) => {
+        console.error('add reply error =>', err);
+        let resErr = "처리중 에러 발생";
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, err);
+            
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    })
+});
+
+
+// 댓글 수정 API
+router.put('/reply/:replyId', tokens.checkInternalToken, function (req, res, next) {
+    var bitwebResponse = new BitwebResponse();
+    let country = dbconfig.country;
+    let replyId = req.params.replyId;
+    let condition = {
+        "_id": replyId
+    }
+    let data = req.body;
+    data['regDate'] = utils.formatDate(new Date().toString());
+
+    serviceReplys.modify(country, condition, data)
+    .then(result => {
+        bitwebResponse.code = 200;
+        result._doc['successYn'] = "Y";
+        let resData = {
+            "modifyReply": result
+        }
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, resData);
+        bitwebResponse.data = result;
+        res.status(200).send(bitwebResponse.create())
+    }).catch((err) => {
+        console.error('modify reply error =>', err);
+        let resErr = "처리중 에러 발생";
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, err);
+            
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    })
+});
+
+
+// 댓글 삭제 API
+router.delete('/reply/:replyId', tokens.checkInternalToken, function (req, res, next) {
+    var bitwebResponse = new BitwebResponse();
+    let country = dbconfig.country;
+    let replyId = req.params.replyId;
+    let condition = {
+        "_id": replyId
+    }
+
+    serviceReplys.remove(country, condition)
+    .then(result => {
+        bitwebResponse.code = 200;
+        result._doc['successYn'] = "Y";
+        let resData = {
+            "deleteReply": result
+        }
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, resData);
+        bitwebResponse.data = result;
+        res.status(200).send(bitwebResponse.create())
+    }).catch((err) => {
+        console.error('delete community error =>', err);
+        let resErr = "처리중 에러 발생";
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, err);
+            
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    })
 });
 
 module.exports = router;
