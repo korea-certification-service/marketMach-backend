@@ -17,6 +17,7 @@ let tokens = require('../../../utils/token');
 router.post('/list', tokens.checkInternalToken, function(req, res, next){
     let bitwebResponse = new BitwebResponse();
     let body = req.body.param;
+
     let option = req.body.option;
     
     if(req.body.param.country == "KR") {
@@ -64,32 +65,45 @@ router.post('/list', tokens.checkInternalToken, function(req, res, next){
 //커뮤니티 상세조회 API
 router.get('/detail/:communityId', tokens.checkInternalToken, function(req, res, next){
     let bitwebResponse = new BitwebResponse();
-    let body = {"_id":req.params.communityId};
+    let condition = {"_id":req.params.communityId};
     let country = dbconfig.country;
     let option = {
         "pageIdx": 0,
         "perPage": 100
     }
 
-    serviceCommunity.detail(country, body)
+    serviceCommunity.detail(country, condition)
     .then(community => {
-        serviceReplys.count(country, {}, option)
-        .then(replyCount => {
-            serviceReplys.list(country, {}, option)
-            .then(replys => {
-                bitwebResponse.code = 200;
-                community._doc['successYn'] = "Y";
-                community._doc['replyCount'] = replyCount;
-                community._doc['reply'] = replys;
-                let resData = {
-                    "detail": community
-                }
-                //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, req.body, resData);
-                bitwebResponse.data = community;
-                res.status(200).send(bitwebResponse.create())
+        let count = community._doc.count == undefined ? 0 : community._doc.count;
+        serviceCommunity.modify(country, condition, {"count": count + 1}) 
+        .then(modityCommunity => {
+            serviceReplys.count(country, {}, option)
+            .then(replyCount => {
+                serviceReplys.list(country, {}, option)
+                .then(replys => {
+                    bitwebResponse.code = 200;
+                    modityCommunity._doc['successYn'] = "Y";
+                    modityCommunity._doc['replyCount'] = replyCount;
+                    modityCommunity._doc['reply'] = replys;
+                    let resData = {
+                        "detail": modityCommunity
+                    }
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, req.body, resData);
+                    bitwebResponse.data = modityCommunity;
+                    res.status(200).send(bitwebResponse.create())
+                }).catch((err) => {
+                    console.error('get community reply list error =>', err);
+                    let resErr = "처리중 에러 발생";
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, req.body, err);
+                        
+                    bitwebResponse.code = 500;
+                    bitwebResponse.message = resErr;
+                    res.status(500).send(bitwebResponse.create())
+                })
             }).catch((err) => {
-                console.error('get community reply list error =>', err);
+                console.error('get community reply count error =>', err);
                 let resErr = "처리중 에러 발생";
                 //API 처리 결과 별도 LOG로 남김
                 logger.addLog(country, req.originalUrl, req.body, err);
@@ -99,7 +113,7 @@ router.get('/detail/:communityId', tokens.checkInternalToken, function(req, res,
                 res.status(500).send(bitwebResponse.create())
             })
         }).catch((err) => {
-            console.error('get community reply count error =>', err);
+            console.error('modify community list error =>', err);
             let resErr = "처리중 에러 발생";
             //API 처리 결과 별도 LOG로 남김
             logger.addLog(country, req.originalUrl, req.body, err);
@@ -123,8 +137,8 @@ router.get('/detail/:communityId', tokens.checkInternalToken, function(req, res,
 //커뮤니티 등록 API
 router.post('/', tokens.checkInternalToken, function(req, res, next){
     let bitwebResponse = new BitwebResponse();
-    let body = req.body;
-    if(req.body.country == "KR") {
+    let body = req.body.param;
+    if(req.body.param.country == "KR") {
         delete body.country;
     }
     let country = dbconfig.country;
@@ -156,10 +170,7 @@ router.post('/', tokens.checkInternalToken, function(req, res, next){
 router.put('/:communityId', tokens.checkInternalToken, function(req, res, next){
     let bitwebResponse = new BitwebResponse();
     let condition = {"_id":req.params.communityId};
-    let body = req.body;
-    if(req.body.country == "KR") {
-        delete body.country;
-    }
+    let body = req.body.param;
     let country = dbconfig.country;
 
     serviceCommunity.modify(country, condition, body)
@@ -189,10 +200,6 @@ router.put('/:communityId', tokens.checkInternalToken, function(req, res, next){
 router.delete('/:communityId', tokens.checkInternalToken, function(req, res, next){
     let bitwebResponse = new BitwebResponse();
     let condition = {"_id":req.params.communityId};
-    let body = req.body;
-    if(req.body.country == "KR") {
-        delete body.country;
-    }
     let country = dbconfig.country;
 
     serviceCommunity.remove(country, condition)
@@ -252,7 +259,7 @@ router.post('/:communityId/images', tokens.checkInternalToken, function (req, re
 router.post('/reply', tokens.checkInternalToken, function (req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;
-    let data = req.body;
+    let data = req.body.param;
     data['regDate'] = utils.formatDate(new Date().toString());
 
     serviceReplys.add(country, data)
@@ -287,7 +294,7 @@ router.put('/reply/:replyId', tokens.checkInternalToken, function (req, res, nex
     let condition = {
         "_id": replyId
     }
-    let data = req.body;
+    let data = req.body.param;
     data['regDate'] = utils.formatDate(new Date().toString());
 
     serviceReplys.modify(country, condition, data)
