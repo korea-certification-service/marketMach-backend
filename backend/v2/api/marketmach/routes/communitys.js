@@ -394,4 +394,45 @@ router.put('/detail/:communityId/:recommandYn', tokens.checkInternalToken, funct
     })
 });
 
+//댓글 공감 추가/해제 API 
+router.put('/reply/:replyId/:recommandYn', tokens.checkInternalToken, function (req, res, next) {
+    var bitwebResponse = new BitwebResponse();
+    let replyId = req.params.replyId;
+    let country = dbconfig.country;
+    let recommandYn = req.params.recommandYn;
+    let condition = {
+        "_id": replyId
+    }
+    let body = {
+        $push: {recommand: req.body.param.reqUser}
+    }
+    if(recommandYn == "N") {
+        body = {
+            $pull: {recommand: req.body.param.reqUser}
+        }
+    }
+    
+    serviceReplys.modify(country, condition, body)
+    .then(reply => {
+        bitwebResponse.code = 200;
+        reply._doc['successYn'] = "Y";
+        let resData = {
+            "modifyReply": reply
+        }
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, resData);
+        bitwebResponse.data = reply;
+        res.status(200).send(bitwebResponse.create())
+    }).catch((err) => {
+        console.error('modify community error =>', err);
+        let resErr = "처리중 에러 발생";
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, err);
+            
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    })
+});
+
 module.exports = router;
