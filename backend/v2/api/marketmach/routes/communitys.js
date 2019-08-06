@@ -300,7 +300,7 @@ router.post('/:communityId/images', tokens.checkInternalToken, function (req, re
 router.post('/reply', tokens.checkInternalToken, function (req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;
-    let data = req.body.param;
+    let data = req.body;
     data['regDate'] = utils.formatDate(new Date().toString());
 
     serviceReplys.add(country, data)
