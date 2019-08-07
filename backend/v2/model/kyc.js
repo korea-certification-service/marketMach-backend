@@ -10,7 +10,7 @@ var kycsSchema = new Schema({
     lastName: String,
     birth: String,
     gender: String,
-    images: Image,
+    images: [Image],
     idNo: String,
     issueDate: String,
     regDate: String,
