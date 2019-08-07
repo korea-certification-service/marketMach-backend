@@ -180,7 +180,7 @@ router.put('/:userId', tokens.checkInternalToken, function(req, res, next){
                 res.status(500).send(bitwebResponse.create())
             })
         }).catch((err) => {
-            console.error('add kyc error =>', err);
+            console.error('modify kyc error =>', err);
             let resErr = "처리중 에러 발생";
             //API 처리 결과 별도 LOG로 남김
             logger.addLog(country, req.originalUrl, body, err);
