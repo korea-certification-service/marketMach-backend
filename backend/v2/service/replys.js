@@ -1,19 +1,40 @@
-let Vtrs = require('../model/vtrs');
+let Replys = require('../model/replies');
 let db = require('../utils/db');
 
-function list(country, condition) {
+function count(country, condition, option) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Vtrs.find(
-                condition,
-                function(err, result) {
-                    if (err) {
-                        reject(err)
-                    }
-                    resolve(result)
+            Replys.count(condition)
+            .limit(100)
+            .skip(option.pageIdx * option.perPage)
+            .sort({regDate:'desc'})
+            .exec(function (err, list) {
+                if (err) {
+                    reject(err)
                 }
-            )
+                resolve(list)
+            })
+        }).catch((err) => {
+            reject(err)
+        })
+    })
+}
+
+function list(country, condition, option) {
+    return new Promise((resolve, reject) => {
+        db.connectDB(country)
+        .then(() => {
+            Replys.find(condition)
+            .limit(option.perPage)
+            .skip(option.pageIdx * option.perPage)
+            .sort({regDate:'desc'})
+            .exec(function (err, list) {
+                if (err) {
+                    reject(err)
+                }
+                resolve(list)
+            })
         }).catch((err) => {
             reject(err)
         })
@@ -24,7 +45,7 @@ function detail(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Vtrs.findOne(
+            Replys.findOne(
                 condition,
                 function(err, result) {
                     if (err) {
@@ -43,16 +64,15 @@ function add(country, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            var vtrs = new Vtrs(data)
-            vtrs.save(function (err, result) {
+            var replys = new Replys(data)
+            replys.save(function (err, result) {
                 if (err) {
                     reject(err);
                 } else {
                     resolve(result);
                 }
             })
-        })
-        .catch((err) => {
+        }).catch((err) => {
             reject(err)
         })
     })
@@ -62,7 +82,7 @@ function modify(country, condition, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Vtrs.findOneAndUpdate(
+            Replys.findOneAndUpdate(
             condition,
             data,
             {upsert: false, new: true},
@@ -83,7 +103,7 @@ function remove(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Vtrs.findOneAndRemove(
+            Replys.findOneAndRemove(
                 condition,
                 function(err, user) {
                     if (err) {
@@ -98,6 +118,7 @@ function remove(country, condition) {
     })
 }
 
+exports.count = count;
 exports.list = list;
 exports.detail = detail;
 exports.add = add;

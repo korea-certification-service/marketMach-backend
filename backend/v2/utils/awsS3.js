@@ -1,7 +1,7 @@
 const multer = require('multer');
 const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
-const credentials = require('../config/aws-credentials');
+const credentials = require('../../../config/aws-credentials');
 
 function upload() {
     aws.config.update({
@@ -43,7 +43,7 @@ function multiUpload() {
             bucket: credentials.s3.bucket,
             acl: 'public-read',
             metadata: function (req, files, cb) {
-                cb(null, {fieldName: files.fieldname});
+                cb(null, {fieldName: files.fieldname + '-' + Date.now().toString()});
             },
             key: function (req, file, cb) {
                 cb(null, Date.now().toString())
