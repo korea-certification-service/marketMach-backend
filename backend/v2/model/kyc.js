@@ -15,7 +15,8 @@ var kycsSchema = new Schema({
     issueDate: String,
     regDate: String,
     verification: Boolean,
-    reason: String
+    reason: String,
+    type: String
 });
 
 module.exports = mongoose.model('Kycs', kycsSchema);
