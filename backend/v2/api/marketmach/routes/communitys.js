@@ -17,6 +17,7 @@ let tokens = require('../../../utils/token');
 router.post('/list', tokens.checkInternalToken, function(req, res, next){
     let bitwebResponse = new BitwebResponse();
     let body = req.body.param;
+    body['notice'] = {$exists:false};
     let noticeCondition = {
         'type': req.body.param.type,
         'country': req.body.param.country,
@@ -26,7 +27,7 @@ router.post('/list', tokens.checkInternalToken, function(req, res, next){
     let option = req.body.option;
     
     if(req.body.param.country == "KR") {
-        body['country'] = {$exists:false};
+        body['country'] = {$exists:false};        
         noticeCondition['country'] = {$exists:false};
     }
 
