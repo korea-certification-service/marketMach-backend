@@ -7,7 +7,8 @@ var agreementsSchema = new Schema({
     privacy: Boolean,   // 개인정보 동의서
     pushTrade: Boolean, // 거래용 푸쉬 알람 동의서
     pushMarketing: Boolean, // 마케팅 동의서
-    authPhone: Boolean
+    authPhone: Boolean,
+    kyc: Boolean
 });
 
 module.exports = mongoose.model('Agreements', agreementsSchema);

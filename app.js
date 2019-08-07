@@ -13,12 +13,14 @@ var usersRouter = require('./backend/v2/api/marketmach/routes/users');
 var vtrsRouter = require('./backend/v2/api/marketmach/routes/vtrs');
 var itemsRouter = require('./backend/v2/api/marketmach/routes/items');
 var communityRouter = require('./backend/v2/api/marketmach/routes/communitys');
+var kycRouter = require('./backend/v2/api/marketmach/routes/kyc');
 var commonRouter = require('./backend/v2/api/marketmach/routes/common');
 
 //management
 var maUsers = require('./backend/v2/api/management/ma_users');
 var maWithdrawusers = require('./backend/v2/api/management/ma_withdrawusers');
 var blacklist = require('./backend/v2/api/management/ma_blacklist');
+var kycs = require('./backend/v2/api/management/ma_kyc');
 
 var app = express();
 
@@ -41,12 +43,14 @@ let version = "/v2";
 app.use(version + '/items', itemsRouter);
 app.use(version + '/users', usersRouter);
 app.use(version + '/vtrs', vtrsRouter);
+app.use(version + '/kycs', kycRouter);
 app.use(version + '/community', communityRouter);
 
 //management API
 app.use('/ma_users', maUsers);
 app.use('/ma_withdrawusers', maWithdrawusers);
 app.use('/ma_blacklist', blacklist);
+app.use('/ma_kyc', kycs);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
