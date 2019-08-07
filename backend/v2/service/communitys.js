@@ -118,9 +118,31 @@ function remove(country, condition) {
     })
 }
 
+function noticeList(country, condition, option) {
+    return new Promise((resolve, reject) => {
+        db.connectDB(country)
+        .then(() => {
+            Communitys.find(condition)
+            .limit(option.perPage)
+            .skip(option.pageIdx * option.perPage)
+            .sort({regDate:'desc'})
+            .exec(function (err, list) {
+                if (err) {
+                    reject(err)
+                }
+                resolve(list)
+            })
+        }).catch((err) => {
+            reject(err)
+        })
+    })
+}
+
+
 exports.count = count;
 exports.list = list;
 exports.detail = detail;
 exports.add = add;
 exports.modify = modify;
 exports.remove = remove;
+exports.noticeList = noticeList;
