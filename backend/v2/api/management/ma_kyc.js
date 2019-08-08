@@ -9,6 +9,7 @@ let BitwebResponse = require('../../utils/BitwebResponse');
 let dbconfig = require('../../../../config/dbconfig');
 let logger = require('../../utils/log');
 let tokens = require('../../utils/token');
+let util = require('../../utils/util');
 let serviceKyc = require('../../service/kyc');
 let serviceUser = require('../../service/users');
 let serviceAgreement = require('../../service/agreements');
@@ -116,6 +117,7 @@ router.put('/:userId', tokens.checkInternalToken, function(req, res, next){
         "userId": req.params.userId
     };
     let body = req.body;    
+    body['verificationDate'] = util.formatDate(new Date().toString());
     let country = dbconfig.country;
     let conditionUser = {
         "_id": req.params.userId
