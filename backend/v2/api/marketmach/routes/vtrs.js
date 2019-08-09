@@ -919,8 +919,10 @@ function _reqCancel(req, res, bitwebResponse) {
                 //     }
                 // }
                 if(vtr._doc.completed == undefined) {
-                    let message = '현재 상태에서는 거래취소가 불가능합니다. 판매자님에게 환불을 요청해주세요.';
+                    let message;
                     if(req.body.country != "KR") {
+                        message = '현재 상태에서는 거래취소가 불가능합니다. 판매자님에게 환불을 요청해주세요.';
+                    } else if(req.body.country != "EN") {
                         message = 'You can not cancel your transaction at this time. Please request a refund from the seller.';
                     }
                     msg = {
@@ -929,8 +931,10 @@ function _reqCancel(req, res, bitwebResponse) {
                         "msg": message
                     }
                 } else {
-                    let message = '거래가 완료되어 거래취소하실 수 없습니다.';
+                    let message;
                     if(req.body.country != "KR") {
+                        message = '거래가 완료되어 거래취소하실 수 없습니다.';
+                    } else if(req.body.country != "EN") {
                         message = 'Your transaction is complete and you can not cancel your transaction.';
                     }
                     msg = {
