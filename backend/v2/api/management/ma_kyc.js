@@ -1,0 +1,232 @@
+/**
+ * KYC API
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-07-11
+ */
+var express = require('express');
+var router = express.Router();
+let BitwebResponse = require('../../utils/BitwebResponse');
+let dbconfig = require('../../../../config/dbconfig');
+let logger = require('../../utils/log');
+let tokens = require('../../utils/token');
+let util = require('../../utils/util');
+let serviceKyc = require('../../service/kyc');
+let serviceUser = require('../../service/users');
+let serviceAgreement = require('../../service/agreements');
+let smsController = require('../../service/sms');
+let smsContent = require('../../../../config/smsMessage');
+
+//kyc 조회 API
+router.post('/list', tokens.checkInternalToken, function(req, res, next){
+    let bitwebResponse = new BitwebResponse();    
+    let country = dbconfig.country;
+    let condition = req.body.param;
+    let option = req.body.option;
+    
+    serviceKyc.count(country, condition, option)
+    .then(count => {
+        serviceKyc.list(country, condition, option)
+        .then((kycs) => {    
+            bitwebResponse.code = 200;
+            let resData = {
+                "successYn":"Y",
+                "count": count,
+                "list": kycs
+            }
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, condition, resData);
+
+            bitwebResponse.data = resData;
+            res.status(200).send(bitwebResponse.create())
+        }).catch((err) => {
+            console.error('get kyc error =>', err);
+            let resErr = "처리중 에러 발생";
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, condition, err);
+
+            bitwebResponse.code = 500;
+            bitwebResponse.message = resErr;
+            res.status(500).send(bitwebResponse.create())
+        }) 
+    }).catch((err) => {
+        console.error('get user error =>', err);
+        let resErr = "처리중 에러 발생";
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, userId, err);
+
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    }) 
+});
+
+//kyc 상세 조회 API
+router.get('/:userId', tokens.checkInternalToken, function(req, res, next){
+    let bitwebResponse = new BitwebResponse();
+    let userId = req.params.userId;
+    let country = dbconfig.country;
+    let condition = {
+        "userId": userId
+    }
+    let conditionUser = {
+        "_id": userId
+    }
+    
+    serviceUser.detail(country, conditionUser)
+    .then(user => {
+        serviceKyc.detail(country, condition)
+        .then((kyc) => {    
+            bitwebResponse.code = 200;
+            let resData = {
+                "successYn":"Y",
+                "kyc": kyc,
+                "user": user
+            }
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, userId, resData);
+
+            bitwebResponse.data = resData;
+            res.status(200).send(bitwebResponse.create())
+        }).catch((err) => {
+            console.error('get kyc error =>', err);
+            let resErr = "처리중 에러 발생";
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, userId, err);
+
+            bitwebResponse.code = 500;
+            bitwebResponse.message = resErr;
+            res.status(500).send(bitwebResponse.create())
+        }) 
+    }).catch((err) => {
+        console.error('get user error =>', err);
+        let resErr = "처리중 에러 발생";
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, userId, err);
+
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    }) 
+});
+
+
+//kyc 수정 API
+router.put('/:userId', tokens.checkInternalToken, function(req, res, next){
+    let bitwebResponse = new BitwebResponse();
+    let condition = {
+        "userId": req.params.userId
+    };
+    let body = req.body;    
+    body['verificationDate'] = util.formatDate(new Date().toString());
+    let country = dbconfig.country;
+    let conditionUser = {
+        "_id": req.params.userId
+    }
+
+    serviceUser.detail(country, conditionUser)
+    .then(user => {
+        if(user == null) {
+            console.error('get user error =>', err);
+            let resErr = "처리중 에러 발생";
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, body, err);
+    
+            bitwebResponse.code = 500;
+            bitwebResponse.message = resErr;
+            res.status(500).send(bitwebResponse.create())
+            return;
+        }
+        let conditionAgreement = {
+            "_id": user._doc.agreementId
+        }
+        let updateAgreement = {
+            "kyc": false
+        }
+        if(req.body.verification) {
+            updateAgreement = {
+                "kyc": true
+            }
+        }
+
+        serviceKyc.modify(country, condition, body)
+        .then(modifyKyc => {
+            serviceAgreement.modify(country, conditionAgreement, updateAgreement) 
+            .then(modifyAgreement => {
+                if(!req.body.verification) {
+                    bitwebResponse.code = 200;
+                    let resData = {
+                        "modifyKyc": modifyKyc,
+                        "modifyAgreement": modifyAgreement,
+                        "sms":"skip"
+                    }
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, body, resData);
+    
+                    bitwebResponse.data = modifyKyc;
+                    res.status(200).send(bitwebResponse.create())
+                    return;
+                }
+
+                let phone = user._doc.countryCode + user._doc.phone;
+                let message = smsContent.kyc.en;
+                smsController.sendSms(phone, message)
+                .then(sms => {
+                    bitwebResponse.code = 200;
+                    let resData = {
+                        "modifyKyc": modifyKyc,
+                        "modifyAgreement": modifyAgreement,
+                        "sms":sms
+                    }
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, body, resData);
+    
+                    bitwebResponse.data = modifyKyc;
+                    res.status(200).send(bitwebResponse.create())
+                }).catch((err) => {
+                    console.error('send sms error =>', err)
+                    bitwebResponse.code = 200;
+                    let resData = {
+                        "modifyKyc": modifyKyc,
+                        "modifyAgreement": modifyAgreement,
+                        "sms":err
+                    }
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, body, resData);
+
+                    bitwebResponse.data = modifyKyc;
+                    res.status(200).send(bitwebResponse.create())
+                });
+            }).catch((err) => {
+                console.error('modify agreement error =>', err);
+                let resErr = "처리중 에러 발생";
+                //API 처리 결과 별도 LOG로 남김
+                logger.addLog(country, req.originalUrl, body, err);
+    
+                bitwebResponse.code = 500;
+                bitwebResponse.message = resErr;
+                res.status(500).send(bitwebResponse.create())
+            })
+        }).catch((err) => {
+            console.error('add kyc error =>', err);
+            let resErr = "처리중 에러 발생";
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, body, err);
+
+            bitwebResponse.code = 500;
+            bitwebResponse.message = resErr;
+            res.status(500).send(bitwebResponse.create())
+        })
+    }).catch((err) => {
+        console.error('get user error =>', err);
+        let resErr = "처리중 에러 발생";
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, body, err);
+
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    });
+});
+
+
+module.exports = router;

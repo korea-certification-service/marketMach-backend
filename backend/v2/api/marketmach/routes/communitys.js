@@ -17,11 +17,18 @@ let tokens = require('../../../utils/token');
 router.post('/list', tokens.checkInternalToken, function(req, res, next){
     let bitwebResponse = new BitwebResponse();
     let body = req.body.param;
+    body['notice'] = {$exists:false};
+    let noticeCondition = {
+        'type': req.body.param.type,
+        'country': req.body.param.country,
+        'notice': true
+    }
 
     let option = req.body.option;
     
     if(req.body.param.country == "KR") {
-        body['country'] = {$exists:false};
+        body['country'] = {$exists:false};        
+        noticeCondition['country'] = {$exists:false};
     }
 
     let country = dbconfig.country;
@@ -34,29 +41,54 @@ router.post('/list', tokens.checkInternalToken, function(req, res, next){
             for(var i in communitys) {
                 communityIds.push(communitys[i]._doc._id);
             }
-            serviceReplys.list(country, {"communityId":communityIds}, option)
-            .then(replys => {
-                for(var i in communitys) {
-                    communitys[i]._doc['replyCount'] = 0;
-                    for(var j in replys) {
-                        if(communitys[i]._doc._id.toString() == replys[j]._doc.communityId) {
-                            communitys[i]._doc['replyCount']++;
+            serviceCommunity.noticeList(country, noticeCondition, {"perPage": 5, "pageIdx": 0})
+            .then(communityNotices => {
+                for(var i in communityNotices) {
+                    communityIds.push(communityNotices[i]._doc._id);
+                }
+                serviceReplys.list(country, {"communityId":communityIds}, option)
+                .then(replys => {    
+                    for(var i in communitys) {
+                        communitys[i]._doc['replyCount'] = 0;
+                        for(var j in replys) {
+                            if(communitys[i]._doc._id.toString() == replys[j]._doc.communityId) {
+                                communitys[i]._doc['replyCount']++;
+                            }
                         }
                     }
-                }
-                
-                bitwebResponse.code = 200;
-                let resData = {
-                    "successYn":"Y",
-                    "count": count,
-                    "list": communitys
-                }
-                //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, req.body, resData);
-                bitwebResponse.data = resData
-                res.status(200).send(bitwebResponse.create())
+
+                    for(var i in communityNotices) {
+                        communityNotices[i]._doc['replyCount'] = 0;
+                        for(var j in replys) {
+                            if(communityNotices[i]._doc._id.toString() == replys[j]._doc.communityId) {
+                                communityNotices[i]._doc['replyCount']++;
+                            }
+                        }
+                    }
+                    
+                    bitwebResponse.code = 200;
+                    let resData = {
+                        "successYn":"Y",
+                        "count": count,
+                        "list": communitys,
+                        "notices": communityNotices
+                    }
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, req.body, resData);
+                    bitwebResponse.data = resData
+                    res.status(200).send(bitwebResponse.create())
+                }).catch((err) => {
+                    console.error('get community notice error =>', err);
+                    let resErr = "처리중 에러 발생";
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, req.body, err);
+                        
+                    bitwebResponse.code = 500;
+                    bitwebResponse.message = resErr;
+                    res.status(500).send(bitwebResponse.create())
+                })
             }).catch((err) => {
-                console.error('get community reply count error =>', err);
+                console.error('get community reply error =>', err);
                 let resErr = "처리중 에러 발생";
                 //API 처리 결과 별도 LOG로 남김
                 logger.addLog(country, req.originalUrl, req.body, err);

@@ -142,6 +142,9 @@ function _createVTR(req, res, bitwebResponse) {
                             let phone = userInfo.seller_phone;
                             let whoReqUser = body.buyerTag;
                             let smsMessage = smsContent.sms.ko;
+                            if(body.country != "KR") {
+                                smsMessage = smsContent.sms.en;
+                            }
                             let url = req.headers.origin + '/sms/room?roomToken='+updateItem._doc.roomToken+'&itemId=' + updateItem._doc._id + '&user_id=' + updateItem._doc.userTag + '&vtrTempId=' + addVtrTemp._doc._id;
                             if(updateItem._doc.trade_type == "buy") {
                                 whoReqUser = sellerTag;
@@ -1399,7 +1402,10 @@ function _buynow(req, res, bitwebResponse) {
                                             //5.SMS전송
                                             let phone = userInfo.seller_phone;
                                             let whoReqUser = body.buyerTag;
-                                            let smsMessage = smsContent.sms.ko;
+                                            let smsMessage = smsContent.notification.ko;
+                                            if(body.country != "KR") {
+                                                smsMessage = smsContent.notification.en;
+                                            }
                                             let url = req.headers.origin + '/sms/room?roomToken='+updateItem._doc.roomToken+'&itemId=' + updateItem._doc._id + '&user_id=' + updateItem._doc.userTag + '&vtrTempId=' + addVtrTemp._doc._id;
                                             if(updateItem._doc.trade_type == "buy") {
                                                 whoReqUser = sellerTag;

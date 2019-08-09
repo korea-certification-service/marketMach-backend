@@ -1,11 +1,11 @@
-let Communitys = require('../model/communities');
+let Kycs = require('../model/kyc');
 let db = require('../utils/db');
 
 function count(country, condition, option) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Communitys.count(condition)
+            Kycs.count(condition)
             .limit(100)
             .skip(option.pageIdx * option.perPage)
             .sort({regDate:'desc'})
@@ -25,7 +25,7 @@ function list(country, condition, option) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Communitys.find(condition)
+            Kycs.find(condition)
             .limit(option.perPage)
             .skip(option.pageIdx * option.perPage)
             .sort({regDate:'desc'})
@@ -45,7 +45,7 @@ function detail(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Communitys.findOne(
+            Kycs.findOne(
                 condition,
                 function(err, result) {
                     if (err) {
@@ -64,8 +64,8 @@ function add(country, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            var communitys = new Communitys(data)
-            communitys.save(function (err, result) {
+            var kycs = new Kycs(data)
+            kycs.save(function (err, result) {
                 if (err) {
                     reject(err);
                 } else {
@@ -82,7 +82,7 @@ function modify(country, condition, data) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Communitys.findOneAndUpdate(
+            Kycs.findOneAndUpdate(
             condition,
             data,
             {upsert: false, new: true},
@@ -103,7 +103,7 @@ function remove(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Communitys.findOneAndRemove(
+            Kycs.findOneAndRemove(
                 condition,
                 function(err, user) {
                     if (err) {
@@ -118,31 +118,9 @@ function remove(country, condition) {
     })
 }
 
-function noticeList(country, condition, option) {
-    return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() => {
-            Communitys.find(condition)
-            .limit(option.perPage)
-            .skip(option.pageIdx * option.perPage)
-            .sort({regDate:'desc'})
-            .exec(function (err, list) {
-                if (err) {
-                    reject(err)
-                }
-                resolve(list)
-            })
-        }).catch((err) => {
-            reject(err)
-        })
-    })
-}
-
-
 exports.count = count;
 exports.list = list;
 exports.detail = detail;
 exports.add = add;
 exports.modify = modify;
 exports.remove = remove;
-exports.noticeList = noticeList;

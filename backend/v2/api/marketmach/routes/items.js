@@ -24,13 +24,19 @@ router.get('/:itemId', token.checkInternalToken, function (req, res, next) {
     serviceItems.detail(country, conditionItem)
     .then((item) => {    
         bitwebResponse.code = 200;
+        let resData = {
+            "item": item
+        }
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, itemId, resData);
+
         bitwebResponse.data = item;
         res.status(200).send(bitwebResponse.create())
     }).catch((err) => {
         console.error('get item error =>', err);
         let resErr = "처리중 에러 발생";
         //API 처리 결과 별도 LOG로 남김
-        logger.addLog(country, req.originalUrl, req.body, err);
+        logger.addLog(country, req.originalUrl, itemId, err);
 
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
