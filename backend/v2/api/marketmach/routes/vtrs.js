@@ -1298,10 +1298,14 @@ function _buynow(req, res, bitwebResponse) {
                         user_price = coin.total_ether == undefined ? 0 : coin.total_ether;
                     }
                     if (user_price < 0 || user_price < body.price) {
+                        let message = "거래금액이 구매자의 보유 금액보다 클 수 없습니다.";
+                        if(req.body.country != "KR") {
+                            message = "Trading amount cannot be greater than the buyer's amount.";
+                        }
                         let msg = {
                             "successYn": "N",
                             "code" : "E001",
-                            "msg" : "거래금액이 구매자의 보유 금액보다 클 수 없습니다."
+                            "msg" : message
                         };
                         //API 처리 결과 별도 LOG로 남김
                         logger.addLog(country, req.originalUrl, req.body, msg);
