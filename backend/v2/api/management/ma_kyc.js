@@ -109,7 +109,6 @@ router.get('/:userId', tokens.checkInternalToken, function(req, res, next){
     }) 
 });
 
-
 //kyc 수정 API
 router.put('/:userId', tokens.checkInternalToken, function(req, res, next){
     let bitwebResponse = new BitwebResponse();

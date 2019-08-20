@@ -45,4 +45,26 @@ router.get("/count", (req, res) => {
     })
 });
 
+/*GET User Detail*/
+router.get("/:userId", (req, res) => {
+    let country = dbconfig.country;
+    let condition = {
+        'country': country,
+        '_id': req.params.userId
+    }
+    let bitwebResponse = new BitwebResponse();
+    serviceUsers.detail(country, condition)
+    .then(data => {
+        res.send(200, data);
+        console.log(data);
+    })
+    .catch(err => {
+        console.error('data error =>', err);
+        let resErr = "there is no data";
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    })
+});
+
 module.exports = router; 

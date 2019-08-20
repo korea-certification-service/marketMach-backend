@@ -19,15 +19,15 @@ var commonRouter = require('./backend/v2/api/marketmach/routes/common');
 //management
 var maUsers = require('./backend/v2/api/management/ma_users');
 var maWithdrawusers = require('./backend/v2/api/management/ma_withdrawusers');
-<<<<<<< HEAD
 var maBlacklist = require('./backend/v2/api/management/ma_blacklist');
 var maCoins = require('./backend/v2/api/management/ma_coins');
 var maEscrows = require('./backend/v2/api/management/ma_escrows');
 var maPoints = require('./backend/v2/api/management/ma_points');
-=======
-var blacklist = require('./backend/v2/api/management/ma_blacklist');
-var kycs = require('./backend/v2/api/management/ma_kyc');
->>>>>>> c1cbaf1f3094b1fd4b2f018026a002dc4a0ef272
+var maKyc = require('./backend/v2/api/management/ma_kyc');
+var maCoinhistorys = require('./backend/v2/api/management/ma_coinhistory');
+var maPointBankHistorys = require('./backend/v2/api/management/ma_pointBankHistorys');
+var maVtrs = require('./backend/v2/api/management/ma_vtrs');
+var maEscrowsHistory = require('./backend/v2/api/management/ma_escrowHistorys');
 
 var app = express();
 
@@ -56,15 +56,15 @@ app.use(version + '/community', communityRouter);
 //management API
 app.use('/ma_users', maUsers);
 app.use('/ma_withdrawusers', maWithdrawusers);
-<<<<<<< HEAD
 app.use('/ma_blacklist', maBlacklist);
 app.use('/ma_coins', maCoins);
 app.use('/ma_escrows', maEscrows);
 app.use('/ma_points', maPoints);
-=======
-app.use('/ma_blacklist', blacklist);
-app.use('/ma_kyc', kycs);
->>>>>>> c1cbaf1f3094b1fd4b2f018026a002dc4a0ef272
+app.use('/ma_kyc', maKyc);
+app.use('/ma_coinhistory', maCoinhistorys);
+app.use('/ma_pointbankhistory', maPointBankHistorys);
+app.use('/ma_vtrs', maVtrs);
+app.use('/ma_escrowHistorys', maEscrowsHistory);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

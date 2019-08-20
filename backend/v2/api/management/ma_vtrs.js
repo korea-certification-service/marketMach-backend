@@ -1,46 +1,59 @@
+/**
+ * 게임거래내역 API
+ * 작성자 : Jini Seo
+ * 작성일 : 2019-08-19
+ */
 var express = require('express');
 var router = express.Router();
-let dbconfig = require('../../../../config/dbconfig');
-let BitwebResponse = require('../../utils/BitwebResponse');
-let serviceCoins = require('../../service/coins');
+var dbconfig = require('../../../../config/dbconfig');
+var BitwebResponse = require('../../utils/BitwebResponse');
+var Vtrs = require('../../service/vtrs.js');
 
-/*GET Coin List*/
-router.get("/list", (req, res) => {
-    let condition = { }
-    let bitwebResponse = new BitwebResponse();
-    serviceCoins.list(condition)
-    .then(data => {
-        res.send(200, data);
-        console.log(data);
-    })
-    .catch(err => {
-        console.error('data error =>', err);
-        let resErr = "there is no data";
-        bitwebResponse.code = 500;
-        bitwebResponse.message = resErr;
-        res.status(500).send(bitwebResponse.create())
-    })
-});
-
-/*GET Coin Detail*/
-router.get("/detail/:coinId", (req, res) => {
+//게임판매내역 조회  API
+router.get("/:from_userId/sell", (req, res) => {
     let country = dbconfig.country;
     let condition = {
-        '_id': req.params.coinId
+
+        'from_userId': req.params.from_userId
+
     }
     let bitwebResponse = new BitwebResponse();
-    serviceCoins.detail(country, condition)
+    Vtrs.list(country, condition)
     .then(data => {
-        res.send(200, data);
+        res.send(200,  data);
         console.log(data);
     })
     .catch(err => {
         console.error('data error =>', err);
-        let resErr = "there is no data";
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
         res.status(500).send(bitwebResponse.create())
     })
+    console.log(req.params);
 });
+
+//게임구매내역 조회  API
+router.get("/:to_userId/buy", (req, res) => {
+    let country = dbconfig.country;
+    let condition = {
+
+        'to_userId': req.params.to_userId
+
+    }
+    let bitwebResponse = new BitwebResponse();
+    Vtrs.list(country, condition)
+    .then(data => {
+        res.send(200,  data);
+        console.log(data);
+    })
+    .catch(err => {
+        console.error('data error =>', err);
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    })
+    console.log(req.params);
+});
+
 
 module.exports = router; 
