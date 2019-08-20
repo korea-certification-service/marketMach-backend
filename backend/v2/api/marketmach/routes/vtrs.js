@@ -493,47 +493,47 @@ function _reqBuy(req, res, bitwebResponse) {
                         } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
                             reqDataCoin = {"total_ether": result_price};
                         }   
-                        
-                        serviceCoin.modify(country, conditionCoin, reqDataCoin)
-                        .then(updateCoin => {
-                            let reqDataEscrow = {
-                                'vtrId': vtr._doc._id,
-                                'itemId': updateItem._doc._id,
-                                'cryptoCurrencyCode': vtr._doc.cryptoCurrencyCode,    
-                                'price': vtr._doc.price,
-                                'sellerUser': vtr._doc.from_userId,
-                                'buyerUser': vtr._doc.to_userId,
-                                'status':'processing',
-                                'regDate': util.formatDate(new Date().toString())
+                        let reqDataEscrow = {
+                            'vtrId': vtr._doc._id,
+                            'itemId': updateItem._doc._id,
+                            'cryptoCurrencyCode': vtr._doc.cryptoCurrencyCode,    
+                            'price': vtr._doc.price,
+                            'sellerUser': vtr._doc.from_userId,
+                            'buyerUser': vtr._doc.to_userId,
+                            'status':'processing',
+                            'regDate': util.formatDate(new Date().toString())
+                        }
+                        console.log('req escrow data =>', reqDataEscrow);
+                        serviceEscrow.add(country,reqDataEscrow)
+                        .then((addEscrow)=> {
+                            let reqDataEscrowHistory = {
+                                "type": "deposit",
+                                "itemId": updateItem._doc._id,
+                                "vtr": vtr,
+                                "cryptoCurrencyCode": vtr._doc.cryptoCurrencyCode,                                                                                           
+                                "price": vtr._doc.price,
+                                "reqUser":vtr._doc.to_userId,
+                                "regDate": util.formatDate(new Date().toString())
+                            };
+                            reqDataEscrowHistory['escrowId'] = addEscrow._doc._id;
+                            console.log('req escrow history data =>', reqDataEscrow);
+                            serviceEscrowHistory.add(country, reqDataEscrowHistory);
+                            
+                            let reqCoinHistoryData = {
+                                "extType" : "mach",
+                                "coinId" : user._doc.coinId,
+                                "category" : "withdraw",
+                                "status" : "success",
+                                "currencyCode" : vtr._doc.cryptoCurrencyCode,
+                                "amount" : vtr._doc.price,
+                                "price" : vtr._doc.price,
+                                "totalPrice":result_price,
+                                "regDate" : util.formatDate(new Date().toString())
                             }
-                            console.log('req escrow data =>', reqDataEscrow);
-                            serviceEscrow.add(country,reqDataEscrow)
-                            .then((addEscrow)=> {
-                                let reqDataEscrowHistory = {
-                                    "type": "deposit",
-                                    "itemId": updateItem._doc._id,
-                                    "vtr": vtr,
-                                    "cryptoCurrencyCode": vtr._doc.cryptoCurrencyCode,                                                                                           
-                                    "price": vtr._doc.price,
-                                    "reqUser":vtr._doc.to_userId,
-                                    "regDate": util.formatDate(new Date().toString())
-                                };
-                                reqDataEscrowHistory['escrowId'] = addEscrow._doc._id;
-                                console.log('req escrow history data =>', reqDataEscrow);
-                                serviceEscrowHistory.add(country, reqDataEscrowHistory);
-                                
-                                let reqCoinHistoryData = {
-                                    "extType" : "mach",
-                                    "coinId" : user._doc.coinId,
-                                    "category" : "withdraw",
-                                    "status" : "success",
-                                    "currencyCode" : vtr._doc.cryptoCurrencyCode,
-                                    "amount" : vtr._doc.price,
-                                    "price" : vtr._doc.price,
-                                    "regDate" : util.formatDate(new Date().toString())
-                                }
-                                serviceCoinHistory.add(country,reqCoinHistoryData)
-                                .then(addHistory => {
+                            serviceCoinHistory.add(country,reqCoinHistoryData)
+                            .then(addHistory => {
+                                serviceCoin.modify(country, conditionCoin, reqDataCoin)
+                                .then(updateCoin => {
                                     updateItem._doc['successYn'] = "Y";
                                     let resData = {
                                         "vtr": modifyVtr,
@@ -550,7 +550,7 @@ function _reqBuy(req, res, bitwebResponse) {
                                     bitwebResponse.data = Object.assign({}, updateItem);
                                     res.status(200).send(bitwebResponse.create())
                                 }).catch((err) => {
-                                    console.error('add history error =>', err);
+                                    console.error('update coin error =>', err);
                                     let resErr = "처리중 에러 발생";
                                     //API 처리 결과 별도 LOG로 남김
                                     logger.addLog(country, req.originalUrl, req.body, err);             
@@ -560,7 +560,7 @@ function _reqBuy(req, res, bitwebResponse) {
                                     res.status(500).send(bitwebResponse.create())
                                 })
                             }).catch((err) => {
-                                console.error('add escrow error =>', err);
+                                console.error('add history error =>', err);
                                 let resErr = "처리중 에러 발생";
                                 //API 처리 결과 별도 LOG로 남김
                                 logger.addLog(country, req.originalUrl, req.body, err);             
@@ -570,7 +570,7 @@ function _reqBuy(req, res, bitwebResponse) {
                                 res.status(500).send(bitwebResponse.create())
                             })
                         }).catch((err) => {
-                            console.error('update coin error =>', err);
+                            console.error('add escrow error =>', err);
                             let resErr = "처리중 에러 발생";
                             //API 처리 결과 별도 LOG로 남김
                             logger.addLog(country, req.originalUrl, req.body, err);
@@ -772,41 +772,41 @@ function _reqComplete(req, res, bitwebResponse) {
                         } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
                             reqDataCoin = {"total_ether": result_price};
                         }   
-                        
-                        serviceCoin.modify(country, conditionCoin, reqDataCoin)
-                        .then(updateCoin => {
-                            let reqDataEscrow = {
-                                'status':'completed',
-                                'completed_regDate': util.formatDate(new Date().toString())
+                        let reqDataEscrow = {
+                            'status':'completed',
+                            'completed_regDate': util.formatDate(new Date().toString())
+                        }
+                        console.log('req escrow data =>', reqDataEscrow);
+                        serviceEscrow.modify(country,{'vtrId':modifyVtr._doc._id},reqDataEscrow)
+                        .then((modifyEscrow)=> {
+                            let reqDataEscrowHistory = {
+                                "type": "withdraw",
+                                "itemId": updateItem._doc._id,
+                                "vtr": vtr,
+                                "cryptoCurrencyCode": vtr._doc.cryptoCurrencyCode,                                                                                           
+                                "price": vtr._doc.price,
+                                "reqUser":vtr._doc.from_userId,
+                                "regDate": util.formatDate(new Date().toString())
+                            };
+                            reqDataEscrowHistory['escrowId'] = modifyEscrow._doc._id;
+                            console.log('req escrow history data =>', reqDataEscrow);
+                            serviceEscrowHistory.add(country, reqDataEscrowHistory);
+                            
+                            let reqCoinHistoryData = {
+                                "extType" : "mach",
+                                "coinId" : user._doc.coinId,
+                                "category" : "deposit",
+                                "status" : "success",
+                                "currencyCode" : vtr._doc.cryptoCurrencyCode,
+                                "amount" : vtr._doc.price,
+                                "price" : vtr._doc.price,
+                                "totalPrice":result_price,
+                                "regDate" : util.formatDate(new Date().toString())
                             }
-                            console.log('req escrow data =>', reqDataEscrow);
-                            serviceEscrow.modify(country,{'vtrId':modifyVtr._doc._id},reqDataEscrow)
-                            .then((modifyEscrow)=> {
-                                let reqDataEscrowHistory = {
-                                    "type": "withdraw",
-                                    "itemId": updateItem._doc._id,
-                                    "vtr": vtr,
-                                    "cryptoCurrencyCode": vtr._doc.cryptoCurrencyCode,                                                                                           
-                                    "price": vtr._doc.price,
-                                    "reqUser":vtr._doc.from_userId,
-                                    "regDate": util.formatDate(new Date().toString())
-                                };
-                                reqDataEscrowHistory['escrowId'] = modifyEscrow._doc._id;
-                                console.log('req escrow history data =>', reqDataEscrow);
-                                serviceEscrowHistory.add(country, reqDataEscrowHistory);
-                                
-                                let reqCoinHistoryData = {
-                                    "extType" : "mach",
-                                    "coinId" : user._doc.coinId,
-                                    "category" : "deposit",
-                                    "status" : "success",
-                                    "currencyCode" : vtr._doc.cryptoCurrencyCode,
-                                    "amount" : vtr._doc.price,
-                                    "price" : vtr._doc.price,
-                                    "regDate" : util.formatDate(new Date().toString())
-                                }
-                                serviceCoinHistory.add(country,reqCoinHistoryData)
-                                .then(addHistory => {
+                            serviceCoinHistory.add(country,reqCoinHistoryData)
+                            .then(addHistory => {
+                                serviceCoin.modify(country, conditionCoin, reqDataCoin)
+                                .then(updateCoin => {                                    
                                     updateItem._doc['successYn'] = "Y";
                                     let resData = {
                                         "vtr": modifyVtr,
@@ -823,7 +823,7 @@ function _reqComplete(req, res, bitwebResponse) {
                                     bitwebResponse.data = Object.assign({}, updateItem);
                                     res.status(200).send(bitwebResponse.create())
                                 }).catch((err) => {
-                                    console.error('add history error =>', err);
+                                    console.error('update coin error =>', err);
                                     let resErr = "처리중 에러 발생";
                                     //API 처리 결과 별도 LOG로 남김
                                     logger.addLog(country, req.originalUrl, req.body, err);             
@@ -833,7 +833,7 @@ function _reqComplete(req, res, bitwebResponse) {
                                     res.status(500).send(bitwebResponse.create())
                                 })
                             }).catch((err) => {
-                                console.error('add escrow error =>', err);
+                                console.error('add history error =>', err);
                                 let resErr = "처리중 에러 발생";
                                 //API 처리 결과 별도 LOG로 남김
                                 logger.addLog(country, req.originalUrl, req.body, err);
@@ -843,7 +843,7 @@ function _reqComplete(req, res, bitwebResponse) {
                                 res.status(500).send(bitwebResponse.create())
                             })
                         }).catch((err) => {
-                            console.error('update coin error =>', err);
+                            console.error('modify escrow error =>', err);
                             let resErr = "처리중 에러 발생";
                             //API 처리 결과 별도 LOG로 남김
                             logger.addLog(country, req.originalUrl, req.body, err);
@@ -1054,54 +1054,54 @@ function _reqCancel(req, res, bitwebResponse) {
                                 } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
                                     reqDataCoin = {"total_ether": result_price};
                                 }   
-                                
-                                serviceCoin.modify(country, {"_id":to_user._doc.coinId}, reqDataCoin)
-                                .then(updateCoin => {
-                                    let reqDataEscrow = {
-                                        'status':'cancelled',
-                                        'cancelled_regDate': util.formatDate(new Date().toString())
+                                let reqDataEscrow = {
+                                    'status':'cancelled',
+                                    'cancelled_regDate': util.formatDate(new Date().toString())
+                                }
+                                console.log('req escrow data =>', reqDataEscrow);
+                                serviceEscrow.modify(country,{'vtrId':vtr._doc._id},reqDataEscrow)
+                                .then((modifyEscrow)=> {
+                                    let reqDataEscrowHistory = {
+                                        "type": "cancel",
+                                        "itemId": itemId,
+                                        "vtr": vtr,
+                                        "cryptoCurrencyCode": vtr._doc.cryptoCurrencyCode,                                                                                           
+                                        "price": vtr._doc.price,
+                                        "reqUser": to_user._doc._id,
+                                        "regDate": util.formatDate(new Date().toString())
+                                    };
+                                    reqDataEscrowHistory['escrowId'] = modifyEscrow._doc._id;
+                                    console.log('req escrow history data =>', reqDataEscrow);
+                                    serviceEscrowHistory.add(country, reqDataEscrowHistory);
+                                    
+                                    let reqCoinHistoryData = {
+                                        "extType" : "mach",
+                                        "coinId" : to_user._doc.coinId,
+                                        "category" : "deposit",
+                                        "status" : "success",
+                                        "currencyCode" : vtr._doc.cryptoCurrencyCode,
+                                        "amount" : vtr._doc.price,
+                                        "price" : vtr._doc.price,
+                                        "totalPrice": result_price,
+                                        "regDate" : util.formatDate(new Date().toString())
                                     }
-                                    console.log('req escrow data =>', reqDataEscrow);
-                                    serviceEscrow.modify(country,{'vtrId':vtr._doc._id},reqDataEscrow)
-                                    .then((modifyEscrow)=> {
-                                        let reqDataEscrowHistory = {
-                                            "type": "cancel",
-                                            "itemId": itemId,
-                                            "vtr": vtr,
-                                            "cryptoCurrencyCode": vtr._doc.cryptoCurrencyCode,                                                                                           
-                                            "price": vtr._doc.price,
-                                            "reqUser": to_user._doc._id,
-                                            "regDate": util.formatDate(new Date().toString())
-                                        };
-                                        reqDataEscrowHistory['escrowId'] = modifyEscrow._doc._id;
-                                        console.log('req escrow history data =>', reqDataEscrow);
-                                        serviceEscrowHistory.add(country, reqDataEscrowHistory);
-                                        
-                                        let reqCoinHistoryData = {
-                                            "extType" : "mach",
-                                            "coinId" : to_user._doc.coinId,
-                                            "category" : "deposit",
-                                            "status" : "success",
-                                            "currencyCode" : vtr._doc.cryptoCurrencyCode,
-                                            "amount" : vtr._doc.price,
-                                            "price" : vtr._doc.price,
-                                            "regDate" : util.formatDate(new Date().toString())
-                                        }
-                                        serviceCoinHistory.add(country,reqCoinHistoryData);
+                                    serviceCoinHistory.add(country,reqCoinHistoryData);
 
-                                        let reqCancelHistory = {
-                                            "vtr": vtr,
-                                            "item": vtr._doc.item,
-                                            "from_userId": vtr._doc.from_userId,
-                                            "to_userId": vtr._doc.to_userId,
-                                            "status": "user_cancel",
-                                            "refund": vtr._doc.buy_status == undefined ? false : true,
-                                            "regDate": util.formatDate(new Date().toString())
-                                        };
-                                        serviceCancelHistory.add(country, reqCancelHistory)
-                                        .then(() => {
-                                            serviceVtrs.remove(country, {"_id":vtr._doc._id})
-                                            .then(deletedVtr => {
+                                    let reqCancelHistory = {
+                                        "vtr": vtr,
+                                        "item": vtr._doc.item,
+                                        "from_userId": vtr._doc.from_userId,
+                                        "to_userId": vtr._doc.to_userId,
+                                        "status": "user_cancel",
+                                        "refund": vtr._doc.buy_status == undefined ? false : true,
+                                        "regDate": util.formatDate(new Date().toString())
+                                    };
+                                    serviceCancelHistory.add(country, reqCancelHistory)
+                                    .then(() => {
+                                        serviceVtrs.remove(country, {"_id":vtr._doc._id})
+                                        .then(deletedVtr => {
+                                            serviceCoin.modify(country, {"_id":to_user._doc.coinId}, reqDataCoin)
+                                            .then(updateCoin => {
                                                 let from_message = '구매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.';
                                                 if(req.body.country != "KR") {
                                                     from_message = 'The buyer has canceled the transaction. The transaction amount held in the escrow has been refunded to the buyer\'s wallet.';
@@ -1140,7 +1140,7 @@ function _reqCancel(req, res, bitwebResponse) {
                                                 bitwebResponse.data = msg;
                                                 res.status(200).send(bitwebResponse.create())
                                             }).catch((err) => {
-                                                console.error('delete vtr error =>', err);
+                                                console.error('update coin error =>', err);
                                                 let resErr = "처리중 에러 발생";
                                                 //API 처리 결과 별도 LOG로 남김
                                                 logger.addLog(country, req.originalUrl, req.body, err);
@@ -1149,9 +1149,18 @@ function _reqCancel(req, res, bitwebResponse) {
                                                 bitwebResponse.message = resErr;
                                                 res.status(500).send(bitwebResponse.create())
                                             })  
+                                        }).catch((err) => {
+                                            console.error('delete vtr error =>', err);
+                                            let resErr = "처리중 에러 발생";
+                                            //API 처리 결과 별도 LOG로 남김
+                                            logger.addLog(country, req.originalUrl, req.body, err);
+                
+                                            bitwebResponse.code = 500;
+                                            bitwebResponse.message = resErr;
+                                            res.status(500).send(bitwebResponse.create())
                                         })
                                     }).catch((err) => {
-                                        console.error('add escrow error =>', err);
+                                        console.error('cancel history error =>', err);
                                         let resErr = "처리중 에러 발생";
                                         //API 처리 결과 별도 LOG로 남김
                                         logger.addLog(country, req.originalUrl, req.body, err);
@@ -1161,7 +1170,7 @@ function _reqCancel(req, res, bitwebResponse) {
                                         res.status(500).send(bitwebResponse.create())
                                     })
                                 }).catch((err) => {
-                                    console.error('update coin error =>', err);
+                                    console.error('modify escrow error =>', err);
                                     let resErr = "처리중 에러 발생";
                                     //API 처리 결과 별도 LOG로 남김
                                     logger.addLog(country, req.originalUrl, req.body, err);
@@ -1171,7 +1180,7 @@ function _reqCancel(req, res, bitwebResponse) {
                                     res.status(500).send(bitwebResponse.create())
                                 })
                             }).catch((err) => {
-                                console.error('add vtr error =>', err);
+                                console.error('modify item error =>', err);
                                 let resErr = "처리중 에러 발생";
                                 //API 처리 결과 별도 LOG로 남김
                                 logger.addLog(country, req.originalUrl, req.body, err);
@@ -1358,47 +1367,47 @@ function _buynow(req, res, bitwebResponse) {
                                 } else if(addVtr._doc.cryptoCurrencyCode == "ETH") {
                                     reqDataCoin = {"total_ether": result_price};
                                 }   
-                                
-                                serviceCoin.modify(country, conditionCoin, reqDataCoin)
-                                .then(updateCoin => {
-                                    let reqDataEscrow = {
-                                        'vtrId': addVtr._doc._id,
-                                        'itemId': updateItem._doc._id,
-                                        'cryptoCurrencyCode': addVtr._doc.cryptoCurrencyCode,    
-                                        'price': addVtr._doc.price,
-                                        'sellerUser': addVtr._doc.from_userId,
-                                        'buyerUser': addVtr._doc.to_userId,
-                                        'status':'processing',
-                                        'regDate': util.formatDate(new Date().toString())
+                                let reqDataEscrow = {
+                                    'vtrId': addVtr._doc._id,
+                                    'itemId': updateItem._doc._id,
+                                    'cryptoCurrencyCode': addVtr._doc.cryptoCurrencyCode,    
+                                    'price': addVtr._doc.price,
+                                    'sellerUser': addVtr._doc.from_userId,
+                                    'buyerUser': addVtr._doc.to_userId,
+                                    'status':'processing',
+                                    'regDate': util.formatDate(new Date().toString())
+                                }
+                                console.log('req escrow data =>', reqDataEscrow);
+                                serviceEscrow.add(country,reqDataEscrow)
+                                .then((addEscrow)=> {
+                                    let reqDataEscrowHistory = {
+                                        "type": "deposit",
+                                        "itemId": updateItem._doc._id,
+                                        "vtr": addVtr,
+                                        "cryptoCurrencyCode": addVtr._doc.cryptoCurrencyCode,                                                                                           
+                                        "price": addVtr._doc.price,
+                                        "reqUser":addVtr._doc.to_userId,
+                                        "regDate": util.formatDate(new Date().toString())
+                                    };
+                                    reqDataEscrowHistory['escrowId'] = addEscrow._doc._id;
+                                    console.log('req escrow history data =>', reqDataEscrow);
+                                    serviceEscrowHistory.add(country, reqDataEscrowHistory);
+                                    
+                                    let reqCoinHistoryData = {
+                                        "extType" : "mach",
+                                        "coinId" : to_user._doc.coinId,
+                                        "category" : "withdraw",
+                                        "status" : "success",
+                                        "currencyCode" : addVtr._doc.cryptoCurrencyCode,
+                                        "amount" : addVtr._doc.price,
+                                        "price" : addVtr._doc.price,
+                                        "totalPrice": result_price,
+                                        "regDate" : util.formatDate(new Date().toString())
                                     }
-                                    console.log('req escrow data =>', reqDataEscrow);
-                                    serviceEscrow.add(country,reqDataEscrow)
-                                    .then((addEscrow)=> {
-                                        let reqDataEscrowHistory = {
-                                            "type": "deposit",
-                                            "itemId": updateItem._doc._id,
-                                            "vtr": addVtr,
-                                            "cryptoCurrencyCode": addVtr._doc.cryptoCurrencyCode,                                                                                           
-                                            "price": addVtr._doc.price,
-                                            "reqUser":addVtr._doc.to_userId,
-                                            "regDate": util.formatDate(new Date().toString())
-                                        };
-                                        reqDataEscrowHistory['escrowId'] = addEscrow._doc._id;
-                                        console.log('req escrow history data =>', reqDataEscrow);
-                                        serviceEscrowHistory.add(country, reqDataEscrowHistory);
-                                        
-                                        let reqCoinHistoryData = {
-                                            "extType" : "mach",
-                                            "coinId" : to_user._doc.coinId,
-                                            "category" : "withdraw",
-                                            "status" : "success",
-                                            "currencyCode" : addVtr._doc.cryptoCurrencyCode,
-                                            "amount" : addVtr._doc.price,
-                                            "price" : addVtr._doc.price,
-                                            "regDate" : util.formatDate(new Date().toString())
-                                        }
-                                        serviceCoinHistory.add(country,reqCoinHistoryData)
-                                        .then(addHistory => {
+                                    serviceCoinHistory.add(country,reqCoinHistoryData)
+                                    .then(addHistory => {
+                                        serviceCoin.modify(country, conditionCoin, reqDataCoin)
+                                        .then(updateCoin => {
                                             //5.SMS전송
                                             let phone = userInfo.seller_phone;
                                             let whoReqUser = body.buyerTag;
@@ -1523,7 +1532,7 @@ function _buynow(req, res, bitwebResponse) {
                                                 res.status(200).send(bitwebResponse.create())
                                             }
                                         }).catch((err) => {
-                                            console.error('add history error =>', err);
+                                            console.error('update coin error =>', err);
                                             let resErr = "처리중 에러 발생";
                                             //API 처리 결과 별도 LOG로 남김
                                             logger.addLog(country, req.originalUrl, req.body, err);             
@@ -1533,7 +1542,7 @@ function _buynow(req, res, bitwebResponse) {
                                             res.status(500).send(bitwebResponse.create())
                                         })
                                     }).catch((err) => {
-                                        console.error('add escrow error =>', err);
+                                        console.error('add history error =>', err);
                                         let resErr = "처리중 에러 발생";
                                         //API 처리 결과 별도 LOG로 남김
                                         logger.addLog(country, req.originalUrl, req.body, err);             
@@ -1543,7 +1552,7 @@ function _buynow(req, res, bitwebResponse) {
                                         res.status(500).send(bitwebResponse.create())
                                     })
                                 }).catch((err) => {
-                                    console.error('update coin error =>', err);
+                                    console.error('add escrow error =>', err);
                                     let resErr = "처리중 에러 발생";
                                     //API 처리 결과 별도 LOG로 남김
                                     logger.addLog(country, req.originalUrl, req.body, err);
@@ -1863,66 +1872,66 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                     'vtr': ''
                                 };
 
-                                serviceItems.modify(country, conditionItem, reqData)
-                                .then((updateItem) => {              
-                                    //판매자 에스크로 금액 입금
-                                    let result_price = parseFloat((user_price + vtr._doc.price).toFixed(8));
-                                    let reqDataCoin = {"total_mach": result_price};
-                                    if(vtr._doc.cryptoCurrencyCode == "BTC") {
-                                        reqDataCoin = {"total_btc": result_price};
-                                    } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
-                                        reqDataCoin = {"total_ether": result_price};
-                                    }   
-                                    
-                                    serviceCoin.modify(country, {"_id":to_user._doc.coinId}, reqDataCoin)
-                                    .then(updateCoin => {
-                                        let reqDataEscrow = {
-                                            'status':'cancelled',
-                                            'cancelled_regDate': util.formatDate(new Date().toString())
-                                        }
-                                        console.log('req escrow data =>', reqDataEscrow);
-                                        serviceEscrow.modify(country,{'vtrId':vtr._doc._id},reqDataEscrow)
-                                        .then((modifyEscrow)=> {
-                                            let reqDataEscrowHistory = {
-                                                "type": "cancel",
-                                                "itemId": itemId,
-                                                "vtr": vtr,
-                                                "cryptoCurrencyCode": vtr._doc.cryptoCurrencyCode,                                                                                           
-                                                "price": vtr._doc.price,
-                                                "reqUser": to_user._doc._id,
-                                                "regDate": util.formatDate(new Date().toString())
-                                            };
-                                            reqDataEscrowHistory['escrowId'] = modifyEscrow._doc._id;
-                                            console.log('req escrow history data =>', reqDataEscrow);
-                                            serviceEscrowHistory.add(country, reqDataEscrowHistory);
-                                            
-                                            let reqCoinHistoryData = {
-                                                "extType" : "mach",
-                                                "coinId" : to_user._doc.coinId,
-                                                "category" : "deposit",
-                                                "status" : "success",
-                                                "currencyCode" : vtr._doc.cryptoCurrencyCode,
-                                                "amount" : vtr._doc.price,
-                                                "price" : vtr._doc.price,
-                                                "regDate" : util.formatDate(new Date().toString())
+                                serviceVtrs.remove(country, {"_id":vtr._doc._id})
+                                .then(deletedVtr => {
+                                    serviceVtrTemps.remove(country, {"item._id":itemId})
+                                    .then(deletedVtrTemp => {
+                                        serviceItems.modify(country, conditionItem, reqData)
+                                        .then((updateItem) => {              
+                                            //판매자 에스크로 금액 입금
+                                            let result_price = parseFloat((user_price + vtr._doc.price).toFixed(8));
+                                            let reqDataCoin = {"total_mach": result_price};
+                                            if(vtr._doc.cryptoCurrencyCode == "BTC") {
+                                                reqDataCoin = {"total_btc": result_price};
+                                            } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
+                                                reqDataCoin = {"total_ether": result_price};
+                                            }   
+                                            let reqDataEscrow = {
+                                                'status':'cancelled',
+                                                'cancelled_regDate': util.formatDate(new Date().toString())
                                             }
-                                            serviceCoinHistory.add(country,reqCoinHistoryData);
+                                            console.log('req escrow data =>', reqDataEscrow);
+                                            serviceEscrow.modify(country,{'vtrId':vtr._doc._id},reqDataEscrow)
+                                            .then((modifyEscrow)=> {
+                                                let reqDataEscrowHistory = {
+                                                    "type": "cancel",
+                                                    "itemId": itemId,
+                                                    "vtr": vtr,
+                                                    "cryptoCurrencyCode": vtr._doc.cryptoCurrencyCode,                                                                                           
+                                                    "price": vtr._doc.price,
+                                                    "reqUser": to_user._doc._id,
+                                                    "regDate": util.formatDate(new Date().toString())
+                                                };
+                                                reqDataEscrowHistory['escrowId'] = modifyEscrow._doc._id;
+                                                console.log('req escrow history data =>', reqDataEscrow);
+                                                serviceEscrowHistory.add(country, reqDataEscrowHistory);
+                                                
+                                                let reqCoinHistoryData = {
+                                                    "extType" : "mach",
+                                                    "coinId" : to_user._doc.coinId,
+                                                    "category" : "deposit",
+                                                    "status" : "success",
+                                                    "currencyCode" : vtr._doc.cryptoCurrencyCode,
+                                                    "amount" : vtr._doc.price,
+                                                    "price" : vtr._doc.price,
+                                                    "totalPrice": result_price,
+                                                    "regDate" : util.formatDate(new Date().toString())
+                                                }
+                                                serviceCoinHistory.add(country,reqCoinHistoryData);
 
-                                            let reqCancelHistory = {
-                                                "vtr": vtr,
-                                                "item": vtr._doc.item,
-                                                "from_userId": vtr._doc.from_userId,
-                                                "to_userId": vtr._doc.to_userId,
-                                                "status": "user_cancel",
-                                                "refund": vtr._doc.buy_status == undefined ? false : true,
-                                                "regDate": util.formatDate(new Date().toString())
-                                            };
-                                            serviceCancelHistory.add(country, reqCancelHistory)
-                                            .then(() => {
-                                                serviceVtrs.remove(country, {"_id":vtr._doc._id})
-                                                .then(deletedVtr => {
-                                                    serviceVtrTemps.remove(country, {"item._id":itemId})
-                                                    .then(deletedVtrTemp => {
+                                                let reqCancelHistory = {
+                                                    "vtr": vtr,
+                                                    "item": vtr._doc.item,
+                                                    "from_userId": vtr._doc.from_userId,
+                                                    "to_userId": vtr._doc.to_userId,
+                                                    "status": "user_cancel",
+                                                    "refund": vtr._doc.buy_status == undefined ? false : true,
+                                                    "regDate": util.formatDate(new Date().toString())
+                                                };
+                                                serviceCancelHistory.add(country, reqCancelHistory)
+                                                .then(() => {
+                                                    serviceCoin.modify(country, {"_id":to_user._doc.coinId}, reqDataCoin)
+                                                    .then(updateCoin => {
                                                         let from_message = '구매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.';
                                                         if(req.body.country != "KR") {
                                                             from_message = 'The buyer has canceled the transaction. The transaction amount held in the escrow has been refunded to the buyer\'s wallet.';
@@ -1963,7 +1972,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                                         bitwebResponse.data = msg;
                                                         res.status(200).send(bitwebResponse.create())
                                                     }).catch((err) => {
-                                                        console.error('delete vtr temp error =>', err);
+                                                        console.error('update coin error =>', err);
                                                         let resErr = "처리중 에러 발생";
                                                         //API 처리 결과 별도 LOG로 남김
                                                         logger.addLog(country, req.originalUrl, req.body, err);
@@ -1973,7 +1982,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                                         res.status(500).send(bitwebResponse.create())
                                                     })  
                                                 }).catch((err) => {
-                                                    console.error('delete vtr error =>', err);
+                                                    console.error('cancel history error =>', err);
                                                     let resErr = "처리중 에러 발생";
                                                     //API 처리 결과 별도 LOG로 남김
                                                     logger.addLog(country, req.originalUrl, req.body, err);
@@ -1982,9 +1991,18 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                                     bitwebResponse.message = resErr;
                                                     res.status(500).send(bitwebResponse.create())
                                                 })  
-                                            })
+                                            }).catch((err) => {
+                                                console.error('modify escrow error =>', err);
+                                                let resErr = "처리중 에러 발생";
+                                                //API 처리 결과 별도 LOG로 남김
+                                                logger.addLog(country, req.originalUrl, req.body, err);
+                                        
+                                                bitwebResponse.code = 500;
+                                                bitwebResponse.message = resErr;
+                                                res.status(500).send(bitwebResponse.create())
+                                            })  
                                         }).catch((err) => {
-                                            console.error('add escrow error =>', err);
+                                            console.error('modify item error =>', err);
                                             let resErr = "처리중 에러 발생";
                                             //API 처리 결과 별도 LOG로 남김
                                             logger.addLog(country, req.originalUrl, req.body, err);
@@ -1994,7 +2012,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                             res.status(500).send(bitwebResponse.create())
                                         })
                                     }).catch((err) => {
-                                        console.error('update coin error =>', err);
+                                        console.error('delete vtr temp error =>', err);
                                         let resErr = "처리중 에러 발생";
                                         //API 처리 결과 별도 LOG로 남김
                                         logger.addLog(country, req.originalUrl, req.body, err);
@@ -2004,7 +2022,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                         res.status(500).send(bitwebResponse.create())
                                     })
                                 }).catch((err) => {
-                                    console.error('add vtr error =>', err);
+                                    console.error('delete vtr error =>', err);
                                     let resErr = "처리중 에러 발생";
                                     //API 처리 결과 별도 LOG로 남김
                                     logger.addLog(country, req.originalUrl, req.body, err);
