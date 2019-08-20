@@ -11,7 +11,8 @@ var coinHistorysSchema = new Schema({
     amount: Number,
     mach: Number,
     fee: Number,
-    regDate: String  
+    regDate: String,
+    totalAmount: Number
 });
 
 module.exports = mongoose.model('CoinHistorys', coinHistorysSchema);
