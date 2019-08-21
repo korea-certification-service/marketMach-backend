@@ -1438,7 +1438,7 @@ function _buynow(req, res, bitwebResponse) {
                                                 }
                                             }
 
-                                            let url = dbconfig.smsUrlCommon + category + '/vtr/' + itemId;
+                                            let url = dbconfig.smsUrlCommon + category + '/detail/' + itemId;
                                             if(updateItem._doc.trade_type == "buy") {
                                                 whoReqUser = sellerTag;
                                                 phone = userInfo.buyer_phone;
