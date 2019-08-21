@@ -147,7 +147,7 @@ function _createVTR(req, res, bitwebResponse) {
                             }
                             let url = req.headers.origin + '/sms/room?roomToken='+updateItem._doc.roomToken+'&itemId=' + updateItem._doc._id + '&user_id=' + updateItem._doc.userTag + '&vtrTempId=' + addVtrTemp._doc._id;
                             if(updateItem._doc.trade_type == "buy") {
-                                whoReqUser = sellerTag;
+                                whoReqUser = body.sellerTag;
                                 phone = userInfo.buyer_phone;
                             } 
                             
