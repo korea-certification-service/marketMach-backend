@@ -136,7 +136,7 @@ function _createVTR(req, res, bitwebResponse) {
                         //vtr 방 넘버,상태, roomToken값 update
                         serviceItems.modify(country, conditionItem, updateData)
                         .then((updateItem) => {
-                            console.log("HOST : ", req.headers.origin);
+                            console.log("HOST : ", dbconfig.smsUrlCommon);
                             
                             //SMS전송
                             let phone = userInfo.seller_phone;
@@ -145,13 +145,13 @@ function _createVTR(req, res, bitwebResponse) {
                             if(body.country != "KR") {
                                 smsMessage = smsContent.sms.en;
                             }
-                            let url = req.headers.origin + '/sms/room?roomToken='+updateItem._doc.roomToken+'&itemId=' + updateItem._doc._id + '&user_id=' + updateItem._doc.userTag + '&vtrTempId=' + addVtrTemp._doc._id;
+                            let url = dbconfig.smsUrlCommon + '/sms/room?roomToken='+updateItem._doc.roomToken+'&itemId=' + updateItem._doc._id + '&user_id=' + updateItem._doc.userTag + '&vtrTempId=' + addVtrTemp._doc._id;
                             if(updateItem._doc.trade_type == "buy") {
                                 whoReqUser = body.sellerTag;
                                 phone = userInfo.buyer_phone;
                             } 
                             
-                            if(req.headers.origin == undefined) {
+                            if(dbconfig.smsUrlCommon == undefined) {
                                 let message = whoReqUser + smsMessage + itemId;
                                 console.log("Send SMS Message => ", message);
                                 smsController.sendSms(phone, message, 'no')
@@ -182,7 +182,7 @@ function _createVTR(req, res, bitwebResponse) {
                                     bitwebResponse.data = updateItem
                                     res.status(200).send(bitwebResponse.create())
                                 });
-                            } else if(req.headers.origin.indexOf("marketmach") > 0) {
+                            } else if(dbconfig.smsUrlCommon.indexOf("marketmach") > 0) {
                                 shortUrl.short(encodeURIComponent(url), function (err, resultUrl) {
                                     let message = whoReqUser + smsMessage + resultUrl;
                                     console.log("Send SMS Message => ", message);
@@ -1357,7 +1357,7 @@ function _buynow(req, res, bitwebResponse) {
                             // 3. item 상태 수정
                             serviceItems.modify(country, conditionItem, modifyItemData)
                             .then((updateItem) => {
-                                console.log("HOST : ", req.headers.origin);
+                                console.log("HOST : ", dbconfig.smsUrlCommon);
                                 
                                 //4. 구매자 coin 차감 및 에스크로
                                 let result_price = parseFloat((user_price - addVtr._doc.price).toFixed(8));
@@ -1415,13 +1415,13 @@ function _buynow(req, res, bitwebResponse) {
                                             if(body.country != "KR") {
                                                 smsMessage = smsContent.notification.en;
                                             }
-                                            let url = req.headers.origin + '/sms/room?roomToken='+updateItem._doc.roomToken+'&itemId=' + updateItem._doc._id + '&user_id=' + updateItem._doc.userTag + '&vtrTempId=' + addVtrTemp._doc._id;
+                                            let url = dbconfig.smsUrlCommon + '/sms/room?roomToken='+updateItem._doc.roomToken+'&itemId=' + updateItem._doc._id + '&user_id=' + updateItem._doc.userTag + '&vtrTempId=' + addVtrTemp._doc._id;
                                             if(updateItem._doc.trade_type == "buy") {
                                                 whoReqUser = sellerTag;
                                                 phone = userInfo.buyer_phone;
                                             } 
 
-                                            if(req.headers.origin == undefined) {
+                                            if(dbconfig.smsUrlCommon == undefined) {
                                                 let message = whoReqUser + smsMessage + itemId;
                                                 console.log("Send SMS Message => ", message);
                                                 smsController.sendSms(phone, message, 'no')
@@ -1465,7 +1465,7 @@ function _buynow(req, res, bitwebResponse) {
                                                     bitwebResponse.data = Object.assign({}, updateItem);
                                                     res.status(200).send(bitwebResponse.create())
                                                 });
-                                            } else if(req.headers.origin.indexOf("marketmach") > 0) {
+                                            } else if(dbconfig.smsUrlCommon.indexOf("marketmach") > 0) {
                                                 shortUrl.short(encodeURIComponent(url), function (err, resultUrl) {
                                                     let message = whoReqUser + smsMessage + resultUrl;
                                                     console.log("Send SMS Message => ", message);
