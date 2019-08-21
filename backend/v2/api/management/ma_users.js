@@ -55,7 +55,11 @@ router.get("/:userId", (req, res) => {
     let bitwebResponse = new BitwebResponse();
     serviceUsers.detail(country, condition)
     .then(data => {
-        res.send(200, data);
+        if(data == null) {
+            res.send(200, []);
+        } else {
+            res.send(200, data);
+        }
         console.log(data);
     })
     .catch(err => {
