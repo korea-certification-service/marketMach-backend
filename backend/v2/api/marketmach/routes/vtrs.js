@@ -5,7 +5,7 @@
  */
 var express = require('express');
 var router = express.Router();
-//let shortUrl = require('node-url-shortener');
+let shortUrl = require('node-url-shortener');
 let dbconfig = require('../../../../../config/dbconfig');
 let util = require('../../../utils/util');
 let serviceItems = require('../../../service/items');
