@@ -2,10 +2,9 @@ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
 var logger = require('morgan');
 let cors = require('cors');
-
-//admin
 
 
 //marketmach 
@@ -30,6 +29,10 @@ var maVtrs = require('./backend/v2/api/management/ma_vtrs');
 var maEscrowsHistory = require('./backend/v2/api/management/ma_escrowHistorys');
 
 var app = express();
+
+//body parser
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended : true}));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

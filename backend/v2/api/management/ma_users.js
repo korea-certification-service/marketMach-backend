@@ -71,4 +71,27 @@ router.get("/:userId", (req, res) => {
     })
 });
 
+/*PUT User Modify*/
+router.put("/modify/:userId", (req, res) => {
+    let country = dbconfig.country;
+    let condition = {
+        '_id': req.params.userId
+    }
+    let data = req.body;
+
+    let bitwebResponse = new BitwebResponse();
+    serviceUsers.modify(country, condition, data)
+    .then(success => {
+        console.log(success);
+        res.status(200).send(success);
+    })
+    .catch(err => {
+        console.error('data error =>', err);
+        let resErr = "there is no data";
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    })
+});
+
 module.exports = router; 
