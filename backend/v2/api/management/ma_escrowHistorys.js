@@ -19,19 +19,27 @@ router.get("/:userTag", (req, res) => {
     }
     let bitwebResponse = new BitwebResponse();
     ServiceItems.list(country, condition)
-    .then(items => {
-
+    .then(async items => {
         if(items.length == 0) {
             res.status(200).send([]);
         } else {
+
             for (let i = 0; i < items.length; i++) {
 
-                EscrowHistorys.detail(country, {'itemId': items[i]._id})
-                .then(data => {
-                    if(data != null) resArray.push(data)
-                    if( i == items.length - 1 )res.status(200).send(resArray);
-                }) 
-    
+                let condition = {
+                    'itemId': JSON.stringify(items[i]._id).replace(/\"/gi,"")
+                }
+                
+                await EscrowHistorys.detail(country, condition)
+                .then(async data =>  {
+                    if(data != null) resArray.push(data);
+                    if( i == items.length - 2 ) {
+                        await res.status(200).send(resArray);
+                        console.log(items.length);
+                        console.log(i);
+                    };
+                })
+
             }
         }
         

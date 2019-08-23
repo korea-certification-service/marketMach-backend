@@ -4,17 +4,37 @@ let dbconfig = require('../../../../config/dbconfig');
 let BitwebResponse = require('../../utils/BitwebResponse');
 let serviceEscrows = require('../../service/escrows');
 
-
 /*GET Escrow Detail*/
-router.get("/detail/:userTag", (req, res) => {
+//입금예정 Escrow
+router.get("/detail/:userId/seller", (req, res) => {
+    let country = dbconfig.country;
     let condition = {
-        'reqUser': req.params.userTag
+        'sellerUser': req.params.userId
     }
     let bitwebResponse = new BitwebResponse();
-    serviceEscrows.detail(condition)
+    serviceEscrows.list(country, condition)
     .then(data => {
-        res.send(200, data);
         console.log(data);
+        res.status(200).send(data);
+    })
+    .catch(err => {
+        console.error('data error =>', err);
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    })
+});
+//출금예정 Escrow
+router.get("/detail/:userId/buyer", (req, res) => {
+    let country = dbconfig.country;
+    let condition = {
+        'buyerUser': req.params.userId
+    }
+    let bitwebResponse = new BitwebResponse();
+    serviceEscrows.list(country, condition)
+    .then(data => {
+        console.log(data);
+        res.status(200).send(data);
     })
     .catch(err => {
         console.error('data error =>', err);

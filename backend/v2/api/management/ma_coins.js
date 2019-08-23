@@ -43,4 +43,27 @@ router.get("/detail/:coinId", (req, res) => {
     })
 });
 
+/*PUT Coin Modify */
+router.put("/modify/:coinId", (req, res) => {
+    let country = dbconfig.country;
+    let condition = {
+        '_id': req.params.coinId
+    }
+    let data = req.body;
+
+    let bitwebResponse = new BitwebResponse();
+    serviceCoins.modify(country, condition, data)
+    .then(success => {
+        res.send(200, success);
+        console.log(success);
+    })
+    .catch(err => {
+        console.error('data error =>', err);
+        let resErr = "there is no data";
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    })
+});
+
 module.exports = router; 
