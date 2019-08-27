@@ -12,6 +12,7 @@ var CommunitySchema = new Schema({
     count: Number,
     regDate: String,
     reporter: String,
+    recommandCount: Number,
     recommand: Mixed,
     nottobe: Mixed,
     images: [Image]               // s3

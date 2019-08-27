@@ -436,11 +436,13 @@ router.put('/detail/:communityId/:recommandYn', tokens.checkInternalToken, funct
         "_id": communityId
     }
     let body = {
-        $push: {recommand: req.body.param.reqUser}
+        $push: {recommand: req.body.param.reqUser},
+        $inc: { recommandCount: 1}
     }
     if(recommandYn == "N") {
         body = {
-            $pull: {recommand: req.body.param.reqUser}
+            $pull: {recommand: req.body.param.reqUser},
+            $inc: { recommandCount: -1}
         }
     }
     
