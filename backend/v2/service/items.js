@@ -1,5 +1,25 @@
 let Items = require('../model/items');
+let ItemReplys = require("../model/replyItems");
 let db = require('../utils/db');
+
+function count(country, condition) {
+    return new Promise((resolve, reject) => {
+        db.connectDB(country)
+        .then(() => {
+            Items.count(
+                condition,
+                function(err, result) {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(result)
+                }
+            )
+        }).catch((err) => {
+            reject(err)
+        })
+    })
+}
 
 function list(country, condition) {
     return new Promise((resolve, reject) => {
@@ -82,7 +102,7 @@ function remove(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Items.findByIdAndRemove(
+            Items.findOneAndRemove(
                 condition,
                 function(err, user) {
                     if (err) {
@@ -94,6 +114,69 @@ function remove(country, condition) {
         }).catch((err) => {
             reject(err)
         })
+    })
+}
+
+function getReplys(country, condition) {
+    return new Promise((resolve, reject) => {
+        db.connectDB(country)
+        .then(() => {
+            ItemReplys.find(
+                condition,
+                function(err, result) {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(result)
+                }
+            )
+        }).catch((err) => {
+            reject(err)
+        })
+    })
+}
+
+function addReply (body) {
+    return new Promise((resolve, reject) => {
+        console.log(body)
+        var itemReplys = new ItemReplys(body)
+        itemReplys.save(function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result)
+            }
+        })
+    })
+}
+
+function modifyReply(conditdion, body) {
+    return new Promise((resolve, reject) => {
+        ReplyItems.findOneAndUpdate(
+            conditdion,
+            {$set: body
+            },
+            {upsert: false, new: true},
+            function(err, data) {
+                if (err) {
+                    reject(err)
+                }
+                resolve(data)
+            })
+    })
+}
+
+function removeReply(replyId) {
+    return new Promise((resolve, reject) => {
+        ReplyItems.findOneAndRemove(
+            replyId,
+            function(err, user) {
+                if (err) {
+                    reject(err)
+                }
+                resolve(user)
+            }
+        )
     })
 }
 
@@ -118,9 +201,14 @@ function setUserInfoForVtr(users, body) {
     return result;
 }
 
+exports.count = count;
 exports.list = list;
 exports.detail = detail;
 exports.add = add;
 exports.modify = modify;
 exports.remove = remove;
+exports.getReplys = getReplys;
+exports.addReply = addReply;
+exports.modifyReply = modifyReply;
+exports.removeReply = removeReply;
 exports.setUserInfoForVtr = setUserInfoForVtr;
