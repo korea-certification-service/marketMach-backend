@@ -5,7 +5,6 @@ var serviceStaff = require('../../service/staff');
 
 router.post("/", (req, res) => {
 
-    
     let userTag = req.body.userTag;
     let password = crypto.createHash('sha256').update(req.body.password).digest('base64');
 
@@ -24,7 +23,6 @@ router.post("/", (req, res) => {
         } else {
             res.status(401).send(false);
         }
-        
     }).catch(err => {
         console.log("--------err--------");
         console.log(err);

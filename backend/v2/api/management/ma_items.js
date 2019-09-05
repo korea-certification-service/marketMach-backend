@@ -10,6 +10,22 @@ var BitwebResponse = require('../../utils/BitwebResponse');
 var Items = require("../../service/items");
 
 //구매/판매 작성 게시물 조회 API
+router.get("/list", (req, res) => {
+    let country = dbconfig.country;
+    let condition = { }
+    let bitwebResponse = new BitwebResponse();
+    Items.list(country, condition)
+    .then(data => {
+        res.status(200).send(data);
+    }).catch(err => {
+        console.error('data error =>', err);
+        let resErr = "escrow 탐색 실패";
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    })
+});
+
 router.get("/:itemId", (req, res) => {
     let country = dbconfig.country;
     let condition = {
