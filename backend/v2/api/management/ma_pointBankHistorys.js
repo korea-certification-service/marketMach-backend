@@ -7,28 +7,30 @@ var express = require('express');
 var router = express.Router();
 var dbconfig = require('../../../../config/dbconfig');
 var BitwebResponse = require('../../utils/BitwebResponse');
-var PointBankHistorys = require('../../service/pointBankHistorys');
+var PointBankHistorys = require('../../model/pointBankHistorys');
+let pagination = require('../../service/_pagination');
 
 //coin history 조회 API
-router.get("/:pointId/:type", (req, res) => {
+router.get("/list/:pointId", (req, res) => {
     let country = dbconfig.country;
     let condition = {
-        'pointId': req.params.pointId,
-        'type': req.params.type
+        'pointId': req.params.pointId
     }
     let bitwebResponse = new BitwebResponse();
-    PointBankHistorys.list(country, condition)
+
+    console.log(req.query);
+
+    pagination.paging(req, res, PointBankHistorys, country, condition, 'type')
     .then(data => {
-        res.send(200,  data);
-        console.log(data);
+        res.status(200).send(data);
     })
     .catch(err => {
         console.error('data error =>', err);
+        let resErr = "there is no data";
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
         res.status(500).send(bitwebResponse.create())
     })
-    console.log(req.params);
 });
 
 module.exports = router; 

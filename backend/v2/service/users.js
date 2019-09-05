@@ -20,19 +20,31 @@ function count(country, condition) {
     })
 }
 
-function list(country, condition) {
+function list(country, condition, limt_num) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Users.find(
-                condition,
-                function(err, result) {
+            if(limt_num) {
+                Users
+                .find(condition)
+                .limit(limt_num)
+                .exec(function(err, result) {
                     if (err) {
                         reject(err)
                     }
                     resolve(result)
-                }
-            )
+                })
+            } else {
+                Users.find(
+                    condition,
+                    function(err, result) {
+                        if (err) {
+                            reject(err)
+                        }
+                        resolve(result)
+                    }
+                )
+            }
         }).catch((err) => {
             reject(err)
         })

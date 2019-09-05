@@ -11,7 +11,7 @@ router.get("/list", (req, res) => {
     serviceCoins.list(condition)
     .then(data => {
         res.send(200, data);
-        console.log(data);
+        //console.log(data);
     })
     .catch(err => {
         console.error('data error =>', err);
@@ -32,7 +32,7 @@ router.get("/detail/:coinId", (req, res) => {
     serviceCoins.detail(country, condition)
     .then(data => {
         res.send(200, data);
-        console.log(data);
+        //console.log(data);
     })
     .catch(err => {
         console.error('data error =>', err);
@@ -55,7 +55,7 @@ router.put("/modify/:coinId", (req, res) => {
     serviceCoins.modify(country, condition, data)
     .then(success => {
         res.send(200, success);
-        console.log(success);
+        //console.log(success);
     })
     .catch(err => {
         console.error('data error =>', err);

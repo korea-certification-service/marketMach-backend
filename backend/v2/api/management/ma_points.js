@@ -15,7 +15,7 @@ router.get("/detail/:pointId", (req, res) => {
     servicePoints.detail(country, condition)
     .then(data => {
         res.send(200, data);
-        console.log(data);
+        //console.log(data);
     })
     .catch(err => {
         console.error('data error =>', err);
@@ -37,7 +37,7 @@ router.put("/modify/:pointId", (req, res) => {
     servicePoints.modify(country, condition, data)
     .then(success => {
         res.send(200, success);
-        console.log(success);
+        //console.log(success);
     })
     .catch(err => {
         console.error('data error =>', err);

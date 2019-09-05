@@ -27,8 +27,25 @@ var maCoinhistorys = require('./backend/v2/api/management/ma_coinhistory');
 var maPointBankHistorys = require('./backend/v2/api/management/ma_pointBankHistorys');
 var maVtrs = require('./backend/v2/api/management/ma_vtrs');
 var maEscrowsHistory = require('./backend/v2/api/management/ma_escrowHistorys');
+var maLogin = require('./backend/v2/api/management/ma_login');
+var session = require('express-session');
+var maItems = require('./backend/v2/api/management/ma_items');
 
 var app = express();
+
+app.use(session({
+  secret: 'bitweb123', //Only enable https
+  name: 'bitweb_sid',
+  // store: new MongoStore({ url: DB_URI}), // connect-mongo session store
+  proxy: false,
+  resave: true,
+  saveUninitialized: true,
+  cookie: {
+      // maxAge: 60 * 60 * 24 * 30 * 10000 // 쿠키 유효기간 하루 (24시간) * 30일 //현재 무기한
+      expires: 60 * 60 * 24 * 30 * 10000 // 쿠키 유효기간 하루 (24시간) * 30일 //현재 무기한
+  }
+}));
+
 
 //body parser
 app.use(bodyParser.json());
@@ -68,6 +85,8 @@ app.use('/ma_coinhistory', maCoinhistorys);
 app.use('/ma_pointbankhistory', maPointBankHistorys);
 app.use('/ma_vtrs', maVtrs);
 app.use('/ma_escrowHistorys', maEscrowsHistory);
+app.use('/ma_login', maLogin);
+app.use('/ma_items', maItems);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

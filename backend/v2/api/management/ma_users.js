@@ -2,19 +2,24 @@ var express = require('express');
 var router = express.Router();
 let dbconfig = require('../../../../config/dbconfig');
 let BitwebResponse = require('../../utils/BitwebResponse');
+let Users = require('../../model/users');
 let serviceUsers = require('../../service/users');
+let pagination = require('../../service/_pagination');
 
 /*GET User List*/
 router.get("/list", (req, res) => {
     let country = dbconfig.country;
     let condition = {
-        'country': country
+        'country': country,
+        'userTag': req.query.search
     }
     let bitwebResponse = new BitwebResponse();
-    serviceUsers.list(country, condition)
+
+    console.log(req.query);
+
+    pagination.paging(req, res, Users, country, condition, 'userTag')
     .then(data => {
-        res.send(200, data);
-        console.log(data);
+        res.status(200).send(data);
     })
     .catch(err => {
         console.error('data error =>', err);
@@ -23,6 +28,7 @@ router.get("/list", (req, res) => {
         bitwebResponse.message = resErr;
         res.status(500).send(bitwebResponse.create())
     })
+
 });
 
 /*GET User Count*/
@@ -35,7 +41,7 @@ router.get("/count", (req, res) => {
     serviceUsers.count(country, condition)
     .then(data => {
         res.send(200, data);
-        console.log(data);
+        //console.log(data);
     })
     .catch(err => {
         console.error('data error =>', err);
@@ -60,7 +66,7 @@ router.get("/:userId", (req, res) => {
         } else {
             res.send(200, data);
         }
-        console.log(data);
+        //console.log(data);
     })
     .catch(err => {
         console.error('data error =>', err);
@@ -82,7 +88,7 @@ router.put("/modify/:userId", (req, res) => {
     let bitwebResponse = new BitwebResponse();
     serviceUsers.modify(country, condition, data)
     .then(success => {
-        console.log(success);
+        //console.log(success);
         res.status(200).send(success);
     })
     .catch(err => {

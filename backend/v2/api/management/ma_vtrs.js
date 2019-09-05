@@ -8,20 +8,18 @@ var router = express.Router();
 var dbconfig = require('../../../../config/dbconfig');
 var BitwebResponse = require('../../utils/BitwebResponse');
 var Vtrs = require('../../service/vtrs.js');
+var Items = require("../../service/items");
 
 //게임판매내역 조회  API
 router.get("/:from_userId/sell", (req, res) => {
     let country = dbconfig.country;
     let condition = {
-
         'from_userId': req.params.from_userId
-
     }
     let bitwebResponse = new BitwebResponse();
     Vtrs.list(country, condition)
-    .then(data => {
+    .then(async data => {
         res.send(200,  data);
-        console.log(data);
     })
     .catch(err => {
         console.error('data error =>', err);
@@ -29,22 +27,19 @@ router.get("/:from_userId/sell", (req, res) => {
         bitwebResponse.message = resErr;
         res.status(500).send(bitwebResponse.create())
     })
-    console.log(req.params);
 });
 
 //게임구매내역 조회  API
 router.get("/:to_userId/buy", (req, res) => {
     let country = dbconfig.country;
     let condition = {
-
         'to_userId': req.params.to_userId
-
     }
     let bitwebResponse = new BitwebResponse();
     Vtrs.list(country, condition)
     .then(data => {
         res.send(200,  data);
-        console.log(data);
+        //console.log(data);
     })
     .catch(err => {
         console.error('data error =>', err);
@@ -52,7 +47,6 @@ router.get("/:to_userId/buy", (req, res) => {
         bitwebResponse.message = resErr;
         res.status(500).send(bitwebResponse.create())
     })
-    console.log(req.params);
 });
 
 

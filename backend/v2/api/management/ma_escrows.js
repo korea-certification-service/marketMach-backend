@@ -14,7 +14,7 @@ router.get("/detail/:userId/seller", (req, res) => {
     let bitwebResponse = new BitwebResponse();
     serviceEscrows.list(country, condition)
     .then(data => {
-        console.log(data);
+        //console.log(data);
         res.status(200).send(data);
     })
     .catch(err => {
@@ -33,7 +33,7 @@ router.get("/detail/:userId/buyer", (req, res) => {
     let bitwebResponse = new BitwebResponse();
     serviceEscrows.list(country, condition)
     .then(data => {
-        console.log(data);
+        //console.log(data);
         res.status(200).send(data);
     })
     .catch(err => {
