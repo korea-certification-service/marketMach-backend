@@ -245,7 +245,7 @@ router.put('/:communityId', tokens.checkInternalToken, function(req, res, next){
         community._doc['successYn'] = "Y";
         if(community._doc.recommand != undefined) {
             let recommandedUser = community._doc.recommand.findIndex(function(group) {
-                return group == req.session.userTag;
+                return group == req.body.reporter;
             })                
             community._doc['recommandedUser'] = recommandedUser == -1 ? false : true;
         }
@@ -436,11 +436,13 @@ router.put('/detail/:communityId/:recommandYn', tokens.checkInternalToken, funct
         "_id": communityId
     }
     let body = {
-        $push: {recommand: req.body.param.reqUser}
+        $push: {recommand: req.body.param.reqUser},
+        $inc: { recommandCount: 1}
     }
     if(recommandYn == "N") {
         body = {
-            $pull: {recommand: req.body.param.reqUser}
+            $pull: {recommand: req.body.param.reqUser},
+            $inc: { recommandCount: -1}
         }
     }
     
