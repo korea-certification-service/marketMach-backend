@@ -66,6 +66,7 @@ router.get('/list', function (req, res, next) {
 });
 
 router.get('/detail/:faqId', function (req, res, next) {
+    let country = dbconfig.country;
     let bitwebResponse = new BitwebResponse();
     let condition = {
         "_id" : req.params.faqId
