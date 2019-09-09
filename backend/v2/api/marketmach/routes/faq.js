@@ -22,7 +22,7 @@ router.get('/list', function (req, res, next) {
     let country = dbconfig.country;
     serviceFaq.count(country, condition, option)
     .then(count => {
-        serviceFaq.list(country, conditionm, option)
+        serviceFaq.list(country, condition, option)
         .then(list => {
             bitwebResponse.code = 200;
             let resData = {
@@ -36,11 +36,11 @@ router.get('/list', function (req, res, next) {
 
             let jsonResult = bitwebResponse.create();
 
-            if (data.pageIdx != undefined) data.pageIdx = pageIdx ? data.pageIdx : 0
-            if (data.perPage != undefined) data.perPage = perPage ? data.perPage : 10
+            if (option.pageIdx != undefined) option.pageIdx;
+            if (option.perPage != undefined) option.perPage;
 
-            jsonResult['pageIdx'] = data.pageIdx;
-            jsonResult['perPage'] = data.perPage;
+            jsonResult['pageIdx'] = option.pageIdx;
+            jsonResult['perPage'] = option.perPage;
 
             res.status(200).send(jsonResult);
         }).catch((err) => {

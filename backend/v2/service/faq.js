@@ -7,7 +7,7 @@ function count(country, condition, option) {
         .then(() => {
             Faqs.count(condition)
             .limit(100)
-            .skip(option.pageIdx * option.perPage)
+            // .skip(option.pageIdx * option.perPage)
             .sort({regDate:'desc'})
             .exec(function (err, list) {
                 if (err) {
@@ -26,8 +26,8 @@ function list(country, condition, option) {
         db.connectDB(country)
         .then(() => {
             Faqs.find(condition)
-            .limit(option.perPage)
-            .skip(option.pageIdx * option.perPage)
+            // .limit(option.perPage)
+            // .skip(option.pageIdx * option.perPage)
             .sort({regDate:'desc'})
             .exec(function (err, list) {
                 if (err) {
