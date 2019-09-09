@@ -9,10 +9,10 @@ var CommunitySchema = new Schema({
     title: String,
     content: String,
     movieUrl: String,
-    count: Number,
+    count: {type: Number, default: 0},
     regDate: String,
     reporter: String,
-    recommandCount: Number,
+    recommandCount: {type: Number, default: 0},
     recommand: Mixed,
     nottobe: Mixed,
     images: [Image]               // s3
