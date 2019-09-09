@@ -21,22 +21,28 @@ router.get('/', token.checkInternalToken, function(req, res, next) {
         condition['country'] = country;
     }
     let status = req.query.status;
-    if(status == "1") {
-        status = [1,2,3];
-    } else if (status == "4") {
-        status = [4,5,6,7];
-    } else if (status == "0") {
-        status = [0];
-    } else if(status == "101") {
-        status = [101,102,103];
-    } else if (status == "104") {
-        status = [104,105,106,107];
+    if(status != undefined) {
+        if(status == "1") {
+            status = [1,2,3];
+        } else if (status == "4") {
+            status = [4,5,6,7];
+        } else if (status == "0") {
+            status = [0];
+        } else if(status == "101") {
+            status = [101,102,103];
+        } else if (status == "104") {
+            status = [104,105,106,107];
+        }
+        condition['status'] = status;
     }
-    condition['status'] = status;
+    let option = {
+        'pageIdx': req.query.pageIdx,
+        'perPage': req.query.perPage
+    }
 
-    serviceItems.count(country, condition)
+    serviceItems.count(country, condition, option)
     .then(count => {
-        serviceItems.list(country, condition)
+        serviceItems.list(country, condition, option)
         .then(list => {
             bitwebResponse.code = 200;
             let resData = {
@@ -45,16 +51,16 @@ router.get('/', token.checkInternalToken, function(req, res, next) {
                 "list": list
             }
             //API 처리 결과 별도 LOG로 남김
-            logger.addLog(country, req.originalUrl, itemId, resData);
+            logger.addLog(country, req.originalUrl, condition, resData);
             bitwebResponse.data = resData;
 
             let jsonResult = bitwebResponse.create();
 
-            if (data.pageIdx != undefined) data.pageIdx = pageIdx ? data.pageIdx : 0
-            if (data.perPage != undefined) data.perPage = perPage ? data.perPage : 10
+            if (option.pageIdx != undefined) option.pageIdx = pageIdx ? option.pageIdx : 0
+            if (option.perPage != undefined) option.perPage = perPage ? option.perPage : 10
 
-            jsonResult['pageIdx'] = data.pageIdx;
-            jsonResult['perPage'] = data.perPage;
+            jsonResult['pageIdx'] = option.pageIdx;
+            jsonResult['perPage'] = option.perPage;
 
             res.status(200).send(jsonResult);
         }).catch((err) => {

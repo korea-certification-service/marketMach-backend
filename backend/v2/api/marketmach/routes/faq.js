@@ -12,7 +12,7 @@ let token = require('../../../utils/token');
 let BitwebResponse = require('../../../utils/BitwebResponse')
 let serviceFaq = require('../../../service/faq');
 
-router.get('/list', function (req, res, next) {
+router.get('/list', token.checkInternalToken, function (req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let condition = {}
     let option = {
@@ -65,7 +65,7 @@ router.get('/list', function (req, res, next) {
     });
 });
 
-router.get('/detail/:faqId', function (req, res, next) {
+router.get('/detail/:faqId', token.checkInternalToken, function (req, res, next) {
     let country = dbconfig.country;
     let bitwebResponse = new BitwebResponse();
     let condition = {
