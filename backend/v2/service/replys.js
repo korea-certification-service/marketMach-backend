@@ -26,8 +26,8 @@ function list(country, condition, option) {
         db.connectDB(country)
         .then(() => {
             Replys.find(condition)
-            .limit(option.perPage)
-            .skip(option.pageIdx * option.perPage)
+            // .limit(option.perPage)
+            // .skip(option.pageIdx * option.perPage)
             .sort({regDate:'desc'})
             .exec(function (err, list) {
                 if (err) {
