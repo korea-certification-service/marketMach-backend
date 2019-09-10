@@ -100,7 +100,7 @@ function _createVTR(req, res, bitwebResponse) {
         
         //item 정보 조회
         serviceItems.detail(country, conditionItem)
-        .then((item) => {      
+        .then((item) => {                  
             let roomToken =body.buyerTag+"|"+ body.sellerTag+"|"+itemId;  
             let reqData = {
                 "roomToken":roomToken,
@@ -121,125 +121,242 @@ function _createVTR(req, res, bitwebResponse) {
             .then(vtrTemp => {
                 if(vtrTemp == null) {
                     //vtr 방 생성
+                    reqData.item._doc.status = 50;
                     serviceVtrTemps.add(country, reqData)
                     .then((addVtrTemp) => {
-                        let updateData = {
-                            "roomToken": roomToken,
-                            "status": 50,
-                            "vtrTempId": addVtrTemp._doc._id,
-                        };
-                        if(item._doc.catrgory == "game") {
-                            updateData['target_game_character'] = body.target_game_character;
-                        }
-                        console.log('update item data =>', updateData);
-
-                        //vtr 방 넘버,상태, roomToken값 update
-                        serviceItems.modify(country, conditionItem, updateData)
-                        .then((updateItem) => {
-                            console.log("HOST : ", dbconfig.smsUrlCommon);
-                            
-                            //SMS전송
-                            let phone = userInfo.seller_phone;
-                            let whoReqUser = body.buyerTag;
-                            let smsMessage = smsContent.sms.ko;
-                            if(body.country != "KR") {
-                                smsMessage = smsContent.sms.en;
-                            }
-                            //let url = dbconfig.smsUrlCommon + '/sms/room?roomToken='+updateItem._doc.roomToken+'&itemId=' + updateItem._doc._id + '&user_id=' + updateItem._doc.userTag + '&vtrTempId=' + addVtrTemp._doc._id;
-                            let category = "/sells";                            
-                            if(updateItem._doc.trade_type == "buy") {
-                                category = "/buys";
-                            }
-
-                            if(updateItem._doc.category == "etc") {
-                                category = "/etc-sells";
-                                if(updateItem._doc.trade_type == "buy") {
-                                    category = "/etc-buys";
+                        //이미 대화중인 상태에서 추가로 방을 생성할 경우 item status 업데이트 하지 말것.
+                        serviceItems.detail(country, conditionItem)
+                        .then(getItem => {
+                            //item status 가 0이면 update
+                            if(getItem._doc.status == 0) {
+                                let updateData = {
+                                    "roomToken": roomToken,
+                                    "status": 50,
+                                    "vtrTempId": addVtrTemp._doc._id,
+                                };
+                                if(item._doc.catrgory == "game") {
+                                    updateData['target_game_character'] = body.target_game_character;
                                 }
-                            } else if(updateItem._doc.category == "otc") {
-                                category = "/otc-sells";
-                                if(updateItem._doc.trade_type == "buy") {
-                                    category = "/otc-buys";
+                                console.log('update item data =>', updateData);
+        
+                                //vtr 방 넘버,상태, roomToken값 update
+                                serviceItems.modify(country, conditionItem, updateData)
+                                .then((updateItem) => {
+                                    console.log("HOST : ", dbconfig.smsUrlCommon);
+                                    
+                                    //SMS전송
+                                    let phone = userInfo.seller_phone;
+                                    let whoReqUser = body.buyerTag;
+                                    let smsMessage = smsContent.sms.ko;
+                                    if(body.country != "KR") {
+                                        smsMessage = smsContent.sms.en;
+                                    }
+                                    //let url = dbconfig.smsUrlCommon + '/sms/room?roomToken='+updateItem._doc.roomToken+'&itemId=' + updateItem._doc._id + '&user_id=' + updateItem._doc.userTag + '&vtrTempId=' + addVtrTemp._doc._id;
+                                    let category = "/sells";                            
+                                    if(updateItem._doc.trade_type == "buy") {
+                                        category = "/buys";
+                                    }
+        
+                                    if(updateItem._doc.category == "etc") {
+                                        category = "/etc-sells";
+                                        if(updateItem._doc.trade_type == "buy") {
+                                            category = "/etc-buys";
+                                        }
+                                    } else if(updateItem._doc.category == "otc") {
+                                        category = "/otc-sells";
+                                        if(updateItem._doc.trade_type == "buy") {
+                                            category = "/otc-buys";
+                                        }
+                                    }
+        
+                                    let url = dbconfig.smsUrlCommon + category + '/vtr/' + itemId;
+                                    if(updateItem._doc.trade_type == "buy") {
+                                        whoReqUser = body.sellerTag;
+                                        phone = userInfo.buyer_phone;
+                                    } 
+                                    
+                                    if(dbconfig.smsUrlCommon.indexOf("marketmach") >= 0) {
+                                        shortUrl.short(encodeURIComponent(url), function (err, resultUrl) {
+                                            let message = whoReqUser + smsMessage + resultUrl;
+                                            console.log("Send SMS Message => ", message);
+                                            smsController.sendSms(phone, message)
+                                            .then(sms => {
+                                                bitwebResponse.code = 200;
+                                                updateItem._doc['successYn'] = "Y";
+                                                let resData = {
+                                                    "item": updateItem, 
+                                                    "vtrTemp": addVtrTemp,
+                                                    "sms": sms
+                                                }
+                                                //API 처리 결과 별도 LOG로 남김
+                                                logger.addLog(country, req.originalUrl, req.body, resData);
+                                                updateItem._doc['successYn'] = "Y";
+                                                bitwebResponse.data = updateItem
+                                                res.status(200).send(bitwebResponse.create())
+                                            }).catch((err) => {
+                                                console.error('send sms error =>', err)
+                                                updateItem._doc['successYn'] = "Y";
+                                                let resData = {
+                                                    "item": updateItem, 
+                                                    "vtrTemp": addVtrTemp,
+                                                    "sms": err
+                                                }
+                                                //API 처리 결과 별도 LOG로 남김
+                                                logger.addLog(country, req.originalUrl, req.body, resData);
+                                                updateItem._doc['successYn'] = "Y";
+                                                bitwebResponse.data = updateItem
+                                                res.status(200).send(bitwebResponse.create())
+                                            });
+                                        });              
+                                    } else {
+                                        let message = whoReqUser + smsMessage + itemId;
+                                        console.log("Send SMS Message => ", message);
+                                        smsController.sendSms(phone, message, 'no')
+                                        .then(sms => {
+                                            bitwebResponse.code = 200;
+                                            updateItem._doc['successYn'] = "Y";
+                                            let resData = {
+                                                "item": updateItem, 
+                                                "vtrTemp": addVtrTemp,
+                                                "sms": sms
+                                            }
+                                            //API 처리 결과 별도 LOG로 남김
+                                            logger.addLog(country, req.originalUrl, req.body, resData);
+                                            updateItem._doc['successYn'] = "Y";
+                                            bitwebResponse.data = updateItem
+                                            res.status(200).send(bitwebResponse.create())
+                                        }).catch((err) => {
+                                            console.error('send sms error =>', err)
+                                            updateItem._doc['successYn'] = "Y";
+                                            let resData = {
+                                                "item": updateItem, 
+                                                "vtrTemp": addVtrTemp,
+                                                "sms": err
+                                            }
+                                            //API 처리 결과 별도 LOG로 남김
+                                            logger.addLog(country, req.originalUrl, req.body, resData);
+                                            updateItem._doc['successYn'] = "Y";
+                                            bitwebResponse.data = updateItem
+                                            res.status(200).send(bitwebResponse.create())
+                                        });
+                                    }
+                                }).catch((err) => {
+                                    console.error('update item error =>', err);
+                                    let resErr = "처리중 에러 발생";
+                                    //API 처리 결과 별도 LOG로 남김
+                                    logger.addLog(country, req.originalUrl, req.body, err);
+                                            
+                                    bitwebResponse.code = 500;
+                                    bitwebResponse.message = resErr;
+                                    res.status(500).send(bitwebResponse.create())
+                                })
+                            } else {
+                                //item status 가 0이 아니면 sms만 전송
+                                console.log("HOST : ", dbconfig.smsUrlCommon);
+                                    
+                                //SMS전송
+                                let phone = userInfo.seller_phone;
+                                let whoReqUser = body.buyerTag;
+                                let smsMessage = smsContent.sms.ko;
+                                if(body.country != "KR") {
+                                    smsMessage = smsContent.sms.en;
                                 }
-                            }
-
-                            let url = dbconfig.smsUrlCommon + category + '/vtr/' + itemId;
-                            if(updateItem._doc.trade_type == "buy") {
-                                whoReqUser = body.sellerTag;
-                                phone = userInfo.buyer_phone;
-                            } 
-                            
-                            if(dbconfig.smsUrlCommon.indexOf("marketmach") >= 0) {
-                                shortUrl.short(encodeURIComponent(url), function (err, resultUrl) {
-                                    let message = whoReqUser + smsMessage + resultUrl;
+                                //let url = dbconfig.smsUrlCommon + '/sms/room?roomToken='+updateItem._doc.roomToken+'&itemId=' + updateItem._doc._id + '&user_id=' + updateItem._doc.userTag + '&vtrTempId=' + addVtrTemp._doc._id;
+                                let category = "/sells";                            
+                                if(getItem._doc.trade_type == "buy") {
+                                    category = "/buys";
+                                }
+    
+                                if(getItem._doc.category == "etc") {
+                                    category = "/etc-sells";
+                                    if(getItem._doc.trade_type == "buy") {
+                                        category = "/etc-buys";
+                                    }
+                                } else if(getItem._doc.category == "otc") {
+                                    category = "/otc-sells";
+                                    if(getItem._doc.trade_type == "buy") {
+                                        category = "/otc-buys";
+                                    }
+                                }
+    
+                                let url = dbconfig.smsUrlCommon + category + '/vtr/' + itemId;
+                                if(getItem._doc.trade_type == "buy") {
+                                    whoReqUser = body.sellerTag;
+                                    phone = userInfo.buyer_phone;
+                                } 
+                                
+                                if(dbconfig.smsUrlCommon.indexOf("marketmach") >= 0) {
+                                    shortUrl.short(encodeURIComponent(url), function (err, resultUrl) {
+                                        let message = whoReqUser + smsMessage + resultUrl;
+                                        console.log("Send SMS Message => ", message);
+                                        smsController.sendSms(phone, message)
+                                        .then(sms => {
+                                            bitwebResponse.code = 200;
+                                            getItem._doc['successYn'] = "Y";
+                                            let resData = {
+                                                "item": getItem, 
+                                                "vtrTemp": addVtrTemp,
+                                                "sms": sms
+                                            }
+                                            //API 처리 결과 별도 LOG로 남김
+                                            logger.addLog(country, req.originalUrl, req.body, resData);
+                                            getItem._doc['successYn'] = "Y";
+                                            bitwebResponse.data = getItem
+                                            res.status(200).send(bitwebResponse.create())
+                                        }).catch((err) => {
+                                            console.error('send sms error =>', err)
+                                            getItem._doc['successYn'] = "Y";
+                                            let resData = {
+                                                "item": getItem, 
+                                                "vtrTemp": addVtrTemp,
+                                                "sms": err
+                                            }
+                                            //API 처리 결과 별도 LOG로 남김
+                                            logger.addLog(country, req.originalUrl, req.body, resData);
+                                            getItem._doc['successYn'] = "Y";
+                                            bitwebResponse.data = getItem
+                                            res.status(200).send(bitwebResponse.create())
+                                        });
+                                    });              
+                                } else {
+                                    let message = whoReqUser + smsMessage + itemId;
                                     console.log("Send SMS Message => ", message);
-                                    smsController.sendSms(phone, message)
+                                    smsController.sendSms(phone, message, 'no')
                                     .then(sms => {
                                         bitwebResponse.code = 200;
-                                        updateItem._doc['successYn'] = "Y";
+                                        getItem._doc['successYn'] = "Y";
                                         let resData = {
-                                            "item": updateItem, 
+                                            "item": getItem, 
                                             "vtrTemp": addVtrTemp,
                                             "sms": sms
                                         }
                                         //API 처리 결과 별도 LOG로 남김
                                         logger.addLog(country, req.originalUrl, req.body, resData);
-                                        updateItem._doc['successYn'] = "Y";
-                                        bitwebResponse.data = updateItem
+                                        getItem._doc['successYn'] = "Y";
+                                        bitwebResponse.data = getItem
                                         res.status(200).send(bitwebResponse.create())
                                     }).catch((err) => {
                                         console.error('send sms error =>', err)
-                                        updateItem._doc['successYn'] = "Y";
+                                        getItem._doc['successYn'] = "Y";
                                         let resData = {
-                                            "item": updateItem, 
+                                            "item": getItem, 
                                             "vtrTemp": addVtrTemp,
                                             "sms": err
                                         }
                                         //API 처리 결과 별도 LOG로 남김
                                         logger.addLog(country, req.originalUrl, req.body, resData);
-                                        updateItem._doc['successYn'] = "Y";
-                                        bitwebResponse.data = updateItem
+                                        getItem._doc['successYn'] = "Y";
+                                        bitwebResponse.data = getItem
                                         res.status(200).send(bitwebResponse.create())
                                     });
-                                });              
-                            } else {
-                                let message = whoReqUser + smsMessage + itemId;
-                                console.log("Send SMS Message => ", message);
-                                smsController.sendSms(phone, message, 'no')
-                                .then(sms => {
-                                    bitwebResponse.code = 200;
-                                    updateItem._doc['successYn'] = "Y";
-                                    let resData = {
-                                        "item": updateItem, 
-                                        "vtrTemp": addVtrTemp,
-                                        "sms": sms
-                                    }
-                                    //API 처리 결과 별도 LOG로 남김
-                                    logger.addLog(country, req.originalUrl, req.body, resData);
-                                    updateItem._doc['successYn'] = "Y";
-                                    bitwebResponse.data = updateItem
-                                    res.status(200).send(bitwebResponse.create())
-                                }).catch((err) => {
-                                    console.error('send sms error =>', err)
-                                    updateItem._doc['successYn'] = "Y";
-                                    let resData = {
-                                        "item": updateItem, 
-                                        "vtrTemp": addVtrTemp,
-                                        "sms": err
-                                    }
-                                    //API 처리 결과 별도 LOG로 남김
-                                    logger.addLog(country, req.originalUrl, req.body, resData);
-                                    updateItem._doc['successYn'] = "Y";
-                                    bitwebResponse.data = updateItem
-                                    res.status(200).send(bitwebResponse.create())
-                                });
+                                }
                             }
                         }).catch((err) => {
-                            console.error('update item error =>', err);
+                            console.error('get item error =>', err);
                             let resErr = "처리중 에러 발생";
                             //API 처리 결과 별도 LOG로 남김
                             logger.addLog(country, req.originalUrl, req.body, err);
-                                    
+                                        
                             bitwebResponse.code = 500;
                             bitwebResponse.message = resErr;
                             res.status(500).send(bitwebResponse.create())
@@ -316,6 +433,8 @@ function _startTrade(req, res, bitwebResponse) {
                     //아이템 상태 정보 update, 거래 요청 시 요청 가격이 틀리면 가격도 update한다.        
                     let userInfo = serviceItems.setUserInfoForVtr(users, body);
                     let reqVtr = Object.assign({}, body, userInfo);
+                    let roomToken = body.buyerTag + "|" + body.sellerTag + "|" + itemId;
+
                     item._doc.status = 1;
                     if(body.price != undefined) {
                         item._doc.price = body.price;
@@ -332,6 +451,7 @@ function _startTrade(req, res, bitwebResponse) {
                             reqVtr['seller_game_character'] = item._doc.game_character;
                         }
                     }    
+                    reqVtr['roomToken'] = roomToken;
                     serviceVtrs.add(country, reqVtr)
                     .then(addVtr => {
                         // vtr['country'] = country;
@@ -341,29 +461,41 @@ function _startTrade(req, res, bitwebResponse) {
                             'cryptoCurrencyCode': body.cryptoCurrencyCode,
                             'price': body.price,
                             'total_price': body.price,
-                            'vtr': reqVtr
+                            'vtr': reqVtr                            
                         };
 
                         console.log('modify item data =>', modifyItemData);
-                        
-                        serviceItems.modify(country, conditionItem, modifyItemData)
-                        .then((updateItem) => {
-                            updateItem._doc['successYn'] = "Y";
-                            let resData = {
-                                "vtr": addVtr,
-                                "item": updateItem
-                            }
-                            //API 처리 결과 별도 LOG로 남김
-                            logger.addLog(country, req.originalUrl, req.body, resData);
-                            
-                            bitwebResponse.code = 200;
-                            bitwebResponse.data = Object.assign({}, updateItem);
-                            res.status(200).send(bitwebResponse.create())
+                        serviceVtrTemps.modify(country, {"roomToken": roomToken}, {"item.status": 1, 'item.price': body.price, 'item.total_price': body.price})
+                        .then(updateVtrTemp => {
+                            serviceItems.modify(country, conditionItem, modifyItemData)
+                            .then((updateItem) => {
+                                updateItem._doc['successYn'] = "Y";
+                                let resData = {
+                                    "vtr": addVtr,
+                                    "vtrTemp": updateVtrTemp,
+                                    "item": updateItem
+                                }
+                                //API 처리 결과 별도 LOG로 남김
+                                logger.addLog(country, req.originalUrl, req.body, resData);
+                                
+                                bitwebResponse.code = 200;
+                                bitwebResponse.data = Object.assign({}, updateItem);
+                                res.status(200).send(bitwebResponse.create())
+                            }).catch((err) => {
+                                console.error('add vtr error =>', err);
+                                let resErr = "처리중 에러 발생";
+                                //API 처리 결과 별도 LOG로 남김
+                                logger.addLog(country, req.originalUrl, req.body, err);
+                                
+                                bitwebResponse.code = 500;
+                                bitwebResponse.message = resErr;
+                                res.status(500).send(bitwebResponse.create())
+                            })
                         }).catch((err) => {
-                            console.error('add vtr error =>', err);
+                            console.error('update vtr temp error =>', err);
                             let resErr = "처리중 에러 발생";
                             //API 처리 결과 별도 LOG로 남김
-                            logger.addLog(country, req.originalUrl, req.body, err);
+                            logger.addLog(country, req.originalUrl, {"roomToken": roomToken}, err);
                             
                             bitwebResponse.code = 500;
                             bitwebResponse.message = resErr;
@@ -487,75 +619,87 @@ function _reqBuy(req, res, bitwebResponse) {
                         'status': 2,
                         'vtr': modifyVtr
                     };
-
-                    serviceItems.modify(country, conditionItem, reqData)
-                    .then((updateItem) => {              
-                        //구매자 coin 차감 및 에스크로
-                        let result_price = parseFloat((user_price - vtr._doc.price).toFixed(8));
-                        let reqDataCoin = {"total_mach": result_price};
-                        if(vtr._doc.cryptoCurrencyCode == "BTC") {
-                            reqDataCoin = {"total_btc": result_price};
-                        } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
-                            reqDataCoin = {"total_ether": result_price};
-                        }   
-                        let reqDataEscrow = {
-                            'vtrId': vtr._doc._id,
-                            'itemId': updateItem._doc._id,
-                            'cryptoCurrencyCode': vtr._doc.cryptoCurrencyCode,    
-                            'price': vtr._doc.price,
-                            'sellerUser': vtr._doc.from_userId,
-                            'buyerUser': vtr._doc.to_userId,
-                            'status':'processing',
-                            'regDate': util.formatDate(new Date().toString())
-                        }
-                        console.log('req escrow data =>', reqDataEscrow);
-                        serviceEscrow.add(country,reqDataEscrow)
-                        .then((addEscrow)=> {
-                            let reqDataEscrowHistory = {
-                                "type": "deposit",
-                                "itemId": updateItem._doc._id,
-                                "vtr": vtr,
-                                "cryptoCurrencyCode": vtr._doc.cryptoCurrencyCode,                                                                                           
-                                "price": vtr._doc.price,
-                                "reqUser":vtr._doc.to_userId,
-                                "regDate": util.formatDate(new Date().toString())
-                            };
-                            reqDataEscrowHistory['escrowId'] = addEscrow._doc._id;
-                            console.log('req escrow history data =>', reqDataEscrow);
-                            serviceEscrowHistory.add(country, reqDataEscrowHistory);
-                            
-                            let reqCoinHistoryData = {
-                                "extType" : "mach",
-                                "coinId" : user._doc.coinId,
-                                "category" : "withdraw",
-                                "status" : "success",
-                                "currencyCode" : vtr._doc.cryptoCurrencyCode,
-                                "amount" : vtr._doc.price,
-                                "price" : vtr._doc.price,
-                                "totalPrice":result_price,
-                                "regDate" : util.formatDate(new Date().toString())
+                    serviceVtrTemps.modify(country, {"roomToken": vtr._doc.roomToken}, {"item.status": 2})
+                    .then(updateVtrTemp => {
+                        serviceItems.modify(country, conditionItem, reqData)
+                        .then((updateItem) => {              
+                            //구매자 coin 차감 및 에스크로
+                            let result_price = parseFloat((user_price - vtr._doc.price).toFixed(8));
+                            let reqDataCoin = {"total_mach": result_price};
+                            if(vtr._doc.cryptoCurrencyCode == "BTC") {
+                                reqDataCoin = {"total_btc": result_price};
+                            } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
+                                reqDataCoin = {"total_ether": result_price};
+                            }   
+                            let reqDataEscrow = {
+                                'vtrId': vtr._doc._id,
+                                'itemId': updateItem._doc._id,
+                                'cryptoCurrencyCode': vtr._doc.cryptoCurrencyCode,    
+                                'price': vtr._doc.price,
+                                'sellerUser': vtr._doc.from_userId,
+                                'buyerUser': vtr._doc.to_userId,
+                                'VtrTemp': updateVtrTemp,
+                                'status':'processing',
+                                'regDate': util.formatDate(new Date().toString())
                             }
-                            serviceCoinHistory.add(country,reqCoinHistoryData)
-                            .then(addHistory => {
-                                serviceCoin.modify(country, conditionCoin, reqDataCoin)
-                                .then(updateCoin => {
-                                    updateItem._doc['successYn'] = "Y";
-                                    let resData = {
-                                        "vtr": modifyVtr,
-                                        "item": updateItem,
-                                        "coin": updateCoin,
-                                        "escrow": addEscrow,
-                                        "escrowHistory": reqDataEscrow,
-                                        "coinHistory": reqCoinHistoryData
-                                    }
-                                    //API 처리 결과 별도 LOG로 남김
-                                    logger.addLog(country, req.originalUrl, req.body, resData);
-        
-                                    bitwebResponse.code = 200;
-                                    bitwebResponse.data = Object.assign({}, updateItem);
-                                    res.status(200).send(bitwebResponse.create())
+                            console.log('req escrow data =>', reqDataEscrow);
+                            serviceEscrow.add(country,reqDataEscrow)
+                            .then((addEscrow)=> {
+                                let reqDataEscrowHistory = {
+                                    "type": "deposit",
+                                    "itemId": updateItem._doc._id,
+                                    "vtr": vtr,
+                                    "cryptoCurrencyCode": vtr._doc.cryptoCurrencyCode,                                                                                           
+                                    "price": vtr._doc.price,
+                                    "reqUser":vtr._doc.to_userId,
+                                    "regDate": util.formatDate(new Date().toString())
+                                };
+                                reqDataEscrowHistory['escrowId'] = addEscrow._doc._id;
+                                console.log('req escrow history data =>', reqDataEscrow);
+                                serviceEscrowHistory.add(country, reqDataEscrowHistory);
+                                
+                                let reqCoinHistoryData = {
+                                    "extType" : "mach",
+                                    "coinId" : user._doc.coinId,
+                                    "category" : "withdraw",
+                                    "status" : "success",
+                                    "currencyCode" : vtr._doc.cryptoCurrencyCode,
+                                    "amount" : vtr._doc.price,
+                                    "price" : vtr._doc.price,
+                                    "totalPrice":result_price,
+                                    "regDate" : util.formatDate(new Date().toString())
+                                }
+                                serviceCoinHistory.add(country,reqCoinHistoryData)
+                                .then(addHistory => {
+                                    serviceCoin.modify(country, conditionCoin, reqDataCoin)
+                                    .then(updateCoin => {
+                                        updateItem._doc['successYn'] = "Y";
+                                        let resData = {
+                                            "vtr": modifyVtr,
+                                            "item": updateItem,
+                                            "coin": updateCoin,
+                                            "escrow": addEscrow,
+                                            "escrowHistory": reqDataEscrow,
+                                            "coinHistory": reqCoinHistoryData
+                                        }
+                                        //API 처리 결과 별도 LOG로 남김
+                                        logger.addLog(country, req.originalUrl, req.body, resData);
+            
+                                        bitwebResponse.code = 200;
+                                        bitwebResponse.data = Object.assign({}, updateItem);
+                                        res.status(200).send(bitwebResponse.create())
+                                    }).catch((err) => {
+                                        console.error('update coin error =>', err);
+                                        let resErr = "처리중 에러 발생";
+                                        //API 처리 결과 별도 LOG로 남김
+                                        logger.addLog(country, req.originalUrl, req.body, err);             
+            
+                                        bitwebResponse.code = 500;
+                                        bitwebResponse.message = resErr;
+                                        res.status(500).send(bitwebResponse.create())
+                                    })
                                 }).catch((err) => {
-                                    console.error('update coin error =>', err);
+                                    console.error('add history error =>', err);
                                     let resErr = "처리중 에러 발생";
                                     //API 처리 결과 별도 LOG로 남김
                                     logger.addLog(country, req.originalUrl, req.body, err);             
@@ -565,52 +709,70 @@ function _reqBuy(req, res, bitwebResponse) {
                                     res.status(500).send(bitwebResponse.create())
                                 })
                             }).catch((err) => {
-                                console.error('add history error =>', err);
+                                console.error('add escrow error =>', err);
                                 let resErr = "처리중 에러 발생";
                                 //API 처리 결과 별도 LOG로 남김
-                                logger.addLog(country, req.originalUrl, req.body, err);             
-    
+                                logger.addLog(country, req.originalUrl, req.body, err);
+        
                                 bitwebResponse.code = 500;
                                 bitwebResponse.message = resErr;
                                 res.status(500).send(bitwebResponse.create())
                             })
                         }).catch((err) => {
-                            console.error('add escrow error =>', err);
+                            console.error('modify item error =>', err);
                             let resErr = "처리중 에러 발생";
                             //API 처리 결과 별도 LOG로 남김
                             logger.addLog(country, req.originalUrl, req.body, err);
-    
+        
                             bitwebResponse.code = 500;
                             bitwebResponse.message = resErr;
                             res.status(500).send(bitwebResponse.create())
                         })
                     }).catch((err) => {
-                        console.error('add vtr error =>', err);
+                        console.error('modify vtr temp error =>', err);
                         let resErr = "처리중 에러 발생";
                         //API 처리 결과 별도 LOG로 남김
-                        logger.addLog(country, req.originalUrl, req.body, err);
+                        logger.addLog(country, req.originalUrl, {"roomToken": vtr._doc.roomToken}, err);
     
                         bitwebResponse.code = 500;
                         bitwebResponse.message = resErr;
                         res.status(500).send(bitwebResponse.create())
                     })
-                });  
+                }).catch((err) => {
+                    console.error('modify vtr error =>', err);
+                    let resErr = "처리중 에러 발생";
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, {"item._id": itemId}, err);
+
+                    bitwebResponse.code = 500;
+                    bitwebResponse.message = resErr;
+                    res.status(500).send(bitwebResponse.create())
+                })  
             }).catch((err) => {
                 console.error('get coin error =>', err);
                 let resErr = "처리중 에러 발생";
                 //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, req.body, err);
+                logger.addLog(country, req.originalUrl, conditionCoin, err);
     
                 bitwebResponse.code = 500;
                 bitwebResponse.message = resErr;
                 res.status(500).send(bitwebResponse.create())
             })
+        }).catch((err) => {
+            console.error('get user detail error =>', err);
+            let resErr = "처리중 에러 발생";
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, conditionUser, err);
+
+            bitwebResponse.code = 500;
+            bitwebResponse.message = resErr;
+            res.status(500).send(bitwebResponse.create())
         })
     }).catch((err) => {
         console.error('get vtr error =>', err);
         let resErr = "처리중 에러 발생";
         //API 처리 결과 별도 LOG로 남김
-        logger.addLog(country, req.originalUrl, req.body, err);
+        logger.addLog(country, req.originalUrl, {"item._id": itemId}, err);
 
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
@@ -662,31 +824,44 @@ function _reqSell(req, res, bitwebResponse) {
                 'vtr': modifyVtr
             };
 
-            serviceItems.modify(country, conditionItem, reqData)
-            .then((updateItem) => {             
-                updateItem._doc['successYn'] = "Y"; 
-                let resData = {
-                    "vtr": modifyVtr,
-                    "item": updateItem
-                }
-                //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, req.body, resData);
+            serviceVtrTemps.modify(country, {"roomToken": vtr._doc.roomToken}, {"item.status": 3})
+            .then(updateVtrTemp => {
+                serviceItems.modify(country, conditionItem, reqData)
+                .then((updateItem) => {             
+                    updateItem._doc['successYn'] = "Y"; 
+                    let resData = {
+                        "vtr": modifyVtr,
+                        "item": updateItem,
+                        "vtrTemp": updateVtrTemp
+                    }
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, req.body, resData);
 
-                bitwebResponse.code = 200;
-                bitwebResponse.data = Object.assign({}, updateItem);
-                res.status(200).send(bitwebResponse.create())
+                    bitwebResponse.code = 200;
+                    bitwebResponse.data = Object.assign({}, updateItem);
+                    res.status(200).send(bitwebResponse.create())
+                }).catch((err) => {
+                    console.error('update item error =>', err);
+                    let resErr = "처리중 에러 발생";
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, conditionItem, err);
+
+                    bitwebResponse.code = 500;
+                    bitwebResponse.message = resErr;
+                    res.status(500).send(bitwebResponse.create())
+                })
             }).catch((err) => {
-                console.error('add vtr error =>', err);
+                console.error('update vtr temp error =>', err);
                 let resErr = "처리중 에러 발생";
                 //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, req.body, err);
-
+                logger.addLog(country, req.originalUrl, {"roomToken": vtr._doc.roomToken}, err);
+    
                 bitwebResponse.code = 500;
                 bitwebResponse.message = resErr;
                 res.status(500).send(bitwebResponse.create())
-            })
+            }) 
         }).catch((err) => {
-            console.error('add vtr error =>', err);
+            console.error('update vtr error =>', err);
             let resErr = "처리중 에러 발생";
             //API 처리 결과 별도 LOG로 남김
             logger.addLog(country, req.originalUrl, req.body, err);
@@ -716,21 +891,21 @@ function _reqComplete(req, res, bitwebResponse) {
     
     serviceVtrs.detail(country, {"item._id": itemId})
     .then((vtr) => {            
-    //아이템 status 값이 2 이하거나 5 이상인 경우면 실패로 처리
-    if(vtr._doc.item.status <= 2 || vtr._doc.item.status > 4) {
-        let msg = {
-            "successYn": "N",
-            "code" : "E001",
-            "msg" : "해당 아이템의 구매 확인을 진행 중이거나 거래가 완료되었습니다."
-        };
-        //API 처리 결과 별도 LOG로 남김
-        logger.addLog(country, req.originalUrl, req.body, msg);
+        //아이템 status 값이 2 이하거나 5 이상인 경우면 실패로 처리
+        if(vtr._doc.item.status <= 2 || vtr._doc.item.status > 4) {
+            let msg = {
+                "successYn": "N",
+                "code" : "E001",
+                "msg" : "해당 아이템의 구매 확인을 진행 중이거나 거래가 완료되었습니다."
+            };
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, req.body, msg);
 
-        bitwebResponse.code = 200;
-        bitwebResponse.data = msg;
-        res.status(200).send(bitwebResponse.create());
-        return;
-    }
+            bitwebResponse.code = 200;
+            bitwebResponse.data = msg;
+            res.status(200).send(bitwebResponse.create());
+            return;
+        }
 
         let conditionUser = {
             "_id":vtr._doc.from_userId
@@ -767,98 +942,111 @@ function _reqComplete(req, res, bitwebResponse) {
                         'vtr': modifyVtr
                     };
 
-                    serviceItems.modify(country, conditionItem, reqData)
-                    .then((updateItem) => {              
-                        //판매자 에스크로 금액 입금
-                        let result_price = parseFloat((user_price + vtr._doc.price).toFixed(8));
-                        let reqDataCoin = {"total_mach": result_price};
-                        if(vtr._doc.cryptoCurrencyCode == "BTC") {
-                            reqDataCoin = {"total_btc": result_price};
-                        } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
-                            reqDataCoin = {"total_ether": result_price};
-                        }   
-                        let reqDataEscrow = {
-                            'status':'completed',
-                            'completed_regDate': util.formatDate(new Date().toString())
-                        }
-                        console.log('req escrow data =>', reqDataEscrow);
-                        serviceEscrow.modify(country,{'vtrId':modifyVtr._doc._id},reqDataEscrow)
-                        .then((modifyEscrow)=> {
-                            let reqDataEscrowHistory = {
-                                "type": "withdraw",
-                                "itemId": updateItem._doc._id,
-                                "vtr": vtr,
-                                "cryptoCurrencyCode": vtr._doc.cryptoCurrencyCode,                                                                                           
-                                "price": vtr._doc.price,
-                                "reqUser":vtr._doc.from_userId,
-                                "regDate": util.formatDate(new Date().toString())
-                            };
-                            reqDataEscrowHistory['escrowId'] = modifyEscrow._doc._id;
-                            console.log('req escrow history data =>', reqDataEscrow);
-                            serviceEscrowHistory.add(country, reqDataEscrowHistory);
-                            
-                            let reqCoinHistoryData = {
-                                "extType" : "mach",
-                                "coinId" : user._doc.coinId,
-                                "category" : "deposit",
-                                "status" : "success",
-                                "currencyCode" : vtr._doc.cryptoCurrencyCode,
-                                "amount" : vtr._doc.price,
-                                "price" : vtr._doc.price,
-                                "totalPrice":result_price,
-                                "regDate" : util.formatDate(new Date().toString())
+                    serviceVtrTemps.modify(country, {"roomToken": vtr._doc.roomToken}, {"item.status": 4})
+                    .then(updateVtrTemp => {
+                        serviceItems.modify(country, conditionItem, reqData)
+                        .then((updateItem) => {              
+                            //판매자 에스크로 금액 입금
+                            let result_price = parseFloat((user_price + vtr._doc.price).toFixed(8));
+                            let reqDataCoin = {"total_mach": result_price};
+                            if(vtr._doc.cryptoCurrencyCode == "BTC") {
+                                reqDataCoin = {"total_btc": result_price};
+                            } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
+                                reqDataCoin = {"total_ether": result_price};
+                            }   
+                            let reqDataEscrow = {
+                                'status':'completed',
+                                'completed_regDate': util.formatDate(new Date().toString())
                             }
-                            serviceCoinHistory.add(country,reqCoinHistoryData)
-                            .then(addHistory => {
-                                serviceCoin.modify(country, conditionCoin, reqDataCoin)
-                                .then(updateCoin => {                                    
-                                    updateItem._doc['successYn'] = "Y";
-                                    let resData = {
-                                        "vtr": modifyVtr,
-                                        "item": updateItem,
-                                        "coin": updateCoin,
-                                        "escrow": modifyEscrow,
-                                        "escrowHistory": reqDataEscrow,
-                                        "coinHistory": reqCoinHistoryData
-                                    }
-                                    //API 처리 결과 별도 LOG로 남김
-                                    logger.addLog(country, req.originalUrl, req.body, resData);
-        
-                                    bitwebResponse.code = 200;
-                                    bitwebResponse.data = Object.assign({}, updateItem);
-                                    res.status(200).send(bitwebResponse.create())
+                            console.log('req escrow data =>', reqDataEscrow);
+                            serviceEscrow.modify(country,{'vtrId':modifyVtr._doc._id},reqDataEscrow)
+                            .then((modifyEscrow)=> {
+                                let reqDataEscrowHistory = {
+                                    "type": "withdraw",
+                                    "itemId": updateItem._doc._id,
+                                    "vtr": vtr,
+                                    "cryptoCurrencyCode": vtr._doc.cryptoCurrencyCode,                                                                                           
+                                    "price": vtr._doc.price,
+                                    "reqUser":vtr._doc.from_userId,                                    
+                                    "regDate": util.formatDate(new Date().toString())
+                                };
+                                reqDataEscrowHistory['escrowId'] = modifyEscrow._doc._id;
+                                console.log('req escrow history data =>', reqDataEscrow);
+                                serviceEscrowHistory.add(country, reqDataEscrowHistory);
+                                
+                                let reqCoinHistoryData = {
+                                    "extType" : "mach",
+                                    "coinId" : user._doc.coinId,
+                                    "category" : "deposit",
+                                    "status" : "success",
+                                    "currencyCode" : vtr._doc.cryptoCurrencyCode,
+                                    "amount" : vtr._doc.price,
+                                    "price" : vtr._doc.price,
+                                    "totalPrice":result_price,
+                                    "regDate" : util.formatDate(new Date().toString())
+                                }
+                                serviceCoinHistory.add(country,reqCoinHistoryData)
+                                .then(addHistory => {
+                                    serviceCoin.modify(country, conditionCoin, reqDataCoin)
+                                    .then(updateCoin => {                                    
+                                        updateItem._doc['successYn'] = "Y";
+                                        let resData = {
+                                            "vtr": modifyVtr,
+                                            "item": updateItem,
+                                            "VtrTemp": updateVtrTemp,
+                                            "coin": updateCoin,
+                                            "escrow": modifyEscrow,
+                                            "escrowHistory": reqDataEscrow,
+                                            "coinHistory": reqCoinHistoryData
+                                        }
+                                        //API 처리 결과 별도 LOG로 남김
+                                        logger.addLog(country, req.originalUrl, req.body, resData);
+            
+                                        bitwebResponse.code = 200;
+                                        bitwebResponse.data = Object.assign({}, updateItem);
+                                        res.status(200).send(bitwebResponse.create())
+                                    }).catch((err) => {
+                                        console.error('update coin error =>', err);
+                                        let resErr = "처리중 에러 발생";
+                                        //API 처리 결과 별도 LOG로 남김
+                                        logger.addLog(country, req.originalUrl, req.body, err);             
+            
+                                        bitwebResponse.code = 500;
+                                        bitwebResponse.message = resErr;
+                                        res.status(500).send(bitwebResponse.create())
+                                    })
                                 }).catch((err) => {
-                                    console.error('update coin error =>', err);
+                                    console.error('add history error =>', err);
                                     let resErr = "처리중 에러 발생";
                                     //API 처리 결과 별도 LOG로 남김
-                                    logger.addLog(country, req.originalUrl, req.body, err);             
+                                    logger.addLog(country, req.originalUrl, req.body, err);
         
                                     bitwebResponse.code = 500;
                                     bitwebResponse.message = resErr;
                                     res.status(500).send(bitwebResponse.create())
                                 })
                             }).catch((err) => {
-                                console.error('add history error =>', err);
+                                console.error('modify escrow error =>', err);
                                 let resErr = "처리중 에러 발생";
                                 //API 처리 결과 별도 LOG로 남김
                                 logger.addLog(country, req.originalUrl, req.body, err);
-    
+        
                                 bitwebResponse.code = 500;
                                 bitwebResponse.message = resErr;
                                 res.status(500).send(bitwebResponse.create())
                             })
                         }).catch((err) => {
-                            console.error('modify escrow error =>', err);
+                            console.error('modify item error =>', err);
                             let resErr = "처리중 에러 발생";
                             //API 처리 결과 별도 LOG로 남김
                             logger.addLog(country, req.originalUrl, req.body, err);
-    
+        
                             bitwebResponse.code = 500;
                             bitwebResponse.message = resErr;
                             res.status(500).send(bitwebResponse.create())
                         })
                     }).catch((err) => {
-                        console.error('add vtr error =>', err);
+                        console.error('modify vtr temp error =>', err);
                         let resErr = "처리중 에러 발생";
                         //API 처리 결과 별도 LOG로 남김
                         logger.addLog(country, req.originalUrl, req.body, err);
@@ -866,7 +1054,16 @@ function _reqComplete(req, res, bitwebResponse) {
                         bitwebResponse.code = 500;
                         bitwebResponse.message = resErr;
                         res.status(500).send(bitwebResponse.create())
-                    })
+                    });
+                }).catch((err) => {
+                    console.error('modify vtr error =>', err);
+                    let resErr = "처리중 에러 발생";
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, req.body, err);
+
+                    bitwebResponse.code = 500;
+                    bitwebResponse.message = resErr;
+                    res.status(500).send(bitwebResponse.create())
                 });  
             }).catch((err) => {
                 console.error('get coin error =>', err);
@@ -878,7 +1075,16 @@ function _reqComplete(req, res, bitwebResponse) {
                 bitwebResponse.message = resErr;
                 res.status(500).send(bitwebResponse.create())
             })
-        })
+        }).catch((err) => {
+            console.error('get user error =>', err);
+            let resErr = "처리중 에러 발생";
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, req.body, err);
+    
+            bitwebResponse.code = 500;
+            bitwebResponse.message = resErr;
+            res.status(500).send(bitwebResponse.create())
+        }) 
     }).catch((err) => {
         console.error('get vtr error =>', err);
         let resErr = "처리중 에러 발생";
@@ -901,8 +1107,20 @@ function _reqCancel(req, res, bitwebResponse) {
 
     serviceUsers.detail(country, {"userTag":reqUserTag}) 
     .then(user => {
-        serviceVtrs.detail(country, {"item._id":itemId})
+        serviceVtrs.detail(country, {"item._id":itemId, $or:[{from_userId:user._doc._id}, {to_userId:user._doc._id}]})
         .then(vtr => {
+            if(vtr == null) {
+                console.error('no exist vtr.');
+                let resErr = "처리중 에러 발생";
+                //API 처리 결과 별도 LOG로 남김
+                logger.addLog(country, req.originalUrl, req.body, err);
+        
+                bitwebResponse.code = 500;
+                bitwebResponse.message = resErr;
+                res.status(500).send(bitwebResponse.create());
+                return;
+            }
+
             if(vtr._doc.buy_status != undefined && user._doc._id.toString() == vtr._doc.to_userId.toString()) {
                 let msg = {};
                 // if(vtr._doc.sell_status == undefined) {
@@ -988,39 +1206,43 @@ function _reqCancel(req, res, bitwebResponse) {
                 if(vtr._doc.buy_status == undefined) {
                     serviceVtrs.remove(country, {"_id":vtr._doc._id})
                     .then(deletedVtr => {
-                        let from_message = '구매자님이 거래를 취소 하였습니다.';
-                        if(req.body.country != "KR") {
-                            from_message = 'The Buyer canceled the transaction.';
-                        }
-                        let msg = {
-                            "successYn":"Y",
-                            "code": 31,
-                            "msg": from_message
-                        }
-
-                        if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
-                            let to_message = '판매자님이 거래를 취소 하였습니다.';
+                        serviceVtrTemps.modify(country, {"roomToken": vtr._doc.roomToken}, {"item.status": 50})
+                        .then(updateVtrTemp => {
+                            let from_message = '구매자님이 거래를 취소 하였습니다.';
                             if(req.body.country != "KR") {
-                                to_message = 'The seller canceled the transaction.';
+                                from_message = 'The Buyer canceled the transaction.';
                             }
-                            msg = {
+                            let msg = {
                                 "successYn":"Y",
-                                "code": 41,
-                                "msg": to_message
+                                "code": 31,
+                                "msg": from_message
                             }
-                        }
 
-                        let resData = {
-                            "result":msg,
-                            "vtr": deletedVtr,
-                            "item": updatedItem
-                        }
-                        //API 처리 결과 별도 LOG로 남김
-                        logger.addLog(country, req.originalUrl, req.body, resData);
+                            if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
+                                let to_message = '판매자님이 거래를 취소 하였습니다.';
+                                if(req.body.country != "KR") {
+                                    to_message = 'The seller canceled the transaction.';
+                                }
+                                msg = {
+                                    "successYn":"Y",
+                                    "code": 41,
+                                    "msg": to_message
+                                }
+                            }
 
-                        bitwebResponse.code = 200;
-                        bitwebResponse.data = msg;
-                        res.status(200).send(bitwebResponse.create())
+                            let resData = {
+                                "result":msg,
+                                "vtr": deletedVtr,
+                                "item": updatedItem,
+                                "vtrTemp": updateVtrTemp
+                            }
+                            //API 처리 결과 별도 LOG로 남김
+                            logger.addLog(country, req.originalUrl, req.body, resData);
+
+                            bitwebResponse.code = 200;
+                            bitwebResponse.data = msg;
+                            res.status(200).send(bitwebResponse.create())
+                        });
                     }).catch((err) => {
                         console.error('delete vtr error =>', err);
                         let resErr = "처리중 에러 발생";
@@ -1050,112 +1272,124 @@ function _reqCancel(req, res, bitwebResponse) {
                             };
 
                             serviceItems.modify(country, conditionItem, reqData)
-                            .then((updateItem) => {              
-                                //판매자 에스크로 금액 입금
-                                let result_price = parseFloat((user_price + vtr._doc.price).toFixed(8));
-                                let reqDataCoin = {"total_mach": result_price};
-                                if(vtr._doc.cryptoCurrencyCode == "BTC") {
-                                    reqDataCoin = {"total_btc": result_price};
-                                } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
-                                    reqDataCoin = {"total_ether": result_price};
-                                }   
-                                let reqDataEscrow = {
-                                    'status':'cancelled',
-                                    'cancelled_regDate': util.formatDate(new Date().toString())
-                                }
-                                console.log('req escrow data =>', reqDataEscrow);
-                                serviceEscrow.modify(country,{'vtrId':vtr._doc._id},reqDataEscrow)
-                                .then((modifyEscrow)=> {
-                                    let reqDataEscrowHistory = {
-                                        "type": "cancel",
-                                        "itemId": itemId,
-                                        "vtr": vtr,
-                                        "cryptoCurrencyCode": vtr._doc.cryptoCurrencyCode,                                                                                           
-                                        "price": vtr._doc.price,
-                                        "reqUser": to_user._doc._id,
-                                        "regDate": util.formatDate(new Date().toString())
-                                    };
-                                    reqDataEscrowHistory['escrowId'] = modifyEscrow._doc._id;
-                                    console.log('req escrow history data =>', reqDataEscrow);
-                                    serviceEscrowHistory.add(country, reqDataEscrowHistory);
-                                    
-                                    let reqCoinHistoryData = {
-                                        "extType" : "mach",
-                                        "coinId" : to_user._doc.coinId,
-                                        "category" : "deposit",
-                                        "status" : "success",
-                                        "currencyCode" : vtr._doc.cryptoCurrencyCode,
-                                        "amount" : vtr._doc.price,
-                                        "price" : vtr._doc.price,
-                                        "totalPrice": result_price,
-                                        "regDate" : util.formatDate(new Date().toString())
+                            .then((updateItem) => {     
+                                serviceVtrTemps.modify(country, {"roomToken": vtr._doc.roomToken}, {"item.status": 50})
+                                .then(updateVtrTemp => {    
+                                    //판매자 에스크로 금액 입금
+                                    let result_price = parseFloat((user_price + vtr._doc.price).toFixed(8));
+                                    let reqDataCoin = {"total_mach": result_price};
+                                    if(vtr._doc.cryptoCurrencyCode == "BTC") {
+                                        reqDataCoin = {"total_btc": result_price};
+                                    } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
+                                        reqDataCoin = {"total_ether": result_price};
+                                    }   
+                                    let reqDataEscrow = {
+                                        'status':'cancelled',
+                                        'cancelled_regDate': util.formatDate(new Date().toString())
                                     }
-                                    serviceCoinHistory.add(country,reqCoinHistoryData);
+                                    console.log('req escrow data =>', reqDataEscrow);
+                                    serviceEscrow.modify(country,{'vtrId':vtr._doc._id},reqDataEscrow)
+                                    .then((modifyEscrow)=> {
+                                        let reqDataEscrowHistory = {
+                                            "type": "cancel",
+                                            "itemId": itemId,
+                                            "vtr": vtr,
+                                            "cryptoCurrencyCode": vtr._doc.cryptoCurrencyCode,                                                                                           
+                                            "price": vtr._doc.price,
+                                            "reqUser": to_user._doc._id,
+                                            "regDate": util.formatDate(new Date().toString())
+                                        };
+                                        reqDataEscrowHistory['escrowId'] = modifyEscrow._doc._id;
+                                        console.log('req escrow history data =>', reqDataEscrow);
+                                        serviceEscrowHistory.add(country, reqDataEscrowHistory);
+                                        
+                                        let reqCoinHistoryData = {
+                                            "extType" : "mach",
+                                            "coinId" : to_user._doc.coinId,
+                                            "category" : "deposit",
+                                            "status" : "success",
+                                            "currencyCode" : vtr._doc.cryptoCurrencyCode,
+                                            "amount" : vtr._doc.price,
+                                            "price" : vtr._doc.price,
+                                            "totalPrice": result_price,
+                                            "regDate" : util.formatDate(new Date().toString())
+                                        }
+                                        serviceCoinHistory.add(country,reqCoinHistoryData);
 
-                                    let reqCancelHistory = {
-                                        "vtr": vtr,
-                                        "item": vtr._doc.item,
-                                        "from_userId": vtr._doc.from_userId,
-                                        "to_userId": vtr._doc.to_userId,
-                                        "status": "user_cancel",
-                                        "refund": vtr._doc.buy_status == undefined ? false : true,
-                                        "regDate": util.formatDate(new Date().toString())
-                                    };
-                                    serviceCancelHistory.add(country, reqCancelHistory)
-                                    .then(() => {
-                                        serviceVtrs.remove(country, {"_id":vtr._doc._id})
-                                        .then(deletedVtr => {
-                                            serviceCoin.modify(country, {"_id":to_user._doc.coinId}, reqDataCoin)
-                                            .then(updateCoin => {
-                                                let from_message = '구매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.';
-                                                if(req.body.country != "KR") {
-                                                    from_message = 'The buyer has canceled the transaction. The transaction amount held in the escrow has been refunded to the buyer\'s wallet.';
-                                                }
-                                                let msg = {
-                                                    "successYn":"Y",
-                                                    "code": 31,
-                                                    "msg": from_message
-                                                }
-                        
-                                                if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
-                                                    let to_message = '판매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.';
+                                        let reqCancelHistory = {
+                                            "vtr": vtr,
+                                            "item": vtr._doc.item,
+                                            "from_userId": vtr._doc.from_userId,
+                                            "to_userId": vtr._doc.to_userId,
+                                            "status": "user_cancel",
+                                            "refund": vtr._doc.buy_status == undefined ? false : true,
+                                            "regDate": util.formatDate(new Date().toString())
+                                        };
+                                        serviceCancelHistory.add(country, reqCancelHistory)
+                                        .then(() => {
+                                            serviceVtrs.remove(country, {"_id":vtr._doc._id})
+                                            .then(deletedVtr => {
+                                                serviceCoin.modify(country, {"_id":to_user._doc.coinId}, reqDataCoin)
+                                                .then(updateCoin => {
+                                                    let from_message = '구매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.';
                                                     if(req.body.country != "KR") {
-                                                        to_message = 'The seller has canceled the transaction. The transaction amount held in the escrow has been refunded to the buyer\'s wallet.';
+                                                        from_message = 'The buyer has canceled the transaction. The transaction amount held in the escrow has been refunded to the buyer\'s wallet.';
                                                     }
-                                                    msg = {
+                                                    let msg = {
                                                         "successYn":"Y",
-                                                        "code": 41,
-                                                        "msg": to_message
+                                                        "code": 31,
+                                                        "msg": from_message
                                                     }
-                                                }
-                                                
-                                                let resData = {
-                                                    "result":msg,
-                                                    "vtr": deletedVtr,
-                                                    "item": updateItem,
-                                                    "coin": updateCoin,
-                                                    "escrow": modifyEscrow,
-                                                    "escrowHistory": reqDataEscrow,
-                                                    "coinHistory": reqCoinHistoryData
-                                                }
-                                                //API 처리 결과 별도 LOG로 남김
-                                                logger.addLog(country, req.originalUrl, req.body, resData);
-                    
-                                                bitwebResponse.code = 200;
-                                                bitwebResponse.data = msg;
-                                                res.status(200).send(bitwebResponse.create())
+                            
+                                                    if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
+                                                        let to_message = '판매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.';
+                                                        if(req.body.country != "KR") {
+                                                            to_message = 'The seller has canceled the transaction. The transaction amount held in the escrow has been refunded to the buyer\'s wallet.';
+                                                        }
+                                                        msg = {
+                                                            "successYn":"Y",
+                                                            "code": 41,
+                                                            "msg": to_message
+                                                        }
+                                                    }
+                                                    
+                                                    let resData = {
+                                                        "result":msg,
+                                                        "vtr": deletedVtr,
+                                                        "item": updateItem,
+                                                        "coin": updateCoin,
+                                                        "escrow": modifyEscrow,
+                                                        "escrowHistory": reqDataEscrow,
+                                                        "coinHistory": reqCoinHistoryData
+                                                    }
+                                                    //API 처리 결과 별도 LOG로 남김
+                                                    logger.addLog(country, req.originalUrl, req.body, resData);
+                        
+                                                    bitwebResponse.code = 200;
+                                                    bitwebResponse.data = msg;
+                                                    res.status(200).send(bitwebResponse.create())
+                                                }).catch((err) => {
+                                                    console.error('update coin error =>', err);
+                                                    let resErr = "처리중 에러 발생";
+                                                    //API 처리 결과 별도 LOG로 남김
+                                                    logger.addLog(country, req.originalUrl, req.body, err);
+                                            
+                                                    bitwebResponse.code = 500;
+                                                    bitwebResponse.message = resErr;
+                                                    res.status(500).send(bitwebResponse.create())
+                                                })  
                                             }).catch((err) => {
-                                                console.error('update coin error =>', err);
+                                                console.error('delete vtr error =>', err);
                                                 let resErr = "처리중 에러 발생";
                                                 //API 처리 결과 별도 LOG로 남김
                                                 logger.addLog(country, req.originalUrl, req.body, err);
-                                        
+                    
                                                 bitwebResponse.code = 500;
                                                 bitwebResponse.message = resErr;
                                                 res.status(500).send(bitwebResponse.create())
-                                            })  
+                                            })
                                         }).catch((err) => {
-                                            console.error('delete vtr error =>', err);
+                                            console.error('cancel history error =>', err);
                                             let resErr = "처리중 에러 발생";
                                             //API 처리 결과 별도 LOG로 남김
                                             logger.addLog(country, req.originalUrl, req.body, err);
@@ -1165,25 +1399,25 @@ function _reqCancel(req, res, bitwebResponse) {
                                             res.status(500).send(bitwebResponse.create())
                                         })
                                     }).catch((err) => {
-                                        console.error('cancel history error =>', err);
+                                        console.error('modify escrow error =>', err);
                                         let resErr = "처리중 에러 발생";
                                         //API 처리 결과 별도 LOG로 남김
                                         logger.addLog(country, req.originalUrl, req.body, err);
-            
+                
                                         bitwebResponse.code = 500;
                                         bitwebResponse.message = resErr;
                                         res.status(500).send(bitwebResponse.create())
-                                    })
+                                    })     
                                 }).catch((err) => {
-                                    console.error('modify escrow error =>', err);
+                                    console.error('modify vtr temp error =>', err);
                                     let resErr = "처리중 에러 발생";
                                     //API 처리 결과 별도 LOG로 남김
                                     logger.addLog(country, req.originalUrl, req.body, err);
-            
+                
                                     bitwebResponse.code = 500;
                                     bitwebResponse.message = resErr;
                                     res.status(500).send(bitwebResponse.create())
-                                })
+                                });
                             }).catch((err) => {
                                 console.error('modify item error =>', err);
                                 let resErr = "처리중 에러 발생";
@@ -1350,6 +1584,7 @@ function _buynow(req, res, bitwebResponse) {
                                 reqVtr['seller_game_character'] = item._doc.game_character;
                             }
                         }    
+                        reqVtr["roomToken"] = roomToken;
                         //2. VTR 거래 요청
                         serviceVtrs.add(country, reqVtr)
                         .then(addVtr => {
@@ -1641,60 +1876,113 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
     let itemId = req.params.itemId;
     let country = dbconfig.country;
     let reqUserTag = req.body.reqUserTag;
+    let roomToken = req.body.roomToken;
     let conditionItem = {
         "_id": itemId
     }
 
     serviceUsers.detail(country, {"userTag":reqUserTag}) 
     .then(user => {
-        serviceVtrs.detail(country, {"item._id":itemId})
+        //기존 검색 조건. {"item._id":itemId}
+        serviceVtrs.detail(country, {"item._id":itemId, $or:[{from_userId:user._doc._id}, {from_userId:user._doc._id}]})
         .then(vtr => {
             if(vtr == null) {
+                // 멀티방이 남아 있는 경우 vtrtemp만 삭제한다.
                 let reqItem = {
                     "status": 0
                 };
 
-                serviceItems.modify(country, conditionItem, reqItem)
-                .then(updatedItem => {
-                    serviceVtrTemps.remove(country, {"item._id":itemId})
-                    .then(deletedVtrTemp => {
-                        let message = '거래를 취소 하였습니다.';
-                        if(req.body.country != "KR") {
-                            message = 'The Buyer canceled the transaction.';
+                serviceVtrTemps.remove(country, {"roomToken":roomToken})
+                .then(deletedVtrTemp => {
+                    serviceVtrTemps.list(country, {'item._id': itemId})
+                    .then(vtrTemps => {
+                        if(vtrTemps.length == 0) {
+                            serviceItems.modify(country, conditionItem, reqItem)
+                            .then(updatedItem => {
+                                let message = '거래를 취소 하였습니다.';
+                                if(req.body.country != "KR") {
+                                    message = 'The Buyer canceled the transaction.';
+                                }
+
+                                let msg = {
+                                    "successYn":"Y",
+                                    "code": 31,
+                                    "msg": message
+                                }
+
+                                // if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
+                                //     let to_message = '판매자님이 거래를 취소 하였습니다.';
+                                //     if(req.body.country != "KR") {
+                                //         to_message = 'The seller canceled the transaction.';
+                                //     }
+
+                                //     msg = {
+                                //         "successYn":"Y",
+                                //         "code": 41,
+                                //         "msg": to_message
+                                //     }
+                                // }
+
+                                let resData = {
+                                    "result":msg,
+                                    "vtrTemp": deletedVtrTemp,
+                                    "item": updatedItem
+                                }
+                                //API 처리 결과 별도 LOG로 남김
+                                logger.addLog(country, req.originalUrl, req.body, resData);
+
+                                bitwebResponse.code = 200;
+                                bitwebResponse.data = msg;
+                                res.status(200).send(bitwebResponse.create())
+                            }).catch((err) => {
+                                console.error('modify item error =>', err);
+                                let resErr = "처리중 에러 발생";
+                                //API 처리 결과 별도 LOG로 남김
+                                logger.addLog(country, req.originalUrl, req.body, err);
+                        
+                                bitwebResponse.code = 500;
+                                bitwebResponse.message = resErr;
+                                res.status(500).send(bitwebResponse.create())
+                            })  
+                        } else {
+                            let message = '거래를 취소 하였습니다.';
+                            if(req.body.country != "KR") {
+                                message = 'The Buyer canceled the transaction.';
+                            }
+
+                            let msg = {
+                                "successYn":"Y",
+                                "code": 31,
+                                "msg": message
+                            }
+
+                            // if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
+                            //     let to_message = '판매자님이 거래를 취소 하였습니다.';
+                            //     if(req.body.country != "KR") {
+                            //         to_message = 'The seller canceled the transaction.';
+                            //     }
+
+                            //     msg = {
+                            //         "successYn":"Y",
+                            //         "code": 41,
+                            //         "msg": to_message
+                            //     }
+                            // }
+
+                            let resData = {
+                                "result":msg,
+                                "vtrTemp": deletedVtrTemp,
+                                "item": "no"
+                            }
+                            //API 처리 결과 별도 LOG로 남김
+                            logger.addLog(country, req.originalUrl, req.body, resData);
+
+                            bitwebResponse.code = 200;
+                            bitwebResponse.data = msg;
+                            res.status(200).send(bitwebResponse.create())
                         }
-
-                        let msg = {
-                            "successYn":"Y",
-                            "code": 31,
-                            "msg": message
-                        }
-
-                        // if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
-                        //     let to_message = '판매자님이 거래를 취소 하였습니다.';
-                        //     if(req.body.country != "KR") {
-                        //         to_message = 'The seller canceled the transaction.';
-                        //     }
-
-                        //     msg = {
-                        //         "successYn":"Y",
-                        //         "code": 41,
-                        //         "msg": to_message
-                        //     }
-                        // }
-
-                        let resData = {
-                            "result":msg,
-                            //"vtrTemp": deletedVtrTemp,
-                            "item": updatedItem
-                        }
-                        //API 처리 결과 별도 LOG로 남김
-                        logger.addLog(country, req.originalUrl, req.body, resData);
-
-                        bitwebResponse.code = 200;
-                        bitwebResponse.data = msg;
-                        res.status(200).send(bitwebResponse.create())
                     }).catch((err) => {
-                        console.error('modify item error =>', err);
+                        console.error('get vtr temps error =>', err);
                         let resErr = "처리중 에러 발생";
                         //API 처리 결과 별도 LOG로 남김
                         logger.addLog(country, req.originalUrl, req.body, err);
@@ -1797,49 +2085,98 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                     "status": 0
                 };
 
-                serviceItems.modify(country, conditionItem, reqItem)
-                .then(updatedItem => {
-                    if(vtr._doc.buy_status == undefined) {
-                        serviceVtrs.remove(country, {"_id":vtr._doc._id})
-                        .then(deletedVtr => {
-                            serviceVtrTemps.remove(country, {"item._id":itemId})
-                            .then(deletedVtrTemp => {
-                                let from_message = '구매자님이 거래를 취소 하였습니다.';
-                                if(req.body.country != "KR") {
-                                    from_message = 'The buyer canceled the transaction.';
-                                }
-        
-                                let msg = {
-                                    "successYn":"Y",
-                                    "code": 31,
-                                    "msg": from_message
-                                }
+                if(vtr._doc.buy_status == undefined) {
+                    serviceVtrs.remove(country, {"_id":vtr._doc._id})
+                    .then(deletedVtr => {
+                        serviceVtrTemps.remove(country, {"item._id":itemId})
+                        .then(deletedVtrTemp => {
+                            serviceVtrTemps.list(country, {'item._id': itemId})
+                            .then(vtrTemps => {
+                                if(vtrTemps.length == 0) {
+                                    serviceItems.modify(country, conditionItem, reqItem)
+                                    .then(updatedItem => {
+                                        let from_message = '구매자님이 거래를 취소 하였습니다.';
+                                        if(req.body.country != "KR") {
+                                            from_message = 'The buyer canceled the transaction.';
+                                        }
+                
+                                        let msg = {
+                                            "successYn":"Y",
+                                            "code": 31,
+                                            "msg": from_message
+                                        }
 
-                                if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
-                                    let to_message = '판매자님이 거래를 취소 하였습니다.';
+                                        if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
+                                            let to_message = '판매자님이 거래를 취소 하였습니다.';
+                                            if(req.body.country != "KR") {
+                                                to_message = 'The seller canceled the transaction.';
+                                            }
+                                            msg = {
+                                                "successYn":"Y",
+                                                "code": 41,
+                                                "msg": to_message
+                                            }
+                                        }
+
+                                        let resData = {
+                                            "result":msg,
+                                            "vtr": deletedVtr,
+                                            "item": updatedItem
+                                        }
+                                        //API 처리 결과 별도 LOG로 남김
+                                        logger.addLog(country, req.originalUrl, req.body, resData);
+
+                                        bitwebResponse.code = 200;
+                                        bitwebResponse.data = msg;
+                                        res.status(200).send(bitwebResponse.create())
+                                    }).catch((err) => {
+                                        console.error('modify item error =>', err);
+                                        let resErr = "처리중 에러 발생";
+                                        //API 처리 결과 별도 LOG로 남김
+                                        logger.addLog(country, req.originalUrl, req.body, err);
+                                
+                                        bitwebResponse.code = 500;
+                                        bitwebResponse.message = resErr;
+                                        res.status(500).send(bitwebResponse.create())
+                                    })
+                                } else {
+                                    let from_message = '구매자님이 거래를 취소 하였습니다.';
                                     if(req.body.country != "KR") {
-                                        to_message = 'The seller canceled the transaction.';
+                                        from_message = 'The buyer canceled the transaction.';
                                     }
-                                    msg = {
+            
+                                    let msg = {
                                         "successYn":"Y",
-                                        "code": 41,
-                                        "msg": to_message
+                                        "code": 31,
+                                        "msg": from_message
                                     }
-                                }
 
-                                let resData = {
-                                    "result":msg,
-                                    "vtr": deletedVtr,
-                                    "item": updatedItem
-                                }
-                                //API 처리 결과 별도 LOG로 남김
-                                logger.addLog(country, req.originalUrl, req.body, resData);
+                                    if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
+                                        let to_message = '판매자님이 거래를 취소 하였습니다.';
+                                        if(req.body.country != "KR") {
+                                            to_message = 'The seller canceled the transaction.';
+                                        }
+                                        msg = {
+                                            "successYn":"Y",
+                                            "code": 41,
+                                            "msg": to_message
+                                        }
+                                    }
 
-                                bitwebResponse.code = 200;
-                                bitwebResponse.data = msg;
-                                res.status(200).send(bitwebResponse.create())
+                                    let resData = {
+                                        "result":msg,
+                                        "vtr": deletedVtr,
+                                        "item": "no"
+                                    }
+                                    //API 처리 결과 별도 LOG로 남김
+                                    logger.addLog(country, req.originalUrl, req.body, resData);
+
+                                    bitwebResponse.code = 200;
+                                    bitwebResponse.data = msg;
+                                    res.status(200).send(bitwebResponse.create())
+                                }
                             }).catch((err) => {
-                                console.error('delete vtr temp error =>', err);
+                                console.error('get vtrtemp error =>', err);
                                 let resErr = "처리중 에러 발생";
                                 //API 처리 결과 별도 LOG로 남김
                                 logger.addLog(country, req.originalUrl, req.body, err);
@@ -1849,7 +2186,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                 res.status(500).send(bitwebResponse.create())
                             })  
                         }).catch((err) => {
-                            console.error('delete vtr error =>', err);
+                            console.error('delete vtr temp error =>', err);
                             let resErr = "처리중 에러 발생";
                             //API 처리 결과 별도 LOG로 남김
                             logger.addLog(country, req.originalUrl, req.body, err);
@@ -1858,30 +2195,177 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                             bitwebResponse.message = resErr;
                             res.status(500).send(bitwebResponse.create())
                         })  
-                    } else {
-                        //환불 및 거래 취소
-                        serviceUsers.detail(country, {"_id":vtr._doc.to_userId}) 
-                        .then(to_user => {
-                            serviceCoin.detail(country, {"_id":to_user._doc.coinId})
-                            .then((coin) => {                            
-                                let user_price = coin.total_mach;
-                                if(vtr._doc.cryptoCurrencyCode == "BTC") {
-                                    user_price = coin.total_btc == undefined ? 0 : coin.total_btc;
-                                } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
-                                    user_price = coin.total_ether == undefined ? 0 : coin.total_ether;
-                                }
+                    }).catch((err) => {
+                        console.error('delete vtr error =>', err);
+                        let resErr = "처리중 에러 발생";
+                        //API 처리 결과 별도 LOG로 남김
+                        logger.addLog(country, req.originalUrl, req.body, err);
+                
+                        bitwebResponse.code = 500;
+                        bitwebResponse.message = resErr;
+                        res.status(500).send(bitwebResponse.create())
+                    })  
+                } else {
+                    //환불 및 거래 취소
+                    serviceUsers.detail(country, {"_id":vtr._doc.to_userId}) 
+                    .then(to_user => {
+                        serviceCoin.detail(country, {"_id":to_user._doc.coinId})
+                        .then((coin) => {                            
+                            let user_price = coin.total_mach;
+                            if(vtr._doc.cryptoCurrencyCode == "BTC") {
+                                user_price = coin.total_btc == undefined ? 0 : coin.total_btc;
+                            } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
+                                user_price = coin.total_ether == undefined ? 0 : coin.total_ether;
+                            }
 
-                                let reqData = {
-                                    'status': 0,
-                                    'vtr': ''
-                                };
+                            let reqData = {
+                                'status': 0,
+                                'vtr': ''
+                            };
 
-                                serviceVtrs.remove(country, {"_id":vtr._doc._id})
-                                .then(deletedVtr => {
-                                    serviceVtrTemps.remove(country, {"item._id":itemId})
-                                    .then(deletedVtrTemp => {
-                                        serviceItems.modify(country, conditionItem, reqData)
-                                        .then((updateItem) => {              
+                            serviceVtrs.remove(country, {"_id":vtr._doc._id})
+                            .then(deletedVtr => {
+                                serviceVtrTemps.remove(country, {"item._id":itemId})
+                                .then(deletedVtrTemp => {
+                                    serviceVtrTemps.list(country, {'item._id': itemId})
+                                    .then(vtrTemps => {
+                                        if(vtrTemps.length == 0) {
+                                            serviceItems.modify(country, conditionItem, reqData)
+                                            .then((updateItem) => {              
+                                                //판매자 에스크로 금액 입금
+                                                let result_price = parseFloat((user_price + vtr._doc.price).toFixed(8));
+                                                let reqDataCoin = {"total_mach": result_price};
+                                                if(vtr._doc.cryptoCurrencyCode == "BTC") {
+                                                    reqDataCoin = {"total_btc": result_price};
+                                                } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
+                                                    reqDataCoin = {"total_ether": result_price};
+                                                }   
+                                                let reqDataEscrow = {
+                                                    'status':'cancelled',
+                                                    'cancelled_regDate': util.formatDate(new Date().toString())
+                                                }
+                                                console.log('req escrow data =>', reqDataEscrow);
+                                                serviceEscrow.modify(country,{'vtrId':vtr._doc._id},reqDataEscrow)
+                                                .then((modifyEscrow)=> {
+                                                    let reqDataEscrowHistory = {
+                                                        "type": "cancel",
+                                                        "itemId": itemId,
+                                                        "vtr": vtr,
+                                                        "cryptoCurrencyCode": vtr._doc.cryptoCurrencyCode,                                                                                           
+                                                        "price": vtr._doc.price,
+                                                        "reqUser": to_user._doc._id,
+                                                        "regDate": util.formatDate(new Date().toString())
+                                                    };
+                                                    reqDataEscrowHistory['escrowId'] = modifyEscrow._doc._id;
+                                                    console.log('req escrow history data =>', reqDataEscrow);
+                                                    serviceEscrowHistory.add(country, reqDataEscrowHistory);
+                                                    
+                                                    let reqCoinHistoryData = {
+                                                        "extType" : "mach",
+                                                        "coinId" : to_user._doc.coinId,
+                                                        "category" : "deposit",
+                                                        "status" : "success",
+                                                        "currencyCode" : vtr._doc.cryptoCurrencyCode,
+                                                        "amount" : vtr._doc.price,
+                                                        "price" : vtr._doc.price,
+                                                        "totalPrice": result_price,
+                                                        "regDate" : util.formatDate(new Date().toString())
+                                                    }
+                                                    serviceCoinHistory.add(country,reqCoinHistoryData);
+
+                                                    let reqCancelHistory = {
+                                                        "vtr": vtr,
+                                                        "item": vtr._doc.item,
+                                                        "from_userId": vtr._doc.from_userId,
+                                                        "to_userId": vtr._doc.to_userId,
+                                                        "status": "user_cancel",
+                                                        "refund": vtr._doc.buy_status == undefined ? false : true,
+                                                        "regDate": util.formatDate(new Date().toString())
+                                                    };
+                                                    serviceCancelHistory.add(country, reqCancelHistory)
+                                                    .then(() => {
+                                                        serviceCoin.modify(country, {"_id":to_user._doc.coinId}, reqDataCoin)
+                                                        .then(updateCoin => {
+                                                            let from_message = '구매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.';
+                                                            if(req.body.country != "KR") {
+                                                                from_message = 'The buyer has canceled the transaction. The transaction amount held in the escrow has been refunded to the buyer\'s wallet.';
+                                                            }
+            
+                                                            let msg = {
+                                                                "successYn":"Y",
+                                                                "code": 31,
+                                                                "msg": from_message
+                                                            }
+                                    
+                                                            if(user._doc._id.toString() != vtr._doc.to_userId.toString()) {
+                                                                let to_message = '판매자님이 거래를 취소 하였습니다.에스크로에 보관된 거래금액이 구매자님의 지갑으로 환불되었습니다.';
+                                                                if(req.body.country != "KR") {
+                                                                    to_message = 'The seller has canceled the transaction. The transaction amount held in the escrow has been refunded to the buyer\'s wallet.';
+                                                                }
+            
+                                                                msg = {
+                                                                    "successYn":"Y",
+                                                                    "code": 41,
+                                                                    "msg": to_message
+                                                                }
+                                                            }
+                                                            
+                                                            let resData = {
+                                                                "result":msg,
+                                                                "vtr": deletedVtr,
+                                                                "item": updateItem,
+                                                                "coin": updateCoin,
+                                                                "escrow": modifyEscrow,
+                                                                "escrowHistory": reqDataEscrow,
+                                                                "coinHistory": reqCoinHistoryData
+                                                            }
+                                                            //API 처리 결과 별도 LOG로 남김
+                                                            logger.addLog(country, req.originalUrl, req.body, resData);
+                                
+                                                            bitwebResponse.code = 200;
+                                                            bitwebResponse.data = msg;
+                                                            res.status(200).send(bitwebResponse.create())
+                                                        }).catch((err) => {
+                                                            console.error('update coin error =>', err);
+                                                            let resErr = "처리중 에러 발생";
+                                                            //API 처리 결과 별도 LOG로 남김
+                                                            logger.addLog(country, req.originalUrl, req.body, err);
+                                                    
+                                                            bitwebResponse.code = 500;
+                                                            bitwebResponse.message = resErr;
+                                                            res.status(500).send(bitwebResponse.create())
+                                                        })  
+                                                    }).catch((err) => {
+                                                        console.error('cancel history error =>', err);
+                                                        let resErr = "처리중 에러 발생";
+                                                        //API 처리 결과 별도 LOG로 남김
+                                                        logger.addLog(country, req.originalUrl, req.body, err);
+                                                
+                                                        bitwebResponse.code = 500;
+                                                        bitwebResponse.message = resErr;
+                                                        res.status(500).send(bitwebResponse.create())
+                                                    })  
+                                                }).catch((err) => {
+                                                    console.error('modify escrow error =>', err);
+                                                    let resErr = "처리중 에러 발생";
+                                                    //API 처리 결과 별도 LOG로 남김
+                                                    logger.addLog(country, req.originalUrl, req.body, err);
+                                            
+                                                    bitwebResponse.code = 500;
+                                                    bitwebResponse.message = resErr;
+                                                    res.status(500).send(bitwebResponse.create())
+                                                })  
+                                            }).catch((err) => {
+                                                console.error('modify item error =>', err);
+                                                let resErr = "처리중 에러 발생";
+                                                //API 처리 결과 별도 LOG로 남김
+                                                logger.addLog(country, req.originalUrl, req.body, err);
+                    
+                                                bitwebResponse.code = 500;
+                                                bitwebResponse.message = resErr;
+                                                res.status(500).send(bitwebResponse.create())
+                                            })
+                                        } else {
                                             //판매자 에스크로 금액 입금
                                             let result_price = parseFloat((user_price + vtr._doc.price).toFixed(8));
                                             let reqDataCoin = {"total_mach": result_price};
@@ -1963,7 +2447,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                                         let resData = {
                                                             "result":msg,
                                                             "vtr": deletedVtr,
-                                                            "item": updateItem,
+                                                            "item": "no",
                                                             "coin": updateCoin,
                                                             "escrow": modifyEscrow,
                                                             "escrowHistory": reqDataEscrow,
@@ -2005,67 +2489,58 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                                 bitwebResponse.message = resErr;
                                                 res.status(500).send(bitwebResponse.create())
                                             })  
-                                        }).catch((err) => {
-                                            console.error('modify item error =>', err);
-                                            let resErr = "처리중 에러 발생";
-                                            //API 처리 결과 별도 LOG로 남김
-                                            logger.addLog(country, req.originalUrl, req.body, err);
-                
-                                            bitwebResponse.code = 500;
-                                            bitwebResponse.message = resErr;
-                                            res.status(500).send(bitwebResponse.create())
-                                        })
+                                        }
                                     }).catch((err) => {
-                                        console.error('delete vtr temp error =>', err);
+                                        console.error('get vtrtemp error =>', err);
                                         let resErr = "처리중 에러 발생";
                                         //API 처리 결과 별도 LOG로 남김
                                         logger.addLog(country, req.originalUrl, req.body, err);
-                
+                                
                                         bitwebResponse.code = 500;
                                         bitwebResponse.message = resErr;
                                         res.status(500).send(bitwebResponse.create())
-                                    })
+                                    })  
                                 }).catch((err) => {
-                                    console.error('delete vtr error =>', err);
+                                    console.error('delete vtr temp error =>', err);
                                     let resErr = "처리중 에러 발생";
                                     //API 처리 결과 별도 LOG로 남김
                                     logger.addLog(country, req.originalUrl, req.body, err);
-                
+            
                                     bitwebResponse.code = 500;
                                     bitwebResponse.message = resErr;
                                     res.status(500).send(bitwebResponse.create())
                                 })
                             }).catch((err) => {
-                                console.error('get coin error =>', err);
+                                console.error('delete vtr error =>', err);
                                 let resErr = "처리중 에러 발생";
                                 //API 처리 결과 별도 LOG로 남김
                                 logger.addLog(country, req.originalUrl, req.body, err);
-                    
+            
                                 bitwebResponse.code = 500;
                                 bitwebResponse.message = resErr;
                                 res.status(500).send(bitwebResponse.create())
                             })
                         }).catch((err) => {
-                            console.error('get user error =>', err);
+                            console.error('get coin error =>', err);
                             let resErr = "처리중 에러 발생";
                             //API 처리 결과 별도 LOG로 남김
                             logger.addLog(country, req.originalUrl, req.body, err);
-                    
+                
                             bitwebResponse.code = 500;
                             bitwebResponse.message = resErr;
                             res.status(500).send(bitwebResponse.create())
-                        })  
-                    }
-                }).catch((err) => {
-                    console.error('modify item error =>', err);
-                    let resErr = "처리중 에러 발생";
-                    //API 처리 결과 별도 LOG로 남김
-                    logger.addLog(country, req.originalUrl, req.body, err);
-            
-                    bitwebResponse.code = 500;
-                    bitwebResponse.message = resErr;
-                    res.status(500).send(bitwebResponse.create())
-                })  
+                        })
+                    }).catch((err) => {
+                        console.error('get user error =>', err);
+                        let resErr = "처리중 에러 발생";
+                        //API 처리 결과 별도 LOG로 남김
+                        logger.addLog(country, req.originalUrl, req.body, err);
+                
+                        bitwebResponse.code = 500;
+                        bitwebResponse.message = resErr;
+                        res.status(500).send(bitwebResponse.create())
+                    })  
+                }
             }
         }).catch((err) => {
             console.error('get vtr error =>', err);
@@ -2088,5 +2563,48 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
         res.status(500).send(bitwebResponse.create())
     }) 
 }
+
+router.get('/room/:roomToken', token.checkInternalToken, function(req, res, next) {
+    let roomToken = req.params.roomToken;
+    let bitwebResponse = new BitwebResponse();
+    let country = dbconfig.country;
+
+    serviceVtrTemps.detail(country, {"roomToken":roomToken})
+    .then(vtrTemp => {
+        if(vtrTemp == null) {    
+            //vtrTemp 존재하지 않는 경우 메시지 출력
+            bitwebResponse.code = 200;
+            let resData = {
+                "successYn": "N",
+                "message": "No exist a VTR room."
+            }
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, req.body, resData);
+            bitwebResponse.data = resData;
+            res.status(200).send(bitwebResponse.create())
+        } else {
+            //vtrTemp 존재시 해당 item 값  return
+            bitwebResponse.code = 200;
+            vtrTemp._doc.item['successYn'] = "Y";
+            let resData = {
+                "successYn": "N",
+                vtrTemp: vtrTemp
+            }
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, req.body, resData);
+            bitwebResponse.data = vtrTemp._doc.item;
+            res.status(200).send(bitwebResponse.create())
+        }
+    }).catch((err) => {
+        console.error('get room error =>', err);
+        let resErr = "처리중 에러 발생";
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, err);
+
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    })    
+})
 
 module.exports = router;

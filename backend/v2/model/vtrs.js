@@ -25,7 +25,8 @@ var vtrsSchema = new Schema({
     buyer_phone: String,
     seller_phone: String,
     auto_completed_confirm_date: String,
-    opposition_date: String
+    opposition_date: String,
+    roomToken: String
 });
 
 module.exports = mongoose.model('Vtrs', vtrsSchema);

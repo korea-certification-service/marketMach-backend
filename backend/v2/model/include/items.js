@@ -20,8 +20,11 @@ var itemsSchema = new Schema({
     china_region2: String,      //중국서버 일때 지구
     name: String,
     title: String,
+    title_en: String,
     desc: String,
+    desc_en: String,
     price: Number,
+    cryptoCurrencyCode: String,
     currency: String,
     point: Number,
     count: Number,
@@ -42,8 +45,6 @@ var itemsSchema = new Schema({
     vtrTempId: String,
     clicked: Number,
     primeService: String,
-    vtr: Mixed,
-    pointTrade: Mixed,
     country: String
 });
 
