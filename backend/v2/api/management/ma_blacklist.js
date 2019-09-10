@@ -1,23 +1,25 @@
 var express = require('express');
 var router = express.Router();
-let dbconfig = require('../../../../config/dbconfig');
 let BitwebResponse = require('../../utils/BitwebResponse');
 let BlackUsers = require('../../model/blacklist');
 let blacklist = require('../../service/blacklist');
 let pagination = require('../../service/_pagination');
+let dbconfig = require('../../../../config/dbconfig');
 
 /*GET User List*/
 router.get("/list", (req, res) => {
-    let country = dbconfig.country;
-    let condition = {
-        'country': country,
-        'userTag': req.query.search
-    }
+
     let bitwebResponse = new BitwebResponse();
 
     console.log(req.query);
 
-    pagination.paging(req, res, BlackUsers, country, condition, 'userTag')
+    pagination.paging({
+        model: BlackUsers,
+        condition: {},
+        limit: req.query.limit,
+        skip: req.query.skip,
+        search: {'userTag': req.query.search}
+    })
     .then(data => {
         res.status(200).send(data);
     })
@@ -32,12 +34,12 @@ router.get("/list", (req, res) => {
 });
 
 /*GET User Count*/
-router.get("/count", (req, res) => {
+router.get("/count/:userTag", (req, res) => {
     let country = dbconfig.country;
-    let condition = {
-        'country': country
-    }
     let bitwebResponse = new BitwebResponse();
+    let condition = {
+        "recommander": req.params.userTag
+    }
     blacklist.count(country, condition)
     .then(data => {
         res.send(200, data);
@@ -55,7 +57,6 @@ router.get("/count", (req, res) => {
 router.get("/:userId", (req, res) => {
     let country = dbconfig.country;
     let condition = {
-        'country': country,
         '_id': req.params.userId
     }
     let bitwebResponse = new BitwebResponse();
@@ -67,6 +68,29 @@ router.get("/:userId", (req, res) => {
             res.send(200, data);
         }
         //console.log(data);
+    })
+    .catch(err => {
+        console.error('data error =>', err);
+        let resErr = "there is no data";
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    })
+});
+
+/*PUT User Modify*/
+router.put("/modify/:userId", (req, res) => {
+    let country = dbconfig.country;
+    let condition = {
+        '_id': req.params.userId
+    }
+    let data = req.body;
+
+    let bitwebResponse = new BitwebResponse();
+    blacklist.modify(country, condition, data)
+    .then(success => {
+        //console.log(success);
+        res.status(200).send(success);
     })
     .catch(err => {
         console.error('data error =>', err);

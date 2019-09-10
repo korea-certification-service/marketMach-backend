@@ -5,22 +5,25 @@
  */
 var express = require('express');
 var router = express.Router();
-var dbconfig = require('../../../../config/dbconfig');
 var BitwebResponse = require('../../utils/BitwebResponse');
 var PointBankHistorys = require('../../model/pointBankHistorys');
 let pagination = require('../../service/_pagination');
+let dbconfig = require('../../../../config/dbconfig');
 
 //coin history 조회 API
 router.get("/list/:pointId", (req, res) => {
-    let country = dbconfig.country;
-    let condition = {
-        'pointId': req.params.pointId
-    }
+
     let bitwebResponse = new BitwebResponse();
 
     console.log(req.query);
 
-    pagination.paging(req, res, PointBankHistorys, country, condition, 'type')
+    pagination.paging({
+        model: PointBankHistorys,
+        condition: {'pointId': req.params.pointId},
+        limit: req.query.limit,
+        skip: req.query.skip,
+        search: {'type': req.query.search}
+    })
     .then(data => {
         res.status(200).send(data);
     })

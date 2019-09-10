@@ -4,6 +4,7 @@ let dbconfig = require('../../../../config/dbconfig');
 let BitwebResponse = require('../../utils/BitwebResponse');
 let serviceEscrows = require('../../service/escrows');
 
+
 /*GET Escrow Detail*/
 //입금예정 Escrow
 router.get("/detail/:userId/seller", (req, res) => {

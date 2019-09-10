@@ -1,23 +1,25 @@
 var express = require('express');
 var router = express.Router();
-let dbconfig = require('../../../../config/dbconfig');
 let BitwebResponse = require('../../utils/BitwebResponse');
 let Users = require('../../model/users');
 let serviceUsers = require('../../service/users');
 let pagination = require('../../service/_pagination');
+let dbconfig = require('../../../../config/dbconfig');
 
 /*GET User List*/
 router.get("/list", (req, res) => {
-    let country = dbconfig.country;
-    let condition = {
-        'country': country,
-        'userTag': req.query.search
-    }
+
     let bitwebResponse = new BitwebResponse();
 
     console.log(req.query);
 
-    pagination.paging(req, res, Users, country, condition, 'userTag')
+    pagination.paging({
+        model: Users,
+        condition: {},
+        limit: req.query.limit,
+        skip: req.query.skip,
+        search: {'userTag': req.query.search}
+    })
     .then(data => {
         res.status(200).send(data);
     })
@@ -32,12 +34,12 @@ router.get("/list", (req, res) => {
 });
 
 /*GET User Count*/
-router.get("/count", (req, res) => {
+router.get("/count/:userTag", (req, res) => {
     let country = dbconfig.country;
-    let condition = {
-        'country': country
-    }
     let bitwebResponse = new BitwebResponse();
+    let condition = {
+        "recommander": req.params.userTag
+    }
     serviceUsers.count(country, condition)
     .then(data => {
         res.send(200, data);
@@ -55,7 +57,6 @@ router.get("/count", (req, res) => {
 router.get("/:userId", (req, res) => {
     let country = dbconfig.country;
     let condition = {
-        'country': country,
         '_id': req.params.userId
     }
     let bitwebResponse = new BitwebResponse();

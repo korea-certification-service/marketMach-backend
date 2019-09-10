@@ -6,7 +6,7 @@ let serviceCoins = require('../../service/coins');
 
 /*GET Coin List*/
 router.get("/list", (req, res) => {
-    let condition = { }
+    let condition = {}
     let bitwebResponse = new BitwebResponse();
     serviceCoins.list(condition)
     .then(data => {

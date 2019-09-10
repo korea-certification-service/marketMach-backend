@@ -12,18 +12,19 @@ let pagination = require('../../service/_pagination');
 
 //escrow history 조회 API
 router.get("/list/:userId", (req, res) => {
-    let country = dbconfig.country;
-    let condition = {
-        'reqUser': req.params.userId,
-        'type': req.query.search
-    }
+
     let bitwebResponse = new BitwebResponse();
 
     console.log(req.query);
 
-    pagination.paging(req, res, EscrowHistorys, country, condition, 'type')
+    pagination.paging({
+        model: EscrowHistorys,
+        condition: {'reqUser': req.params.userId},
+        limit: req.query.limit,
+        skip: req.query.skip,
+        search: {'type': req.query.search}
+    })
     .then(data => {
-        console.log(data);
         res.status(200).send(data);
     })
     .catch(err => {
