@@ -8,20 +8,21 @@ function paging(obj) {
     if(!condition) condition = {};
     if(!limit) limit = 0;
     if(!skip) skip = 0;
-    if(!search) search.regDate = '';
+    if(!search || !search.key || !search.val) {
+        search.key = 'regDate';
+        search.val = '';
+    }
 
     limit = parseInt(limit)
     skip = parseInt(skip)
-    searchKey = Object.keys(search)[0] || 'regDate';
-    searchValue = Object.values(search)[0] || '';
 
     let total = 0
 
     return new Promise((resolve, reject) => {
         db.connectDB()
         .then(() => {
-            if(searchKey.match(/_id/gi) != null) {
-                let newCondition = searchValue  == '' ? condition : Object.assign(condition, search);
+            if(search.key.match(/_id/gi) != null) {
+                let newCondition = search.val  == '' ? condition : Object.assign(condition, {'item._id': search.val});
                 model.countDocuments(newCondition)
                 .then(count => {
                     total = count
@@ -38,11 +39,11 @@ function paging(obj) {
                 })
             } else {
                 model.countDocuments(condition)
-                .where(searchKey).regex(searchValue)
+                .where(search.key).regex(search.val)
                 .then(count => {
                     total = count
                     model.find(condition)
-                    .where(searchKey).regex(searchValue)
+                    .where(search.key).regex(search.val)
                     .sort({'regDate':-1})
                     .skip(skip)
                     .limit(limit)
@@ -58,57 +59,6 @@ function paging(obj) {
             reject(err)
         });
     });
-
-    // if(searchKey == "_id") {
-
-    //     let newCondition = searchValue  == '' ? condition : Object.assign(condition, search);
-
-    //     return new Promise((resolve, reject) => {
-    //         db.connectDB(country)
-    //         .then(() => {
-    //             model.countDocuments(newCondition)
-    //             .then(count => {
-    //                 total = count
-    //                 model.find(newCondition)
-    //                 .sort({'regDate':-1})
-    //                 .skip(skip)
-    //                 .limit(limit)
-    //                 .exec((err, rs) => {
-    //                     if (err) {
-    //                         reject({ success: false, msg: err });
-    //                     }
-    //                     resolve({ success: true, t: total, ds: rs});
-    //                 })
-    //             })
-    //         }).catch(err => {
-    //             reject(err)
-    //         });
-    //     });
-    // } else {
-    //     return new Promise((resolve, reject) => {
-    //         db.connectDB(country)
-    //         .then(() => {
-    //             model.countDocuments(condition)
-    //             .where(searchKey).regex(searchValue)
-    //             .then(count => {
-    //                 total = count
-    //                 model.find(condition)
-    //                 .where(searchKey).regex(searchValue)
-    //                 .sort({'regDate':-1})
-    //                 .skip(skip)
-    //                 .limit(limit)
-    //                 .exec((err, rs) => {
-    //                     if (err) {
-    //                         reject({ success: false, msg: err });
-    //                     }
-    //                     resolve({ success: true, t: total, ds: rs});
-    //                 })
-    //             });
-    //         }).catch(err => {
-    //             reject(err)
-    //         });
-    //     })
-    // }
 }
 
 exports.paging = paging;

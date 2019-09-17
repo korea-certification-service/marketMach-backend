@@ -22,7 +22,8 @@ router.get("/list/:userId", (req, res) => {
         condition: {'reqUser': req.params.userId},
         limit: req.query.limit,
         skip: req.query.skip,
-        search: {'type': req.query.search}
+        // search: {'type': req.query.search}
+        search: { key: req.query.key, val: req.query.val }
     })
     .then(data => {
         res.status(200).send(data);
