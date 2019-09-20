@@ -25,7 +25,7 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
     if(req.body.countryCode == "+7") {
         console.error('err=>', err)
         bitwebResponse.code = 200;
-        bitwebResponse.data = "";
+        bitwebResponse.data = "{\"successYn\":\"true\"}";
         res.status(200).send(bitwebResponse.create());
         return;
     }
