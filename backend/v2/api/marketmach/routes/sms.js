@@ -24,7 +24,7 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
     //긴급 패치
     if(req.body.countryCode == "+7") {
         bitwebResponse.code = 200;
-        bitwebResponse.data = "{\"successYn\":\"true\"}";
+        bitwebResponse.data = "{\"data\":\"true\"}";
         res.status(200).send(bitwebResponse.create());
         return;
     }
