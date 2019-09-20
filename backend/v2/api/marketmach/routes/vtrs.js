@@ -591,7 +591,10 @@ function _reqBuy(req, res, bitwebResponse) {
                     user_price = coin.total_btc == undefined ? 0 : coin.total_btc;
                 } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
                     user_price = coin.total_ether == undefined ? 0 : coin.total_ether;
+                } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
+                    user_price = coin.total_ont == undefined ? 0 : coin.total_ont;
                 }
+
                 if (user_price < 0 || user_price < vtr._doc.price) {
                     let msg = {
                         "successYn": "N",
@@ -630,7 +633,10 @@ function _reqBuy(req, res, bitwebResponse) {
                                 reqDataCoin = {"total_btc": result_price};
                             } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
                                 reqDataCoin = {"total_ether": result_price};
-                            }   
+                            } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
+                                reqDataCoin = {"total_ont": result_price};
+                            } 
+
                             let reqDataEscrow = {
                                 'vtrId': vtr._doc._id,
                                 'itemId': updateItem._doc._id,
@@ -925,6 +931,8 @@ function _reqComplete(req, res, bitwebResponse) {
                     user_price = coin.total_btc == undefined ? 0 : coin.total_btc;
                 } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
                     user_price = coin.total_ether == undefined ? 0 : coin.total_ether;
+                } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
+                    user_price = coin.total_ont == undefined ? 0 : coin.total_ont;
                 }
 
                 //아이템 상태 정보 update.    
@@ -953,7 +961,10 @@ function _reqComplete(req, res, bitwebResponse) {
                                 reqDataCoin = {"total_btc": result_price};
                             } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
                                 reqDataCoin = {"total_ether": result_price};
-                            }   
+                            } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
+                                reqDataCoin = {"total_ont": result_price};
+                            }  
+
                             let reqDataEscrow = {
                                 'status':'completed',
                                 'completed_regDate': util.formatDate(new Date().toString())
@@ -1264,6 +1275,8 @@ function _reqCancel(req, res, bitwebResponse) {
                                 user_price = coin.total_btc == undefined ? 0 : coin.total_btc;
                             } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
                                 user_price = coin.total_ether == undefined ? 0 : coin.total_ether;
+                            } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
+                                user_price = coin.total_ont == undefined ? 0 : coin.total_ont;
                             }
 
                             let reqData = {
@@ -1282,7 +1295,10 @@ function _reqCancel(req, res, bitwebResponse) {
                                         reqDataCoin = {"total_btc": result_price};
                                     } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
                                         reqDataCoin = {"total_ether": result_price};
-                                    }   
+                                    } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
+                                        reqDataCoin = {"total_ont": result_price};
+                                    } 
+
                                     let reqDataEscrow = {
                                         'status':'cancelled',
                                         'cancelled_regDate': util.formatDate(new Date().toString())
@@ -1544,7 +1560,10 @@ function _buynow(req, res, bitwebResponse) {
                         user_price = coin.total_btc == undefined ? 0 : coin.total_btc;
                     } else if(body.cryptoCurrencyCode == "ETH") {
                         user_price = coin.total_ether == undefined ? 0 : coin.total_ether;
+                    } else if(body.cryptoCurrencyCode == "ONT") {
+                        user_price = coin.total_ont == undefined ? 0 : coin.total_ont;
                     }
+
                     if (user_price < 0 || user_price < body.price) {
                         let message = "거래금액이 구매자의 보유 금액보다 클 수 없습니다.";
                         if(req.body.country != "KR") {
@@ -1606,7 +1625,10 @@ function _buynow(req, res, bitwebResponse) {
                                     reqDataCoin = {"total_btc": result_price};
                                 } else if(addVtr._doc.cryptoCurrencyCode == "ETH") {
                                     reqDataCoin = {"total_ether": result_price};
-                                }   
+                                } else if(addVtr._doc.cryptoCurrencyCode == "ONT") {
+                                    reqDataCoin = {"total_ont": result_price};
+                                } 
+
                                 let reqDataEscrow = {
                                     'vtrId': addVtr._doc._id,
                                     'itemId': updateItem._doc._id,
@@ -2216,6 +2238,8 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                 user_price = coin.total_btc == undefined ? 0 : coin.total_btc;
                             } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
                                 user_price = coin.total_ether == undefined ? 0 : coin.total_ether;
+                            } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
+                                user_price = coin.total_ont == undefined ? 0 : coin.total_ont;
                             }
 
                             let reqData = {
@@ -2239,7 +2263,10 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                                     reqDataCoin = {"total_btc": result_price};
                                                 } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
                                                     reqDataCoin = {"total_ether": result_price};
-                                                }   
+                                                } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
+                                                    reqDataCoin = {"total_ont": result_price};
+                                                } 
+
                                                 let reqDataEscrow = {
                                                     'status':'cancelled',
                                                     'cancelled_regDate': util.formatDate(new Date().toString())
@@ -2373,7 +2400,10 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                                 reqDataCoin = {"total_btc": result_price};
                                             } else if(vtr._doc.cryptoCurrencyCode == "ETH") {
                                                 reqDataCoin = {"total_ether": result_price};
-                                            }   
+                                            } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
+                                                reqDataCoin = {"total_ont": result_price};
+                                            }  
+
                                             let reqDataEscrow = {
                                                 'status':'cancelled',
                                                 'cancelled_regDate': util.formatDate(new Date().toString())
