@@ -26,7 +26,8 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
         console.error('err=>', err)
         bitwebResponse.code = 200;
         bitwebResponse.data = "";
-        res.status(200).send(bitwebResponse.create())
+        res.status(200).send(bitwebResponse.create());
+        return;
     }
 
     serviceOccupancyPhones.add(country, reqData)
