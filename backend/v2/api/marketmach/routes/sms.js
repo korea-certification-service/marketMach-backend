@@ -23,7 +23,6 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
 
     //긴급 패치
     if(req.body.countryCode == "+7") {
-        console.error('err=>', err)
         bitwebResponse.code = 200;
         bitwebResponse.data = "{\"successYn\":\"true\"}";
         res.status(200).send(bitwebResponse.create());
