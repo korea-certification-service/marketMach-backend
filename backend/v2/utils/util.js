@@ -162,6 +162,16 @@ function fileUpload(req, res, callback) {
     });
 }
 
+function makeNumber() {
+    var text = "";
+    var possible = "0123456789";
+
+    for( var i=0; i < 6; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
 exports.formatDate = formatDate;
 exports.formatDate2 = formatDate2;
 exports.getEnvLocale = getEnvLocale;
@@ -174,3 +184,4 @@ exports.checkPassword = checkPassword;
 exports.checkEmail = checkEmail;
 exports.checkAdult = checkAdult;
 exports.fileUpload = fileUpload;
+exports.makeNumber = makeNumber;

@@ -14,6 +14,7 @@ var itemsRouter = require('./backend/v2/api/marketmach/routes/items');
 var communityRouter = require('./backend/v2/api/marketmach/routes/communitys');
 var kycRouter = require('./backend/v2/api/marketmach/routes/kyc');
 var faqRouter = require('./backend/v2/api/marketmach/routes/faq');
+var smsRouter = require('./backend/v2/api/marketmach/routes/sms');
 var commonRouter = require('./backend/v2/api/marketmach/routes/common');
 
 //management
@@ -74,6 +75,7 @@ app.use(version + '/vtrs', vtrsRouter);
 app.use(version + '/kycs', kycRouter);
 app.use(version + '/community', communityRouter);
 app.use(version + '/faq', faqRouter);
+app.use(version + '/sms', smsRouter);
 
 //management API
 app.use('/ma_users', maUsers);
