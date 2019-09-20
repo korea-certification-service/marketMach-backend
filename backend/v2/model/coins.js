@@ -10,6 +10,7 @@ var coinsSchema = new Schema({
     output_total_mach: Number,
     total_btc: Number,
     total_ether: Number,
+    total_ont: Number,
     firstItem: Boolean,
     firstReply: Boolean,
     firstVtr: Boolean

@@ -21,6 +21,14 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
         'regDate': util.formatDate(new Date().toString())
     }
 
+    //긴급 패치
+    if(req.body.countryCode == "+7") {
+        console.error('err=>', err)
+        bitwebResponse.code = 200;
+        bitwebResponse.data = "";
+        res.status(200).send(bitwebResponse.create())
+    }
+
     serviceOccupancyPhones.add(country, reqData)
     .then(() => {
         //SMS인증 후 인증번호 회신
