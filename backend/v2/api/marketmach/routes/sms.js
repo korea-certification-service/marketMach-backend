@@ -36,9 +36,32 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
         let message = "" + reqData.authCode + " - " + smsContent.authSms[country];
         serviceSms.sendSms(phone, message)
         .then((result) => {
-            bitwebResponse.code = 200;
-            bitwebResponse.data = result;
-            res.status(200).send(bitwebResponse.create())
+            let fromDate = new Date();
+            fromDate.setHours(fromDate.getHours() - 1);
+            fromDate = util.formatDatePerHour(fromDate);
+            let toDate = util.formatDatePerHour(new Date().toString());
+            let condition = {
+                "regDate":{"$gte": fromDate,"$lte": toDate}
+            }
+            //config에 설정된 건수보다 많이 발생한 경우 SMS Noti날린다.
+            serviceOccupancyPhones.count(country, condition)
+            .then(count => {
+                if(count >= dbconfig.smsNotification.sendSms.count.hour) {
+                    let managerList = dbconfig.smsNotification.manager;
+                    let notification = "["+count+"건]" + smsContent.manageNotification;
+                    for(var i=0;i<managerList.length;i++) {
+                        serviceSms.sendSms(managerList[i], notification);
+                    }
+                }
+                bitwebResponse.code = 200;
+                bitwebResponse.data = result;
+                res.status(200).send(bitwebResponse.create())
+            }).catch((err) => {
+                console.error('err=>', err)
+                bitwebResponse.code = 200;
+                bitwebResponse.data = result;
+                res.status(200).send(bitwebResponse.create())
+            })
         }).catch((err) => {
             console.error('err=>', err)
             bitwebResponse.code = 500;

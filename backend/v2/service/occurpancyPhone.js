@@ -1,7 +1,7 @@
 let db = require('../utils/db');
 var OccupancyPhones = require('../model/occupancyPhone');
 
-function count(country, condition, option) {
+function count(country, condition) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {

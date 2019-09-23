@@ -38,6 +38,26 @@ function formatDate2 (date) {
     return getDate + getTime;
 }
 
+function formatDatePerHour (date) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear(),
+        hour = d.getHours(),
+        minutes = d.getMinutes(),
+        secounds = d.getSeconds();
+
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+    if (hour.toString().length < 2) hour = '0' + hour;
+    if (minutes.toString().length < 2) minutes = '00';
+    if (secounds.toString().length < 2) secounds = '00';
+
+    let getDate = [year, month, day].join('/');
+    let getTime = [hour, minutes, secounds].join(':');
+    return getDate + " " + getTime;
+}
+
 function checkAdult (start_date, to_date) {
     var s_d = new Date(start_date);
     var e_d = new Date(to_date);
@@ -185,3 +205,4 @@ exports.checkEmail = checkEmail;
 exports.checkAdult = checkAdult;
 exports.fileUpload = fileUpload;
 exports.makeNumber = makeNumber;
+exports.formatDatePerHour = formatDatePerHour;
