@@ -2,7 +2,8 @@ let express = require('express');
 let router = express.Router();
 var BitwebResponse = require('../../../utils/BitwebResponse')
 let serviceSms = require('../../../service/sms');
-var serviceOccupancyPhones = require('../../../service/occurpancyPhone');
+let serviceOccupancyPhones = require('../../../service/occurpancyPhone');
+var occurpancyNotifications = require('../../../service/occurpancyNotification');
 const smsContent = require('../../../../../config/sms');
 const dbconfig = require('../../../../../config/dbconfig');
 const util = require('../../../utils/util');
@@ -37,25 +38,42 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
         serviceSms.sendSms(phone, message)
         .then((result) => {
             let fromDate = new Date();
-            fromDate.setHours(fromDate.getHours() - 1);
             fromDate = util.formatDatePerHour(fromDate);
-            let toDate = util.formatDatePerHour(new Date().toString());
+            let toDate = util.formatDate(new Date().toString());
             let condition = {
                 "regDate":{"$gte": fromDate,"$lte": toDate}
             }
             //config에 설정된 건수보다 많이 발생한 경우 SMS Noti날린다.
             serviceOccupancyPhones.count(country, condition)
             .then(count => {
-                if(count >= dbconfig.smsNotification.sendSms.count.hour) {
-                    let managerList = dbconfig.smsNotification.manager;
-                    let notification = "["+count+"건]" + smsContent.manageNotification;
-                    for(var i=0;i<managerList.length;i++) {
-                        serviceSms.sendSms(managerList[i], notification);
-                    }
+                let condition2 = {
+                    "regDate":{"$gte": fromDate,"$lte": toDate}
                 }
-                bitwebResponse.code = 200;
-                bitwebResponse.data = result;
-                res.status(200).send(bitwebResponse.create())
+                occurpancyNotifications.count(country, condition2)
+                .then(notiCount => {
+                    if(count >= dbconfig.smsNotification.sendSms.count.hour && notiCount == 0) {
+                        let managerList = dbconfig.smsNotification.manager;
+                        let reqDate = {
+                            sendSmsNotification: true,
+                            phones: managerList,
+                            regDate: util.formatDate(new Date().toString())
+                        }
+                        occurpancyNotifications.add(country, reqDate);
+                        
+                        let notification = "["+count+"건]" + smsContent.manageNotification;
+                        for(var i=0;i<managerList.length;i++) {
+                            serviceSms.sendSms(managerList[i], notification);
+                        }
+                    }
+                    bitwebResponse.code = 200;
+                    bitwebResponse.data = result;
+                    res.status(200).send(bitwebResponse.create())
+                }).catch((err) => {
+                    console.error('err=>', err)
+                    bitwebResponse.code = 200;
+                    bitwebResponse.data = result;
+                    res.status(200).send(bitwebResponse.create())
+                })
             }).catch((err) => {
                 console.error('err=>', err)
                 bitwebResponse.code = 200;

@@ -44,15 +44,13 @@ function formatDatePerHour (date) {
         day = '' + d.getDate(),
         year = d.getFullYear(),
         hour = d.getHours(),
-        minutes = d.getMinutes(),
-        secounds = d.getSeconds();
+        minutes = '00',
+        secounds = '00';
 
     if (month.length < 2) month = '0' + month;
     if (day.length < 2) day = '0' + day;
     if (hour.toString().length < 2) hour = '0' + hour;
-    if (minutes.toString().length < 2) minutes = '00';
-    if (secounds.toString().length < 2) secounds = '00';
-
+    
     let getDate = [year, month, day].join('/');
     let getTime = [hour, minutes, secounds].join(':');
     return getDate + " " + getTime;
