@@ -38,6 +38,11 @@ function formatDate2 (date) {
     return getDate + getTime;
 }
 
+function getUnixTime(date) {
+    var d = new Date(date);
+    return d.getTime() / 1000;
+}
+
 function formatDatePerHour (date) {
     var d = new Date(date),
         month = '' + (d.getMonth() + 1),
@@ -204,3 +209,4 @@ exports.checkAdult = checkAdult;
 exports.fileUpload = fileUpload;
 exports.makeNumber = makeNumber;
 exports.formatDatePerHour = formatDatePerHour;
+exports.getUnixTime = getUnixTime;

@@ -8,6 +8,7 @@ const smsContent = require('../../../../../config/sms');
 const dbconfig = require('../../../../../config/dbconfig');
 const util = require('../../../utils/util');
 let token = require('../../../utils/token');
+let logger = require('../../../utils/log');
 
 router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next) {
     var bitwebResponse = new BitwebResponse();
@@ -25,6 +26,8 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
     //긴급 패치
     if(req.body.countryCode == "+7") {
         bitwebResponse.code = 200;
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, reqData, "Russia Skip!!");
         bitwebResponse.data = "{\"data\":\"true\"}";
         res.status(200).send(bitwebResponse.create());
         return;
@@ -65,29 +68,45 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
                             serviceSms.sendSms(managerList[i], notification);
                         }
                     }
+                    let resData = {
+                        "sendSms":result,
+                        "OccupancyPhoneCount": count,
+                        "notiCount": notiCount
+                    }
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, reqData, resData);
+
                     bitwebResponse.code = 200;
                     bitwebResponse.data = result;
                     res.status(200).send(bitwebResponse.create())
                 }).catch((err) => {
                     console.error('err=>', err)
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, reqData, err);
                     bitwebResponse.code = 200;
                     bitwebResponse.data = result;
                     res.status(200).send(bitwebResponse.create())
                 })
             }).catch((err) => {
                 console.error('err=>', err)
+                //API 처리 결과 별도 LOG로 남김
+                logger.addLog(country, req.originalUrl, reqData, err);
                 bitwebResponse.code = 200;
                 bitwebResponse.data = result;
                 res.status(200).send(bitwebResponse.create())
             })
         }).catch((err) => {
             console.error('err=>', err)
+            //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, reqData, err);
             bitwebResponse.code = 500;
             bitwebResponse.message = err;
             res.status(500).send(bitwebResponse.create())
         })
     }).catch((err) => {
-        console.error('err=>', err)
+        console.error('err=>', err);
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, reqData, err);
         bitwebResponse.code = 500;
         bitwebResponse.message = err;
         res.status(500).send(bitwebResponse.create())
