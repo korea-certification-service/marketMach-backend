@@ -113,7 +113,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
 
                     let amount = req.body.amount;
                     let fee_rate = parseFloat((amount * dbconfig.fee.coin.ont.withdraw).toFixed(8));
-                    amount = parseFloat((amount - 1).toFixed(8));
+                    amount = Math.floor(parseFloat((amount - fee_rate).toFixed(8)));
                     //각 코인별로 출금
                     if(coinType == "ETH") {
                         fee_rate = parseFloat((amount * dbconfig.fee.coin.ether.withdraw).toFixed(8));
