@@ -2,17 +2,19 @@ let Items = require('../model/items');
 let ItemReplys = require("../model/replyItems");
 let db = require('../utils/db');
 
-function count(country, condition) {
+function count(country, condition, option) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Items.count(
-                condition,
-                function(err, result) {
+            Items.count(condition)
+            .limit(100)
+            .skip(option.pageIdx * option.perPage)
+            .sort({regDate:'desc'})
+            .exec(function (err, count) {
                     if (err) {
                         reject(err)
                     }
-                    resolve(result)
+                    resolve(count)
                 }
             )
         }).catch((err) => {
@@ -21,19 +23,20 @@ function count(country, condition) {
     })
 }
 
-function list(country, condition) {
+function list(country, condition, option) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Items.find(
-                condition,
-                function(err, result) {
-                    if (err) {
-                        reject(err)
-                    }
-                    resolve(result)
+            Items.find(condition)
+            .limit(option.perPage)
+            .skip(option.pageIdx * option.perPage)
+            .sort({regDate:'desc'})
+            .exec(function (err, list) {
+                if (err) {
+                    reject(err)
                 }
-            )
+                resolve(list)
+            })
         }).catch((err) => {
             reject(err)
         })
@@ -136,23 +139,30 @@ function getReplys(country, condition) {
     })
 }
 
-function addReply (body) {
+function addReply (country, body) {
     return new Promise((resolve, reject) => {
-        console.log(body)
-        var itemReplys = new ItemReplys(body)
-        itemReplys.save(function (err, result) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(result)
-            }
+        db.connectDB(country)
+        .then(() => {
+            console.log(body)
+            var itemReplys = new ItemReplys(body)
+            itemReplys.save(function (err, result) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result)
+                }
+            })
+        }).catch((err) => {
+            reject(err)
         })
     })
 }
 
-function modifyReply(conditdion, body) {
+function modifyReply(country, conditdion, body) {
     return new Promise((resolve, reject) => {
-        ReplyItems.findOneAndUpdate(
+        db.connectDB(country)
+        .then(() => {
+            ItemReplys.findOneAndUpdate(
             conditdion,
             {$set: body
             },
@@ -163,20 +173,28 @@ function modifyReply(conditdion, body) {
                 }
                 resolve(data)
             })
+        }).catch((err) => {
+            reject(err)
+        })
     })
 }
 
-function removeReply(replyId) {
+function removeReply(country, conditdion) {
     return new Promise((resolve, reject) => {
-        ReplyItems.findOneAndRemove(
-            replyId,
-            function(err, user) {
-                if (err) {
-                    reject(err)
+        db.connectDB(country)
+        .then(() => {
+            ItemReplys.findOneAndRemove(
+                conditdion,
+                function(err, user) {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(user)
                 }
-                resolve(user)
-            }
-        )
+            )
+        }).catch((err) => {
+            reject(err)
+        })
     })
 }
 

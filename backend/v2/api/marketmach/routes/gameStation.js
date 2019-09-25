@@ -12,17 +12,15 @@ let token = require('../../../utils/token');
 let BitwebResponse = require('../../../utils/BitwebResponse')
 let serviceGameStation = require('../../../service/gameStation');
 
-router.get('/list', function (req, res, next) {
+router.post('/list', function (req, res, next) {
     let bitwebResponse = new BitwebResponse();
-    let condition = {}
-    let option = {
-        "perPage": 20,
-        "pageIdx": 0
-    }
+    let condition = {};
+    
+    let option = req.body.option;
     let country = dbconfig.country;
     serviceGameStation.count(country, condition, option)
     .then(count => {
-        serviceGameStation.list(country, conditionm, option)
+        serviceGameStation.list(country, condition, option)
         .then(list => {
             bitwebResponse.code = 200;
             let resData = {
@@ -36,11 +34,8 @@ router.get('/list', function (req, res, next) {
 
             let jsonResult = bitwebResponse.create();
 
-            if (data.pageIdx != undefined) data.pageIdx = pageIdx ? data.pageIdx : 0
-            if (data.perPage != undefined) data.perPage = perPage ? data.perPage : 10
-
-            jsonResult['pageIdx'] = data.pageIdx;
-            jsonResult['perPage'] = data.perPage;
+            jsonResult['pageIdx'] = option.pageIdx;
+            jsonResult['perPage'] = option.perPage;
 
             res.status(200).send(jsonResult);
         }).catch((err) => {

@@ -16,6 +16,7 @@ var kycRouter = require('./backend/v2/api/marketmach/routes/kyc');
 var faqRouter = require('./backend/v2/api/marketmach/routes/faq');
 var smsRouter = require('./backend/v2/api/marketmach/routes/sms');
 var coinRouter = require('./backend/v2/api/marketmach/routes/coin');
+var gameStationRouter = require('./backend/v2/api/marketmach/routes/gameStation');
 var commonRouter = require('./backend/v2/api/marketmach/routes/common');
 
 //management
@@ -78,6 +79,8 @@ app.use(version + '/community', communityRouter);
 app.use(version + '/faq', faqRouter);
 app.use(version + '/sms', smsRouter);
 app.use(version + '/coin', coinRouter);
+app.use(version + '/gamestation', gameStationRouter);
+
 
 //management API
 app.use('/ma_users', maUsers);

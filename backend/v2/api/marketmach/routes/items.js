@@ -13,12 +13,12 @@ let BitwebResponse = require('../../../utils/BitwebResponse')
 let serviceItems = require('../../../service/items');
 
 //아이템 목록 조회 API
-router.get('/', token.checkInternalToken, function(req, res, next) {
+router.post('/list', token.checkInternalToken, function(req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;
-    let condition = req.query;
-    if(country != "KR") {
-        condition['country'] = country;
+    let condition = req.body.param;
+    if(req.body.param.country == "KR") {
+        condition['country'] = {$exists:false};        
     }
     let status = req.query.status;
     if(status != undefined) {
@@ -35,10 +35,7 @@ router.get('/', token.checkInternalToken, function(req, res, next) {
         }
         condition['status'] = status;
     }
-    let option = {
-        'pageIdx': req.query.pageIdx,
-        'perPage': req.query.perPage
-    }
+    let option = req.body.option;
 
     serviceItems.count(country, condition, option)
     .then(count => {
@@ -51,13 +48,10 @@ router.get('/', token.checkInternalToken, function(req, res, next) {
                 "list": list
             }
             //API 처리 결과 별도 LOG로 남김
-            logger.addLog(country, req.originalUrl, condition, resData);
+            logger.addLog(country, req.originalUrl, req.body, resData);
             bitwebResponse.data = resData;
 
             let jsonResult = bitwebResponse.create();
-
-            if (option.pageIdx != undefined) option.pageIdx = pageIdx ? option.pageIdx : 0
-            if (option.perPage != undefined) option.perPage = perPage ? option.perPage : 10
 
             jsonResult['pageIdx'] = option.pageIdx;
             jsonResult['perPage'] = option.perPage;
@@ -118,13 +112,13 @@ router.get('/:itemId', token.checkInternalToken, function (req, res, next) {
 });
 
 //아이템 등록 API
-router.post('/', token.checkInternalToken, function(req, res, next) {
+router.post('/add', token.checkInternalToken, function(req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;
-    let reqData = {}
-    reqData = req.body;
-    if(country != "KR") {
-        reqData['country'] = country;
+    let reqData = req.body;
+    
+    if(req.body.country == "KR") {
+        delete reqData['country'];
     }
     reqData['total_price'] = req.body.price;
     reqData['total_point'] = req.body.point;
@@ -181,7 +175,7 @@ router.post('/', token.checkInternalToken, function(req, res, next) {
 });
 
 //아이템 수정 API
-router.post('/:itemId', token.checkInternalToken, function(req, res, next) {
+router.put('/:itemId', token.checkInternalToken, function(req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;
     let condition = {
@@ -275,7 +269,7 @@ router.delete('/:itemId', token.checkInternalToken, function(req, res, next) {
     }) 
 });
 
-//파일 업로드 API
+//파일 업로드 API(현재 안씀, 개선 필요)
 router.post('/:itemId/images', token.checkInternalToken, function (req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let condition = {"_id":req.params.itemId};
@@ -312,13 +306,13 @@ router.put("/:itemId/clicked", token.checkInternalToken, function(req, res, next
     }
     let bitwebResponse = new BitwebResponse();
     let reqData = {
-        "clicked": {$inc: 1}
+        "$inc": {"clicked": 1}
     }
 
     serviceItems.modify(country, condition, reqData)
     .then(updateItem => {
         bitwebResponse.code = 200;
-        item._doc['successYn'] = "Y";
+        updateItem._doc['successYn'] = "Y";
         let resData = {
             "updateItem": updateItem
         }
@@ -344,7 +338,7 @@ router.post('/reply', token.checkInternalToken, function (req, res, next) {
     let reqData = req.body;
     reqData["regDate"] = util.formatDate(new Date().toString());
 
-    controllerItems.addReply(country, reqData)
+    serviceItems.addReply(country, reqData)
     .then(addReply => {
         bitwebResponse.code = 200;
         addReply._doc['successYn'] = "Y";
@@ -376,7 +370,7 @@ router.put('/reply/:replyId', token.checkInternalToken, function (req, res, next
     let reqData = req.body;
     reqData["modifyDate"] = util.formatDate(new Date().toString());
 
-    controllerItems.modifyReply(country, condition, reqData)
+    serviceItems.modifyReply(country, condition, reqData)
     .then(modifyReply => {
         bitwebResponse.code = 200;
         modifyReply._doc['successYn'] = "Y";
@@ -406,10 +400,10 @@ router.delete('/reply/:replyId', token.checkInternalToken, function (req, res, n
         "_id": req.params.replyId
     }
 
-    controllerItems.deleteReply(country, condition)
+    serviceItems.removeReply(country, condition)
     .then(deleteReply => {
         bitwebResponse.code = 200;
-        modifyReply._doc['successYn'] = "Y";
+        deleteReply._doc['successYn'] = "Y";
         let resData = {
             "deleteReply": deleteReply
         }

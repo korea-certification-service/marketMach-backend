@@ -23,7 +23,6 @@ router.post('/list', tokens.checkInternalToken, function(req, res, next){
         'country': req.body.param.country,
         'notice': true
     }
-
     let option = req.body.option;
     
     if(req.body.param.country == "KR") {
@@ -76,7 +75,12 @@ router.post('/list', tokens.checkInternalToken, function(req, res, next){
                     //API 처리 결과 별도 LOG로 남김
                     logger.addLog(country, req.originalUrl, req.body, resData);
                     bitwebResponse.data = resData
-                    res.status(200).send(bitwebResponse.create())
+                    let jsonResult = bitwebResponse.create();
+
+                    jsonResult['pageIdx'] = option.pageIdx;
+                    jsonResult['perPage'] = option.perPage;
+
+                    res.status(200).send(jsonResult);
                 }).catch((err) => {
                     console.error('get community notice error =>', err);
                     let resErr = "처리중 에러 발생";

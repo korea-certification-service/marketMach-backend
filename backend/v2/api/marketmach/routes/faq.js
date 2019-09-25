@@ -12,14 +12,15 @@ let token = require('../../../utils/token');
 let BitwebResponse = require('../../../utils/BitwebResponse')
 let serviceFaq = require('../../../service/faq');
 
-router.get('/list', token.checkInternalToken, function (req, res, next) {
+router.post('/list', token.checkInternalToken, function (req, res, next) {
     let bitwebResponse = new BitwebResponse();
-    let condition = {}
-    let option = {
-        "perPage": 20,
-        "pageIdx": 0
+    let condition = {};
+    if(req.body.param.country == "KR") {        
+        condition['country'] = {$exists: false};
     }
+    let option = req.body.option;
     let country = dbconfig.country;
+
     serviceFaq.count(country, condition, option)
     .then(count => {
         serviceFaq.list(country, condition, option)
@@ -35,9 +36,6 @@ router.get('/list', token.checkInternalToken, function (req, res, next) {
             bitwebResponse.data = resData;
 
             let jsonResult = bitwebResponse.create();
-
-            if (option.pageIdx != undefined) option.pageIdx;
-            if (option.perPage != undefined) option.perPage;
 
             jsonResult['pageIdx'] = option.pageIdx;
             jsonResult['perPage'] = option.perPage;
