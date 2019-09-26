@@ -45,15 +45,14 @@ router.get('/:bannerId', async (req, res) => {
     let condition = {
         "_id": req.params.bannerId
     };
-    reqBody["regDate"] =  util.formatDate(new Date().toString());
-
+    
     try {
         let getBanner = await serviceBanner.detail(country, condition);
         let resData = {
             "getBanner": getBanner
         }
         //API 처리 결과 별도 LOG로 남김
-        logger.addLog(country, req.originalUrl, reqBody, resData);
+        logger.addLog(country, req.originalUrl, condition, resData);
 
         bitwebResponse.code = 200;
         bitwebResponse.data = getBanner;                
@@ -61,7 +60,7 @@ router.get('/:bannerId', async (req, res) => {
     } catch(err) {
         console.error('add banners error =>', err);
         //API 처리 결과 별도 LOG로 남김
-        logger.addLog(country, req.originalUrl, reqBody, err);
+        logger.addLog(country, req.originalUrl, condition, err);
         let resErr = "처리중 에러 발생";
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
