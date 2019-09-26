@@ -4,61 +4,67 @@ let db = require('../utils/db');
 
 function count(country, condition, option) {
     return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() => {
-            Items.count(condition)
-            .limit(100)
-            .skip(option.pageIdx * option.perPage)
-            .sort({regDate:'desc'})
-            .exec(function (err, count) {
-                    if (err) {
-                        reject(err)
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() => {
+                Items.count(condition)
+                .limit(100)
+                .skip(option.pageIdx * option.perPage)
+                .sort({regDate:'desc'})
+                .exec(function (err, count) {
+                        if (err) {
+                            reject(err)
+                        }
+                        resolve(count)
                     }
-                    resolve(count)
-                }
-            )
-        }).catch((err) => {
-            reject(err)
-        })
+                )
+            }).catch((err) => {
+                reject(err)
+            })
+        });
     })
 }
 
 function list(country, condition, option) {
     return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() => {
-            Items.find(condition)
-            .limit(option.perPage)
-            .skip(option.pageIdx * option.perPage)
-            .sort({regDate:'desc'})
-            .exec(function (err, list) {
-                if (err) {
-                    reject(err)
-                }
-                resolve(list)
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() => {
+                Items.find(condition)
+                .limit(option.perPage)
+                .skip(option.pageIdx * option.perPage)
+                .sort({regDate:'desc'})
+                .exec(function (err, list) {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(list)
+                })
+            }).catch((err) => {
+                reject(err)
             })
-        }).catch((err) => {
-            reject(err)
-        })
+        });
     })
 }
 
 function detail(country, condition) {
     return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() => {
-            Items.findOne(
-                condition,
-                function(err, result) {
-                    if (err) {
-                        reject(err)
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() => {
+                Items.findOne(
+                    condition,
+                    function(err, result) {
+                        if (err) {
+                            reject(err)
+                        }
+                        resolve(result)
                     }
-                    resolve(result)
-                }
-            )
-        }).catch((err) => {
-            reject(err)
-        })
+                )
+            }).catch((err) => {
+                reject(err)
+            })
+        });
     })
 }
 
@@ -82,119 +88,131 @@ function add(country, data) {
 
 function modify(country, condition, data) {
     return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() => {
-            Items.findOneAndUpdate(
-            condition,
-            data,
-            {upsert: false, new: true},
-            function(err, result) {
-                if (err) {
-                    reject(err)
-                } else {
-                    resolve(result)
-                }
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() => {
+                Items.findOneAndUpdate(
+                condition,
+                data,
+                {upsert: false, new: true},
+                function(err, result) {
+                    if (err) {
+                        reject(err)
+                    } else {
+                        resolve(result)
+                    }
+                })
+            }).catch((err) => {
+                reject(err)
             })
-        }).catch((err) => {
-            reject(err)
-        })
+        });
     })
 }
 
 function remove(country, condition) {
     return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() => {
-            Items.findOneAndRemove(
-                condition,
-                function(err, user) {
-                    if (err) {
-                        reject(err)
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() => {
+                Items.findOneAndRemove(
+                    condition,
+                    function(err, user) {
+                        if (err) {
+                            reject(err)
+                        }
+                        resolve(user)
                     }
-                    resolve(user)
-                }
-            )
-        }).catch((err) => {
-            reject(err)
-        })
+                )
+            }).catch((err) => {
+                reject(err)
+            })
+        });
     })
 }
 
 function getReplys(country, condition) {
     return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() => {
-            ItemReplys.find(
-                condition,
-                function(err, result) {
-                    if (err) {
-                        reject(err)
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() => {
+                ItemReplys.find(
+                    condition,
+                    function(err, result) {
+                        if (err) {
+                            reject(err)
+                        }
+                        resolve(result)
                     }
-                    resolve(result)
-                }
-            )
-        }).catch((err) => {
-            reject(err)
-        })
+                )
+            }).catch((err) => {
+                reject(err)
+            })
+        });
     })
 }
 
 function addReply (country, body) {
     return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() => {
-            console.log(body)
-            var itemReplys = new ItemReplys(body)
-            itemReplys.save(function (err, result) {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(result)
-                }
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() => {
+                console.log(body)
+                var itemReplys = new ItemReplys(body)
+                itemReplys.save(function (err, result) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result)
+                    }
+                })
+            }).catch((err) => {
+                reject(err)
             })
-        }).catch((err) => {
-            reject(err)
-        })
+        });
     })
 }
 
 function modifyReply(country, conditdion, body) {
     return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() => {
-            ItemReplys.findOneAndUpdate(
-            conditdion,
-            {$set: body
-            },
-            {upsert: false, new: true},
-            function(err, data) {
-                if (err) {
-                    reject(err)
-                }
-                resolve(data)
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() => {
+                ItemReplys.findOneAndUpdate(
+                conditdion,
+                {$set: body
+                },
+                {upsert: false, new: true},
+                function(err, data) {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(data)
+                })
+            }).catch((err) => {
+                reject(err)
             })
-        }).catch((err) => {
-            reject(err)
-        })
+        });
     })
 }
 
 function removeReply(country, conditdion) {
     return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() => {
-            ItemReplys.findOneAndRemove(
-                conditdion,
-                function(err, user) {
-                    if (err) {
-                        reject(err)
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() => {
+                ItemReplys.findOneAndRemove(
+                    conditdion,
+                    function(err, user) {
+                        if (err) {
+                            reject(err)
+                        }
+                        resolve(user)
                     }
-                    resolve(user)
-                }
-            )
-        }).catch((err) => {
-            reject(err)
-        })
+                )
+            }).catch((err) => {
+                reject(err)
+            })
+        });
     })
 }
 

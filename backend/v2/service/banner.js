@@ -1,7 +1,7 @@
 let Banners = require('../model/banner');
 let db = require('../utils/db');
 
-async function list(country, condition) {
+function list(country, condition) {
     return new Promise((resolve, reject) => {
         setTimeout(_ => {
             db.connectDB(country)
@@ -22,7 +22,7 @@ async function list(country, condition) {
     })
 }
 
-async function detail(country, condition) {
+function detail(country, condition) {
     return new Promise((resolve, reject) => {
         setTimeout(_ => {
             db.connectDB(country)
@@ -63,7 +63,7 @@ async function add(country, data) {
     })
 }
 
-async function modify(country, condition, data) {
+function modify(country, condition, data) {
     return new Promise((resolve, reject) => {
         setTimeout(_ => {
             db.connectDB(country)
@@ -86,7 +86,7 @@ async function modify(country, condition, data) {
     })
 }
 
-async function remove(country, condition) {
+function remove(country, condition) {
     return new Promise((resolve, reject) => {
         setTimeout(_ => {
             db.connectDB(country)
