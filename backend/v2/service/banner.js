@@ -91,7 +91,7 @@ function remove(country, condition) {
         setTimeout(_ => {
             db.connectDB(country)
             .then(() => {
-                Banners.findByIdAndRemove(
+                Banners.findOneAndRemove(
                     condition,
                     function(err, user) {
                         if (err) {

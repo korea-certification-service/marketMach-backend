@@ -3,39 +3,10 @@ let Users = require('../model/users');
 
 function count(country, condition) {
     return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() => {
-            Users.count(
-                condition,
-                function(err, result) {
-                    if (err) {
-                        reject(err)
-                    }
-                    resolve(result)
-                }
-            )
-        }).catch((err) => {
-            reject(err)
-        })
-    })
-}
-
-function list(country, condition, limt_num) {
-    return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() => {
-            if(limt_num) {
-                Users
-                .find(condition)
-                .limit(limt_num)
-                .exec(function(err, result) {
-                    if (err) {
-                        reject(err)
-                    }
-                    resolve(result)
-                })
-            } else {
-                Users.find(
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() => {
+                Users.count(
                     condition,
                     function(err, result) {
                         if (err) {
@@ -44,86 +15,127 @@ function list(country, condition, limt_num) {
                         resolve(result)
                     }
                 )
-            }
-        }).catch((err) => {
-            reject(err)
-        })
+            }).catch((err) => {
+                reject(err)
+            })
+        });
+    })
+}
+
+function list(country, condition, limt_num) {
+    return new Promise((resolve, reject) => {
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() => {
+                if(limt_num) {
+                    Users
+                    .find(condition)
+                    .limit(limt_num)
+                    .exec(function(err, result) {
+                        if (err) {
+                            reject(err)
+                        }
+                        resolve(result)
+                    })
+                } else {
+                    Users.find(
+                        condition,
+                        function(err, result) {
+                            if (err) {
+                                reject(err)
+                            }
+                            resolve(result)
+                        }
+                    )
+                }
+            }).catch((err) => {
+                reject(err)
+            })
+        });
     })
 }
 
 function detail(country, condition) {
     return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() => {
-            Users.findOne(
-                condition,
-                function(err, result) {
-                    if (err) {
-                        reject(err)
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() => {
+                Users.findOne(
+                    condition,
+                    function(err, result) {
+                        if (err) {
+                            reject(err)
+                        }
+                        resolve(result)
                     }
-                    resolve(result)
-                }
-            )
-        }).catch((err) => {
-            reject(err)
-        })
+                )
+            }).catch((err) => {
+                reject(err)
+            })
+        });
     })
 }
 
 function add(country, data) {
     return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() => {
-            var users = new Users(data)
-            users.save(function (err, result) {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(result);
-                }
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() => {
+                var users = new Users(data)
+                users.save(function (err, result) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+                })
+            }).catch((err) => {
+                reject(err)
             })
-        }).catch((err) => {
-            reject(err)
-        })
+        });
     })
 }
 
 function modify(country, condition, data) {
     return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() =>{
-            Users.findOneAndUpdate(
-            condition,
-            data,
-            {upsert: false, new: true},
-            function(err, result) {
-                if (err) {
-                    reject(err)
-                } else {
-                    resolve(result)
-                }
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() =>{
+                Users.findOneAndUpdate(
+                condition,
+                data,
+                {upsert: false, new: true},
+                function(err, result) {
+                    if (err) {
+                        reject(err)
+                    } else {
+                        resolve(result)
+                    }
+                })
+            }).catch((err) => {
+                reject(err)
             })
-        }).catch((err) => {
-            reject(err)
-        })
+        });
     })
 }
 
 function remove(country, condition) {
     return new Promise((resolve, reject) => {
-        db.connectDB(country)
-        .then(() => {
-            Users.findByIdAndRemove(
-            condition,
-            function(err, user) {
-                if (err) {
-                    reject(err)
-                }
-                resolve(user)
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() => {
+                Users.findByIdAndRemove(
+                condition,
+                function(err, user) {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(user)
+                })
+            }).catch((err) => {
+                reject(err)
             })
-        }).catch((err) => {
-            reject(err)
-        })
+        });
     })
 }
 
