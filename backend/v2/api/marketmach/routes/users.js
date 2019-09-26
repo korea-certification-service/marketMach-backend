@@ -97,8 +97,6 @@ router.post('/login', function (req, res, next) {
     })
 });
 
-// router.get('/:user', function (req, res, next) {
-//     serviceUsers.list
-// });
+
 
 module.exports = router;

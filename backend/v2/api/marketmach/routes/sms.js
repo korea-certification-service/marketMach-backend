@@ -24,14 +24,14 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
     }
 
     //긴급 패치
-    // if(req.body.countryCode == "+7") {
-    //     bitwebResponse.code = 200;
-    //     //API 처리 결과 별도 LOG로 남김
-    //     logger.addLog(country, req.originalUrl, reqData, "Russia Skip!!");
-    //     bitwebResponse.data = "{\"data\":\"true\"}";
-    //     res.status(200).send(bitwebResponse.create());
-    //     return;
-    // }
+    if(req.body.countryCode == "+7") {
+        bitwebResponse.code = 200;
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, reqData, "Russia Skip!!");
+        bitwebResponse.data = "{\"data\":\"true\"}";
+        res.status(200).send(bitwebResponse.create());
+        return;
+    }
 
     serviceOccupancyPhones.add(country, reqData)
     .then(() => {

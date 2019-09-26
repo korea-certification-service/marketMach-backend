@@ -17,6 +17,7 @@ var faqRouter = require('./backend/v2/api/marketmach/routes/faq');
 var smsRouter = require('./backend/v2/api/marketmach/routes/sms');
 var coinRouter = require('./backend/v2/api/marketmach/routes/coin');
 var gameStationRouter = require('./backend/v2/api/marketmach/routes/gameStation');
+var mainRouter = require('./backend/v2/api/marketmach/routes/main');
 var commonRouter = require('./backend/v2/api/marketmach/routes/common');
 
 //management
@@ -34,6 +35,7 @@ var maEscrowsHistory = require('./backend/v2/api/management/ma_escrowHistorys');
 var maLogin = require('./backend/v2/api/management/ma_login');
 var session = require('express-session');
 var maItems = require('./backend/v2/api/management/ma_items');
+var maBanners = require('./backend/v2/api/management/ma_banner');
 
 var app = express();
 
@@ -80,6 +82,7 @@ app.use(version + '/faq', faqRouter);
 app.use(version + '/sms', smsRouter);
 app.use(version + '/coin', coinRouter);
 app.use(version + '/gamestation', gameStationRouter);
+app.use(version + '/main', mainRouter);
 
 
 //management API
@@ -96,6 +99,7 @@ app.use('/ma_vtrs', maVtrs);
 app.use('/ma_escrowHistorys', maEscrowsHistory);
 app.use('/ma_login', maLogin);
 app.use('/ma_items', maItems);
+app.use('/ma_banners', maBanners);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
