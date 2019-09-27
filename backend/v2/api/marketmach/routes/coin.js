@@ -36,7 +36,7 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
                 "coinId": user._doc.coinId,
                 "category": 'deposit',          
                 "status": false,
-                "currencyCode": 'ONT',
+                "currencyCode": req.body.cryptoCurrencyCode,
                 "amount": amount,
                 "price": amount,
                 "regDate": util.formatDate(new Date().toString())  
@@ -48,7 +48,7 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
                 jsonData['coinId'] = coinHistory._doc.coinId;
                 jsonData['historyId'] = coinHistory._doc._id;                    
                 jsonData['regDate'] = util.getUnixTime(coinHistory._doc.regDate);
-                jsonData['coinType'] = "ont";                    
+                jsonData['coinType'] = req.body.cryptoCurrencyCode.toLowerCase();                    
                 jsonData['price'] = amount;
                 jsonData['fromAddress'] = req.body.fromAddress;
                 scheduler.ontJob(jsonData);
@@ -103,6 +103,8 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                         total_price = coin._doc.total_ether == undefined ? 0 : coin._doc.total_ether;
                     } else if(coinType == "BTC") {
                         total_price = coin._doc.total_btc == undefined ? 0 : coin._doc.total_btc;
+                    } else if(coinType == "ONG") {
+                        total_price = coin._doc.total_ong == undefined ? 0 : coin._doc.total_ong;
                     }
 
                     if(total_price < req.body.amount) {
@@ -129,6 +131,9 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                     } else if(coinType == "BTC") {
                         fee_rate = parseFloat((amount * dbconfig.fee.coin.btc.withdraw).toFixed(8));
                         amount = parseFloat((amount - fee_rate).toFixed(8));
+                    } else if(coinType == "ONG") {
+                        fee_rate = parseFloat((amount * dbconfig.fee.coin.ong.withdraw).toFixed(8));
+                        amount = parseFloat((amount - fee_rate).toFixed(8));
                     } 
 
                     let update_data = {
@@ -142,11 +147,15 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                         update_data = {
                             "total_ether":  parseFloat((coin._doc.total_ether - req.body.amount).toFixed(8))
                         }
+                    } else if(coinType == "ONG") {
+                        update_data = {
+                            "total_ong":  parseFloat((coin._doc.total_ong - req.body.amount).toFixed(8))
+                        }
                     }
                     
                     let coinWithdrawCondition = {
                         "userTag": user._doc.userTag, 
-                        "cryptoCurrencyCode":"ONT", 
+                        "cryptoCurrencyCode":coinType, 
                         "regDate": {"$gte": util.formatDatePerDay(util.formatDate(new Date().toString())), "$lte": util.formatDate(new Date().toString())}
                     }
                     serviceCoinWithdraws.count(country, coinWithdrawCondition)
@@ -211,7 +220,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                                 let withdrawReqData = {
                                                     userTag: user._doc.userTag,
                                                     address: req.body.toAddress,
-                                                    cryptoCurrencyCode: 'ONT',
+                                                    cryptoCurrencyCode: coinType,
                                                     amount: amount,
                                                     status: "success",
                                                     regDate: util.formatDate(new Date().toString())
@@ -232,7 +241,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                                 let withdrawReqData = {
                                                     userTag: user._doc.userTag,
                                                     address: req.body.toAddress,
-                                                    cryptoCurrencyCode: 'ONT',
+                                                    cryptoCurrencyCode: coinType,
                                                     amount: amount,
                                                     status: "fail",
                                                     regDate: util.formatDate(new Date().toString())
@@ -249,7 +258,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                             let withdrawReqData = {
                                                 userTag: user._doc.userTag,
                                                 address: req.body.toAddress,
-                                                cryptoCurrencyCode: 'ONT',
+                                                cryptoCurrencyCode: coinType,
                                                 amount: amount,
                                                 status: "fail",
                                                 regDate: util.formatDate(new Date().toString())
@@ -266,7 +275,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                         let withdrawReqData = {
                                             userTag: user._doc.userTag,
                                             address: req.body.toAddress,
-                                            cryptoCurrencyCode: 'ONT',
+                                            cryptoCurrencyCode: coinType,
                                             amount: amount,
                                             status: "fail",
                                             regDate: util.formatDate(new Date().toString())

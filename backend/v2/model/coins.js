@@ -7,6 +7,7 @@ var coinsSchema = new Schema({
     btc_address: String,                //user block chain address
     ether_address: String,
     ont_address: String,
+    total_ong: Number,
     total_mach: Number,
     output_total_mach: Number,
     total_btc: Number,

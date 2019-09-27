@@ -78,6 +78,11 @@ function ontJob(data) {
                                         update_data = {
                                             "total_ether":  parseFloat((total_ether + amount).toFixed(8))
                                         }
+                                    } else if(coinType== "ong") {
+                                        let total_ong = coin._doc.total_ong == undefined ? 0 :  coin._doc.total_ong;
+                                        update_data = {
+                                            "total_ong":  parseFloat((total_ong + amount).toFixed(8))
+                                        }
                                     }
                                     
                                     serviceCoins.modify(country, {"_id": coinId}, update_data)

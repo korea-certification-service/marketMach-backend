@@ -593,6 +593,8 @@ function _reqBuy(req, res, bitwebResponse) {
                     user_price = coin.total_ether == undefined ? 0 : coin.total_ether;
                 } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
                     user_price = coin.total_ont == undefined ? 0 : coin.total_ont;
+                } else if(vtr._doc.cryptoCurrencyCode == "ONG") {
+                    user_price = coin.total_ong == undefined ? 0 : coin.total_ong;
                 }
 
                 if (user_price < 0 || user_price < vtr._doc.price) {
@@ -635,6 +637,8 @@ function _reqBuy(req, res, bitwebResponse) {
                                 reqDataCoin = {"total_ether": result_price};
                             } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
                                 reqDataCoin = {"total_ont": result_price};
+                            } else if(vtr._doc.cryptoCurrencyCode == "ONG") {
+                                reqDataCoin = {"total_ong": result_price};
                             } 
 
                             let reqDataEscrow = {
@@ -933,6 +937,8 @@ function _reqComplete(req, res, bitwebResponse) {
                     user_price = coin.total_ether == undefined ? 0 : coin.total_ether;
                 } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
                     user_price = coin.total_ont == undefined ? 0 : coin.total_ont;
+                } else if(vtr._doc.cryptoCurrencyCode == "ONG") {
+                    user_price = coin.total_ong == undefined ? 0 : coin.total_ong;
                 }
 
                 //아이템 상태 정보 update.    
@@ -963,6 +969,8 @@ function _reqComplete(req, res, bitwebResponse) {
                                 reqDataCoin = {"total_ether": result_price};
                             } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
                                 reqDataCoin = {"total_ont": result_price};
+                            } else if(vtr._doc.cryptoCurrencyCode == "ONG") {
+                                reqDataCoin = {"total_ong": result_price};
                             }  
 
                             let reqDataEscrow = {
@@ -1277,6 +1285,8 @@ function _reqCancel(req, res, bitwebResponse) {
                                 user_price = coin.total_ether == undefined ? 0 : coin.total_ether;
                             } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
                                 user_price = coin.total_ont == undefined ? 0 : coin.total_ont;
+                            } else if(vtr._doc.cryptoCurrencyCode == "ONG") {
+                                user_price = coin.total_ong == undefined ? 0 : coin.total_ong;
                             }
 
                             let reqData = {
@@ -1297,6 +1307,8 @@ function _reqCancel(req, res, bitwebResponse) {
                                         reqDataCoin = {"total_ether": result_price};
                                     } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
                                         reqDataCoin = {"total_ont": result_price};
+                                    } else if(vtr._doc.cryptoCurrencyCode == "ONG") {
+                                        reqDataCoin = {"total_ong": result_price};
                                     } 
 
                                     let reqDataEscrow = {
@@ -1562,6 +1574,8 @@ function _buynow(req, res, bitwebResponse) {
                         user_price = coin.total_ether == undefined ? 0 : coin.total_ether;
                     } else if(body.cryptoCurrencyCode == "ONT") {
                         user_price = coin.total_ont == undefined ? 0 : coin.total_ont;
+                    } else if(body.cryptoCurrencyCode == "ONG") {
+                        user_price = coin.total_ong == undefined ? 0 : coin.total_ong;
                     }
 
                     if (user_price < 0 || user_price < body.price) {
@@ -1627,6 +1641,8 @@ function _buynow(req, res, bitwebResponse) {
                                     reqDataCoin = {"total_ether": result_price};
                                 } else if(addVtr._doc.cryptoCurrencyCode == "ONT") {
                                     reqDataCoin = {"total_ont": result_price};
+                                } else if(addVtr._doc.cryptoCurrencyCode == "ONG") {
+                                    reqDataCoin = {"total_ong": result_price};
                                 } 
 
                                 let reqDataEscrow = {
@@ -2240,6 +2256,8 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                 user_price = coin.total_ether == undefined ? 0 : coin.total_ether;
                             } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
                                 user_price = coin.total_ont == undefined ? 0 : coin.total_ont;
+                            } else if(vtr._doc.cryptoCurrencyCode == "ONG") {
+                                user_price = coin.total_ong == undefined ? 0 : coin.total_ong;
                             }
 
                             let reqData = {
@@ -2265,6 +2283,8 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                                     reqDataCoin = {"total_ether": result_price};
                                                 } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
                                                     reqDataCoin = {"total_ont": result_price};
+                                                } else if(vtr._doc.cryptoCurrencyCode == "ONG") {
+                                                    reqDataCoin = {"total_ong": result_price};
                                                 } 
 
                                                 let reqDataEscrow = {
@@ -2402,6 +2422,8 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
                                                 reqDataCoin = {"total_ether": result_price};
                                             } else if(vtr._doc.cryptoCurrencyCode == "ONT") {
                                                 reqDataCoin = {"total_ont": result_price};
+                                            } else if(vtr._doc.cryptoCurrencyCode == "ONG") {
+                                                reqDataCoin = {"total_ong": result_price};
                                             }  
 
                                             let reqDataEscrow = {
