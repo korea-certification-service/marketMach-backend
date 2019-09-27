@@ -12,7 +12,11 @@ let serviceCoins = require('../../../service/coins');
 let serviceUsers = require('../../../service/users');
 let serviceBlackList = require('../../../service/blacklist');
 let serviceFeeHistorys = require('../../../service/feeHistorys');
+let serviceCoinWithdraws = require('../../../service/coinWithdraw');
 let logger = require('../../../utils/log');
+let smsContent = require('../../../../../config/sms');
+let serviceSms = require('../../../service/sms');
+let occurpancyNotifications = require('../../../service/occurpancyNotification');
 
 //ONT wallet 입금 요청 처리
 router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, next) {
@@ -103,9 +107,13 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
 
                     if(total_price < req.body.amount) {
                         bitwebResponse.code = 200;
+                        let message = "사용자 코인이 출금금액 보다 적습니다.";
+                        if(req.body.country == "EN") {
+                            message = "Your coin is less than withdrawal amount.";
+                        }
                         bitwebResponse.message = {
                             "code": "E001",
-                            "msg": "사용자 코인이 출금금액 보다 적습니다."
+                            "msg": message
                         };
                         res.status(200).send(bitwebResponse.create());
                         return;
@@ -136,67 +144,184 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                         }
                     }
                     
-                    serviceCoins.modify(country, {"_id":user._doc.coinId}, update_data)
-                    .then(u_coin => {
-                        //supppose we have an account with enough ONT and ONG
-                        //Sender's address
-                        const from = new Ont.Crypto.Address(dbconfig.ontology.address);
-                        //Receiver's address
-                        const to = new Ont.Crypto.Address(req.body.toAddress);
-                        //Asset type
-                        const assetType = 'ONT'
-                        //Gas price and gas limit are to compute the gas costs of the transaction.
-                        const gasPrice = dbconfig.ontology.gasPrice;
-                        const gasLimit = dbconfig.ontology.gasLimit;
-                        const payer = from;
-                        const privateKey = new Ont.Crypto.PrivateKey(dbconfig.ontology.privateKey);
-                        //Payer's address to pay for the transaction gas
-                        const tx = Ont.OntAssetTxBuilder.makeTransferTx(assetType, from, to, amount, gasPrice, gasLimit, payer);
-                        Ont.TransactionBuilder.signTransaction(tx, privateKey)
-                        const rest = new Ont.RestClient(dbconfig.ontology.restUrl);
-                        rest.sendRawTransaction(tx.serialize())
-                        .then(result => {
-                            console.log('success : ', result);
+                    let coinWithdrawCondition = {
+                        "userTag": user._doc.userTag, 
+                        "cryptoCurrencyCode":"ONT", 
+                        "regDate": {"$gte": util.formatDatePerDay(util.formatDate(new Date().toString())), "$lte": util.formatDate(new Date().toString())}
+                    }
+                    serviceCoinWithdraws.count(country, coinWithdrawCondition)
+                    .then(withdrawCount => {
+                        coinWithdrawCondition["status"] = "success";
+                        serviceCoinWithdraws.count(country, coinWithdrawCondition)
+                        .then(withdrawSuccessCount => {
+                            if(withdrawCount < dbconfig.ontology.withdrawreqLimit) {
+                                if(withdrawSuccessCount < dbconfig.ontology.withdrawSuccessLimit) {
+                                    //supppose we have an account with enough ONT and ONG
+                                    //Sender's address
+                                    const from = new Ont.Crypto.Address(dbconfig.ontology.address);
+                                    //Receiver's address
+                                    const to = new Ont.Crypto.Address(req.body.toAddress);
+                                    //Asset type
+                                    const assetType = 'ONT'
+                                    //Gas price and gas limit are to compute the gas costs of the transaction.
+                                    const gasPrice = dbconfig.ontology.gasPrice;
+                                    const gasLimit = dbconfig.ontology.gasLimit;
+                                    const payer = from;
+                                    const privateKey = new Ont.Crypto.PrivateKey(dbconfig.ontology.privateKey);
+                                    //Payer's address to pay for the transaction gas
+                                    const tx = Ont.OntAssetTxBuilder.makeTransferTx(assetType, from, to, amount, gasPrice, gasLimit, payer);
+                                    Ont.TransactionBuilder.signTransaction(tx, privateKey)
+                                    const rest = new Ont.RestClient(dbconfig.ontology.restUrl);
+                                    rest.sendRawTransaction(tx.serialize())
+                                    .then(result => {
+                                        console.log('success : ', result);                            
+                                        if(result.Error == 0) {      
+                                            serviceCoins.modify(country, {"_id":user._doc.coinId}, update_data)
+                                            .then(u_coin => {                        
+                                                let data = {
+                                                    "extType": "ontwallet",
+                                                    "coinId": user._doc.coinId,
+                                                    "category": "withdraw",          
+                                                    "status": 'success',
+                                                    "currencyCode": coinType,
+                                                    "amount": amount,
+                                                    "price": amount,
+                                                    "regDate": util.formatDate(new Date().toString())  
+                                                }
+    
+                                                serviceCoinHistorys.add(country, data);
+                                                
+                                                let feePercentage = dbconfig.fee.coin.ont.withdraw;
+                                                if(coinType == "BTC") {
+                                                    feePercentage = dbconfig.fee.coin.btc.withdraw;
+                                                } else if(coinType == "ETH") {
+                                                    feePercentage = dbconfig.fee.coin.ether.withdraw;
+                                                }
+    
+                                                let feeHistory = {
+                                                    userId: user._doc._id,
+                                                    currency: coinType,
+                                                    type: "withdraw",
+                                                    amount: fee_rate,
+                                                    fee: feePercentage,
+                                                    regDate: util.formatDate(new Date().toString())  
+                                                }
+                                                serviceFeeHistorys.add(country, feeHistory);
+    
+                                                let withdrawReqData = {
+                                                    userTag: user._doc.userTag,
+                                                    address: req.body.toAddress,
+                                                    cryptoCurrencyCode: 'ONT',
+                                                    amount: amount,
+                                                    status: "success",
+                                                    regDate: util.formatDate(new Date().toString())
+                                                }
+                                                serviceCoinWithdraws.add(country, withdrawReqData);
+    
+                                                bitwebResponse.code = 200;
+                                                let resData = {
+                                                    "ontTransaction":result,
+                                                    "coinHistory": data,
+                                                    "feeHistory": feeHistory
+                                                }
+                                                //API 처리 결과 별도 LOG로 남김
+                                                logger.addLog(country, req.originalUrl, req.body, resData);
+                                                bitwebResponse.data = u_coin;
+                                                res.status(200).send(bitwebResponse.create())
+                                            }) .catch(err => {
+                                                let withdrawReqData = {
+                                                    userTag: user._doc.userTag,
+                                                    address: req.body.toAddress,
+                                                    cryptoCurrencyCode: 'ONT',
+                                                    amount: amount,
+                                                    status: "fail",
+                                                    regDate: util.formatDate(new Date().toString())
+                                                }
+                                                serviceCoinWithdraws.add(country, withdrawReqData);
 
-                            let data = {
-                                "extType": "ontwallet",
-                                "coinId": user._doc.coinId,
-                                "category": "withdraw",          
-                                "status": 'success',
-                                "currencyCode": coinType,
-                                "amount": amount,
-                                "price": amount,
-                                "regDate": util.formatDate(new Date().toString())  
-                            }
+                                                bitwebResponse.code = 500;
+                                                //API 처리 결과 별도 LOG로 남김
+                                                logger.addLog(country, req.originalUrl, req.body, err);
+                                                bitwebResponse.message = err;
+                                                res.status(500).send(bitwebResponse.create());
+                                            });                          
+                                        } else {
+                                            let withdrawReqData = {
+                                                userTag: user._doc.userTag,
+                                                address: req.body.toAddress,
+                                                cryptoCurrencyCode: 'ONT',
+                                                amount: amount,
+                                                status: "fail",
+                                                regDate: util.formatDate(new Date().toString())
+                                            }
+                                            serviceCoinWithdraws.add(country, withdrawReqData);
 
-                            serviceCoinHistorys.add(country, data);
-                            
-                            let feePercentage = dbconfig.fee.coin.ont.withdraw;
-                            if(coinType == "BTC") {
-                                feePercentage = dbconfig.fee.coin.btc.withdraw;
-                            } else if(coinType == "ETH") {
-                                feePercentage = dbconfig.fee.coin.ether.withdraw;
-                            }
+                                            bitwebResponse.code = 500;
+                                            //API 처리 결과 별도 LOG로 남김
+                                            logger.addLog(country, req.originalUrl, req.body, result);
+                                            bitwebResponse.message = result;
+                                            res.status(500).send(bitwebResponse.create());
+                                        }
+                                    }).catch(err => {
+                                        let withdrawReqData = {
+                                            userTag: user._doc.userTag,
+                                            address: req.body.toAddress,
+                                            cryptoCurrencyCode: 'ONT',
+                                            amount: amount,
+                                            status: "fail",
+                                            regDate: util.formatDate(new Date().toString())
+                                        }
+                                        serviceCoinWithdraws.add(country, withdrawReqData);
+                                        
+                                        bitwebResponse.code = 500;
+                                        //API 처리 결과 별도 LOG로 남김
+                                        logger.addLog(country, req.originalUrl, req.body, err);
+                                        bitwebResponse.message = err;
+                                        res.status(500).send(bitwebResponse.create());
+                                    });
+                                } else {
+                                    bitwebResponse.code = 200;
+                                    let message = "해당 사용자의 출금 요청 횟수를 초과하였습니다. 자세한 문의는 관리자에게 문의하세요.";
+                                    if(req.body.country == "EN") {
+                                        message = "The number of withdrawal requests from the user has been exceeded. For more information, please contact the administrator.";
+                                    }
+                                    
+                                    //API 처리 결과 별도 LOG로 남김
+                                    logger.addLog(country, req.originalUrl, req.body, message);
+                                    bitwebResponse.data = {
+                                        "code": "N",
+                                        "msg": message
+                                    };
+                                    res.status(200).send(bitwebResponse.create());
+                                }
+                            } else {
+                                //관리자에게 noti 보냄
+                                let managerList = dbconfig.smsNotification.manager;
+                                let reqDate = {
+                                    type: "coinWithdraw",
+                                    phones: managerList,
+                                    regDate: util.formatDate(new Date().toString())
+                                }
+                                occurpancyNotifications.add(country, reqDate);
+                                
+                                let notification = "["+withdrawCount+"건]" + smsContent.manageWithdrawNotification;
+                                for(var i=0;i<managerList.length;i++) {
+                                    serviceSms.sendSms(managerList[i], notification);
+                                }
 
-                            let feeHistory = {
-                                userId: user._doc._id,
-                                currency: coinType,
-                                type: "withdraw",
-                                amount: fee_rate,
-                                fee: feePercentage,
-                                regDate: util.formatDate(new Date().toString())  
+                                bitwebResponse.code = 200;
+                                let message = "해당 사용자의 출금 요청 횟수를 초과하였습니다. 자세한 문의는 관리자에게 문의하세요.";
+                                if(req.body.country == "EN") {
+                                    message = "The number of withdrawal requests from the user has been exceeded. For more information, please contact the administrator.";
+                                }
+                                //API 처리 결과 별도 LOG로 남김
+                                logger.addLog(country, req.originalUrl, req.body, message);
+                                bitwebResponse.data = {
+                                    "code": "N",
+                                    "msg": message
+                                };
+                                res.status(200).send(bitwebResponse.create());
                             }
-                            serviceFeeHistorys.add(country, feeHistory);
-                            bitwebResponse.code = 200;
-                            let resData = {
-                                "ontTransaction":result,
-                                "coinHistory": data,
-                                "feeHistory": feeHistory
-                            }
-                            //API 처리 결과 별도 LOG로 남김
-                            logger.addLog(country, req.originalUrl, req.body, resData);
-                            bitwebResponse.data = u_coin;
-                            res.status(200).send(bitwebResponse.create())
                         }).catch(err => {
                             bitwebResponse.code = 500;
                             //API 처리 결과 별도 LOG로 남김
@@ -204,7 +329,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                             bitwebResponse.message = err;
                             res.status(500).send(bitwebResponse.create());
                         });
-                    }) .catch(err => {
+                    }).catch(err => {
                         bitwebResponse.code = 500;
                         //API 처리 결과 별도 LOG로 남김
                         logger.addLog(country, req.originalUrl, req.body, err);
@@ -215,8 +340,8 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
             } else {
                 bitwebResponse.code = 200;
                 let message = "해당 사용자는 출금이 불가능합니다. 자세한 문의는 관리자에게 문의하세요.";
-                if(country == "EN") {
-                    message = "This user can not withdraw MACH. For more information, please contact the administrator.";
+                if(req.body.country == "EN") {
+                    message = "This user can not withdraw the coin. For more information, please contact the administrator.";
                 }
                 //API 처리 결과 별도 LOG로 남김
                 logger.addLog(country, req.originalUrl, req.body, message);
@@ -531,8 +656,8 @@ router.post('/bitberry/withdraw', token.checkInternalToken, function (req, res, 
             } else {
                 bitwebResponse.code = 200;
                 let message = "해당 사용자는 출금이 불가능합니다. 자세한 문의는 관리자에게 문의하세요.";
-                if(country == "EN") {
-                    message = "This user can not withdraw MACH. For more information, please contact the administrator.";
+                if(req.body.country == "EN") {
+                    message = "This user can not withdraw the coin. For more information, please contact the administrator.";
                 }
                 //API 처리 결과 별도 LOG로 남김
                 logger.addLog(country, req.originalUrl, req.body, message);

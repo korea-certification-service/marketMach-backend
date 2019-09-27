@@ -15,5 +15,6 @@ module.exports = {
         EN: "MarketMACH-The Authentication Code.\n",
         POINT: "[MarketMACH]휴대폰인증코드입니다.\n"
     },
-    manageNotification: "시간 단위 sms요청이 과도하게 발생하였습니다."
+    manageNotification: "시간 단위 sms요청이 과도하게 발생하였습니다.",
+    manageWithdrawNotification : "일 단위 코인 출금이 과도하게 발생하였습니다.",
 };

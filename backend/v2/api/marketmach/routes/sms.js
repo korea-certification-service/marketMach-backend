@@ -57,7 +57,7 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
                     if(count >= dbconfig.smsNotification.sendSms.count.hour && notiCount == 0) {
                         let managerList = dbconfig.smsNotification.manager;
                         let reqDate = {
-                            sendSmsNotification: true,
+                            type: "checkMobile",
                             phones: managerList,
                             regDate: util.formatDate(new Date().toString())
                         }
