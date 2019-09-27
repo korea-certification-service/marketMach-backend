@@ -295,19 +295,31 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                     res.status(200).send(bitwebResponse.create());
                                 }
                             } else {
-                                //관리자에게 noti 보냄
-                                let managerList = dbconfig.smsNotification.manager;
-                                let reqDate = {
-                                    type: "coinWithdraw",
-                                    phones: managerList,
-                                    regDate: util.formatDate(new Date().toString())
+                                let fromDate = new Date();
+                                fromDate = util.formatDatePerDay(fromDate);
+                                let toDate = util.formatDate(new Date().toString());
+                                let condition2 = {
+                                    "type":"coinWithdraw",
+                                    "regDate":{"$gte": fromDate,"$lte": toDate}
                                 }
-                                occurpancyNotifications.add(country, reqDate);
-                                
-                                let notification = "["+withdrawCount+"건]" + smsContent.manageWithdrawNotification;
-                                for(var i=0;i<managerList.length;i++) {
-                                    serviceSms.sendSms(managerList[i], notification);
-                                }
+                                occurpancyNotifications.count(country, condition2)
+                                .then(notiCount => {
+                                    if(withdrawCount >= dbconfig.smsNotification.coinWithdraw.count.day && notiCount == 0) {
+                                        //관리자에게 noti 보냄
+                                        let managerList = dbconfig.smsNotification.manager;
+                                        let reqDate = {
+                                            type: "coinWithdraw",
+                                            phones: managerList,
+                                            regDate: util.formatDate(new Date().toString())
+                                        }
+                                        occurpancyNotifications.add(country, reqDate);
+                                        
+                                        let notification = "["+withdrawCount+"건]" + smsContent.manageWithdrawNotification;
+                                        for(var i=0;i<managerList.length;i++) {
+                                            serviceSms.sendSms(managerList[i], notification);
+                                        }
+                                    }
+                                });
 
                                 bitwebResponse.code = 200;
                                 let message = "해당 사용자의 출금 요청 횟수를 초과하였습니다. 자세한 문의는 관리자에게 문의하세요.";

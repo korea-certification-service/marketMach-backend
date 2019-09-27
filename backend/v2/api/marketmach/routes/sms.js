@@ -50,6 +50,7 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
             serviceOccupancyPhones.count(country, condition)
             .then(count => {
                 let condition2 = {
+                    "type":"checkMobile",
                     "regDate":{"$gte": fromDate,"$lte": toDate}
                 }
                 occurpancyNotifications.count(country, condition2)
