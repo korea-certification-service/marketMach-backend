@@ -4,6 +4,7 @@ var Schema = mongoose.Schema;
 
 var BannerSchema = new Schema({
     title: String,
+    url: String,
     image: Image,
     regDate: String,
     modifyDate: String,

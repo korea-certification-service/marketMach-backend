@@ -63,8 +63,9 @@ function ontJob(data) {
 
                                 serviceCoins.detail(country, {"_id": coinId})
                                 .then(coin => {
+                                    let total_ont = coin._doc.total_ont == undefined ? 0 :  coin._doc.total_ont;
                                     let update_data = {
-                                        "total_ont": parseFloat((coin._doc.total_ont + amount).toFixed(8)),
+                                        "total_ont": parseFloat((total_ont + amount).toFixed(8)),
                                         "ont_address": fromAddress
                                     }
                                     if(coinType == "btc") {

@@ -1,4 +1,3 @@
-let GameStations = require('../model/gameStation');
 let GameStationRecords = require('../model/gameStationRecords');
 let db = require('../utils/db');
 
@@ -7,7 +6,7 @@ function count(country, condition, option) {
         setTimeout(_ => {
             db.connectDB(country)
             .then(() => {
-                GameStations.count(condition)
+                GameStationRecords.count(condition)
                 .limit(100)
                 .skip(option.pageIdx * option.perPage)
                 .sort({regDate:'desc'})
@@ -29,7 +28,7 @@ function list(country, condition, option) {
         setTimeout(_ => {
             db.connectDB(country)
             .then(() => {
-                GameStations.find(condition)
+                GameStationRecords.find(condition)
                 .limit(option.perPage)
                 .skip(option.pageIdx * option.perPage)
                 .sort({regDate:'desc'})
@@ -51,7 +50,7 @@ function detail(country, condition) {
         setTimeout(_ => {
             db.connectDB(country)
             .then(() => {
-                GameStations.findOne(
+                GameStationRecords.findOne(
                     condition,
                     function(err, result) {
                         if (err) {
@@ -72,8 +71,8 @@ function add(country, data) {
         setTimeout(_ => {
             db.connectDB(country)
             .then(() => {
-                var gameStations = new GameStations(data)
-                gameStations.save(function (err, result) {
+                var gameStationRecords = new GameStationRecords(data)
+                gameStationRecords.save(function (err, result) {
                     if (err) {
                         reject(err);
                     } else {
@@ -92,7 +91,7 @@ function modify(country, condition, data) {
         setTimeout(_ => {
             db.connectDB(country)
             .then(() => {
-                GameStations.findOneAndUpdate(
+                GameStationRecords.findOneAndUpdate(
                 condition,
                 data,
                 {upsert: false, new: true},
@@ -115,7 +114,7 @@ function remove(country, condition) {
         setTimeout(_ => {
             db.connectDB(country)
             .then(() => {
-                GameStations.findOneAndRemove(
+                GameStationRecords.findOneAndRemove(
                     condition,
                     function(err, user) {
                         if (err) {
