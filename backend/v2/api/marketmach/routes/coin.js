@@ -36,7 +36,7 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
                 "coinId": user._doc.coinId,
                 "category": 'deposit',          
                 "status": false,
-                "currencyCode": req.body.cryptoCurrencyCode,
+                "currencyCode": req.body.coinType,
                 "amount": amount,
                 "price": amount,
                 "regDate": util.formatDate(new Date().toString())  
@@ -48,7 +48,7 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
                 jsonData['coinId'] = coinHistory._doc.coinId;
                 jsonData['historyId'] = coinHistory._doc._id;                    
                 jsonData['regDate'] = util.getUnixTime(coinHistory._doc.regDate);
-                jsonData['coinType'] = req.body.cryptoCurrencyCode.toLowerCase();                    
+                jsonData['coinType'] = req.body.coinType.toLowerCase();                    
                 jsonData['price'] = amount;
                 jsonData['fromAddress'] = req.body.fromAddress;
                 scheduler.ontJob(jsonData);
@@ -123,17 +123,18 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
 
                     let amount = req.body.amount;
                     let fee_rate = parseFloat((amount * dbconfig.fee.coin.ont.withdraw).toFixed(8));
-                    amount = Math.floor(parseFloat((amount - fee_rate).toFixed(8)));
+                    let transactionAmount = Math.floor(parseFloat((amount - fee_rate).toFixed(8)));
                     //각 코인별로 출금
                     if(coinType == "ETH") {
                         fee_rate = parseFloat((amount * dbconfig.fee.coin.ether.withdraw).toFixed(8));
-                        amount = parseFloat((amount - fee_rate).toFixed(8));
+                        transactionAmount = parseFloat((amount - fee_rate).toFixed(8));
                     } else if(coinType == "BTC") {
                         fee_rate = parseFloat((amount * dbconfig.fee.coin.btc.withdraw).toFixed(8));
-                        amount = parseFloat((amount - fee_rate).toFixed(8));
+                        transactionAmount = parseFloat((amount - fee_rate).toFixed(8));
                     } else if(coinType == "ONG") {
                         fee_rate = parseFloat((amount * dbconfig.fee.coin.ong.withdraw).toFixed(8));
-                        amount = parseFloat((amount - fee_rate).toFixed(8));
+                        amount = parseFloat((amount - fee_rate).toFixed(8)) - parseFloat((dbconfig.ontology.gasPrice * dbconfig.ontology.gasLimit) / 1e9).toFixed(2);
+                        transactionAmount = parseFloat(amount * 1e9);
                     } 
 
                     let update_data = {
@@ -171,14 +172,14 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                     //Receiver's address
                                     const to = new Ont.Crypto.Address(req.body.toAddress);
                                     //Asset type
-                                    const assetType = 'ONT'
+                                    const assetType = coinType;
                                     //Gas price and gas limit are to compute the gas costs of the transaction.
                                     const gasPrice = dbconfig.ontology.gasPrice;
                                     const gasLimit = dbconfig.ontology.gasLimit;
                                     const payer = from;
                                     const privateKey = new Ont.Crypto.PrivateKey(dbconfig.ontology.privateKey);
                                     //Payer's address to pay for the transaction gas
-                                    const tx = Ont.OntAssetTxBuilder.makeTransferTx(assetType, from, to, amount, gasPrice, gasLimit, payer);
+                                    const tx = Ont.OntAssetTxBuilder.makeTransferTx(assetType, from, to, transactionAmount, gasPrice, gasLimit, payer);
                                     Ont.TransactionBuilder.signTransaction(tx, privateKey)
                                     const rest = new Ont.RestClient(dbconfig.ontology.restUrl);
                                     rest.sendRawTransaction(tx.serialize())
