@@ -1922,7 +1922,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
     serviceUsers.detail(country, {"userTag":reqUserTag}) 
     .then(user => {
         //기존 검색 조건. {"item._id":itemId}
-        serviceVtrs.detail(country, {"item._id":itemId, $or:[{from_userId:user._doc._id}, {from_userId:user._doc._id}]})
+        serviceVtrs.detail(country, {"item._id":itemId, $or:[{from_userId:user._doc._id}, {to_userId:user._doc._id}]})
         .then(vtr => {
             if(vtr == null) {
                 // 멀티방이 남아 있는 경우 vtrtemp만 삭제한다.
