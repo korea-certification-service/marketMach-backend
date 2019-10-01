@@ -42,6 +42,7 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
             if(getCoinHistory == null) {
                 //history add
                 let amount = req.body.mach;
+                let currentTime = util.formatDate(new Date().toString());
                 let data = {
                     "fromAddress": req.body.fromAddress,
                     "extType":"ontwallet",
@@ -51,7 +52,8 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
                     "currencyCode": req.body.coinType,
                     "amount": amount,
                     "price": amount,
-                    "regDate": util.formatDate(new Date().toString())  
+                    "regDate": currentTime,
+                    "reqDate": currentTime
                 }
                 
                 serviceCoinHistorys.add(country, data)
@@ -87,10 +89,11 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
                 //1. history에 등록 된 coinId가 내 coinId와 다르면 alert message 띄우기
                 if(getCoinHistory._doc.coinId.toString() == user._doc.coinId.toString()) {
                     //2. 요청 시간이 현재 시간 기준으로 3분 이내이면 skip, 아니면 재요청
-                    let startDate = new Date(getCoinHistory._doc.regDate);
+                    let startDate = new Date(getCoinHistory._doc.reqDate);
                     let endDate = new Date();
                     var tmpMin = (endDate.getTime() - startDate.getTime()) / 60000;
                     if(tmpMin >= 3) {
+                        serviceCoinHistorys.modify(country, {"_id":getCoinHistory._doc._id}, {"reqDate": util.formatDate(new Date().toString())});
                         let jsonData = {}
                         jsonData['coinId'] = getCoinHistory._doc.coinId;
                         jsonData['historyId'] = getCoinHistory._doc._id;                    
@@ -108,7 +111,6 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
                     }
                     //API 처리 결과 별도 LOG로 남김
                     logger.addLog(country, req.originalUrl, req.body, resData);
-
                     bitwebResponse.data = getCoinHistory;
                     res.status(200).send(bitwebResponse.create());
                 } else {
@@ -131,6 +133,45 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
         bitwebResponse.message = err;
         res.status(500).send(bitwebResponse.create());
     });
+});
+
+//ONT wallet 입금 요청 처리
+router.post('/ontwallet/retry/deposit', token.checkInternalToken, async function(req, res, next) {
+    var bitwebResponse = new BitwebResponse();
+    
+    let country = dbconfig.country;
+    let condition = {
+        '_id': req.body.historyId
+    }
+    
+    try {
+        let getCoinHistory = await serviceCoinHistorys.detail(country, condition);
+        serviceCoinHistorys.modify(country, {"_id":getCoinHistory._doc._id}, {"reqDate": util.formatDate(new Date().toString())});
+        let jsonData = {}
+        jsonData['coinId'] = getCoinHistory._doc.coinId;
+        jsonData['historyId'] = getCoinHistory._doc._id;                    
+        jsonData['regDate'] = util.getUnixTime(getCoinHistory._doc.regDate);
+        jsonData['coinType'] = getCoinHistory._doc.currencyCode.toLowerCase();                    
+        jsonData['price'] = getCoinHistory._doc.mach;
+        jsonData['fromAddress'] = getCoinHistory._doc.fromAddress;
+        scheduler.ontJob(jsonData);
+
+        bitwebResponse.code = 200;
+        let resData = {
+            "coinHistory": getCoinHistory,
+            "ontJob": "start"
+        }
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, resData);
+        bitwebResponse.data = getCoinHistory;
+        res.status(200).send(bitwebResponse.create());
+    } catch (err) {
+        bitwebResponse.code = 500;
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, err);
+        bitwebResponse.message = err;
+        res.status(500).send(bitwebResponse.create());
+    }
 });
 
 //ont wallet 출금 처리

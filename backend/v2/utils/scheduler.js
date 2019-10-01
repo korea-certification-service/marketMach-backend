@@ -110,9 +110,7 @@ function ontJob(data) {
                                         console.error(err);
                                         job.cancel();
                                     });
-                                } else {
-                                    jobCount++; 
-                                }
+                                } 
                             })
                         }
                     }

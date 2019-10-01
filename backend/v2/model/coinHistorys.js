@@ -14,6 +14,7 @@ var coinHistorysSchema = new Schema({
     mach: Number,
     fee: Number,
     regDate: String,
+    reqDate: String,
     totalAmount: Number
 });
 
