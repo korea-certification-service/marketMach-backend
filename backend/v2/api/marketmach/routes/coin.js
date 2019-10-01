@@ -96,7 +96,7 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
                         jsonData['historyId'] = getCoinHistory._doc._id;                    
                         jsonData['regDate'] = util.getUnixTime(getCoinHistory._doc.regDate);
                         jsonData['coinType'] = req.body.coinType.toLowerCase();                    
-                        jsonData['price'] = amount;
+                        jsonData['price'] = req.body.mach;
                         jsonData['fromAddress'] = req.body.fromAddress;
                         scheduler.ontJob(jsonData);
                     } 
