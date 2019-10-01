@@ -29,47 +29,101 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
     }
     
     serviceUsers.detail(country, condition)
-        .then((user) => {
-            let amount = req.body.mach;
-            let data = {
+        .then(async (user) => {
+            let condition = {
                 "extType":"ontwallet",
-                "coinId": user._doc.coinId,
-                "category": 'deposit',          
+                "category": 'deposit',
                 "status": false,
                 "currencyCode": req.body.coinType,
-                "amount": amount,
-                "price": amount,
-                "regDate": util.formatDate(new Date().toString())  
-            }
+                "fromAddress": req.body.fromAddress
+            };
+            let getCoinHistory = await serviceCoinHistorys.detail(country, condition);
 
-            serviceCoinHistorys.add(country, data)
-            .then(coinHistory => {
-                let jsonData = {}
-                jsonData['coinId'] = coinHistory._doc.coinId;
-                jsonData['historyId'] = coinHistory._doc._id;                    
-                jsonData['regDate'] = util.getUnixTime(coinHistory._doc.regDate);
-                jsonData['coinType'] = req.body.coinType.toLowerCase();                    
-                jsonData['price'] = amount;
-                jsonData['fromAddress'] = req.body.fromAddress;
-                scheduler.ontJob(jsonData);
-
-                bitwebResponse.code = 200;
-                let resData = {
-                    "coinHistory": coinHistory,
-                    "ontJob": "start"
+            if(getCoinHistory == null) {
+                //history add
+                let amount = req.body.mach;
+                let data = {
+                    "fromAddress": req.body.fromAddress,
+                    "extType":"ontwallet",
+                    "coinId": user._doc.coinId,
+                    "category": 'deposit',          
+                    "status": false,
+                    "currencyCode": req.body.coinType,
+                    "amount": amount,
+                    "price": amount,
+                    "regDate": util.formatDate(new Date().toString())  
                 }
-                //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, req.body, resData);
+                
+                serviceCoinHistorys.add(country, data)
+                .then(coinHistory => {
+                    let jsonData = {}
+                    coinHistory._doc['successYn'] = "Y";                    
+                    jsonData['coinId'] = coinHistory._doc.coinId;
+                    jsonData['historyId'] = coinHistory._doc._id;                    
+                    jsonData['regDate'] = util.getUnixTime(coinHistory._doc.regDate);
+                    jsonData['coinType'] = req.body.coinType.toLowerCase();                    
+                    jsonData['price'] = amount;
+                    jsonData['fromAddress'] = req.body.fromAddress;
+                    scheduler.ontJob(jsonData);
 
-                bitwebResponse.data = coinHistory;
-                res.status(200).send(bitwebResponse.create());
-            }).catch(err => {
-                bitwebResponse.code = 500;
-                //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, req.body, err);
-                bitwebResponse.message = err;
-                res.status(500).send(bitwebResponse.create());
-            });
+                    bitwebResponse.code = 200;
+                    let resData = {
+                        "coinHistory": coinHistory,
+                        "ontJob": "start"
+                    }
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, req.body, resData);
+
+                    bitwebResponse.data = coinHistory;
+                    res.status(200).send(bitwebResponse.create());
+                }).catch(err => {
+                    bitwebResponse.code = 500;
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, req.body, err);
+                    bitwebResponse.message = err;
+                    res.status(500).send(bitwebResponse.create());
+                });
+            } else {
+                //1. history에 등록 된 coinId가 내 coinId와 다르면 alert message 띄우기
+                if(getCoinHistory._doc.coinId.toString() == user._doc.coinId.toString()) {
+                    //2. 요청 시간이 현재 시간 기준으로 3분 이내이면 skip, 아니면 재요청
+                    let startDate = new Date(getCoinHistory._doc.regDate);
+                    let endDate = new Date();
+                    var tmpMin = (endDate.getTime() - startDate.getTime()) / 60000;
+                    if(tmpMin >= 3) {
+                        let jsonData = {}
+                        jsonData['coinId'] = getCoinHistory._doc.coinId;
+                        jsonData['historyId'] = getCoinHistory._doc._id;                    
+                        jsonData['regDate'] = util.getUnixTime(getCoinHistory._doc.regDate);
+                        jsonData['coinType'] = req.body.coinType.toLowerCase();                    
+                        jsonData['price'] = amount;
+                        jsonData['fromAddress'] = req.body.fromAddress;
+                        scheduler.ontJob(jsonData);
+                    } 
+
+                    bitwebResponse.code = 200;
+                    let resData = {
+                        "coinHistory": getCoinHistory,
+                        "ontJob": "start"
+                    }
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, req.body, resData);
+
+                    bitwebResponse.data = getCoinHistory;
+                    res.status(200).send(bitwebResponse.create());
+                } else {
+                    bitwebResponse.code = 200;
+                    let resData = {
+                        "successYn":"N",
+                        "message":"다른 사용자가 해당 지갑으로 입금 요청이 존재합니다. 자세한 사항은 관리자에 문의하세요."
+                    };
+                    //API 처리 결과 별도 LOG로 남김
+                    logger.addLog(country, req.originalUrl, req.body, resData);
+
+                    bitwebResponse.data = resData;
+                    res.status(200).send(bitwebResponse.create());
+                }
+            }
         }).catch(err => {
         bitwebResponse.code = 500;
         //API 처리 결과 별도 LOG로 남김

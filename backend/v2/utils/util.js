@@ -43,6 +43,24 @@ function getUnixTime(date) {
     return d.getTime() / 1000;
 }
 
+function formatDatePerMin (date, min) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear(),
+        hour = d.getHours(),
+        minutes = (d.getMinutes() - min),
+        secounds = '00';
+
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+    if (hour.toString().length < 2) hour = '0' + hour;
+    
+    let getDate = [year, month, day].join('/');
+    let getTime = [hour, minutes, secounds].join(':');
+    return getDate + " " + getTime;
+}
+
 function formatDatePerHour (date) {
     var d = new Date(date),
         month = '' + (d.getMonth() + 1),
@@ -228,4 +246,5 @@ exports.fileUpload = fileUpload;
 exports.makeNumber = makeNumber;
 exports.formatDatePerHour = formatDatePerHour;
 exports.formatDatePerDay = formatDatePerDay;
+exports.formatDatePerMin = formatDatePerMin;
 exports.getUnixTime = getUnixTime;
