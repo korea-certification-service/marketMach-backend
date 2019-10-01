@@ -93,14 +93,21 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
                     let endDate = new Date();
                     var tmpMin = (endDate.getTime() - startDate.getTime()) / 60000;
                     if(tmpMin >= 3) {
-                        serviceCoinHistorys.modify(country, {"_id":getCoinHistory._doc._id}, {"reqDate": util.formatDate(new Date().toString())});
+                        let amount = req.body.mach;
+                        let data = {
+                            "amount": amount,
+                            "price": amount,
+                            "reqDate": util.formatDate(new Date().toString())
+                        }
+
+                        serviceCoinHistorys.modify(country, {"_id":getCoinHistory._doc._id}, data);
                         let jsonData = {}
                         jsonData['coinId'] = getCoinHistory._doc.coinId;
                         jsonData['historyId'] = getCoinHistory._doc._id;                    
                         jsonData['regDate'] = util.getUnixTime(getCoinHistory._doc.regDate);
                         jsonData['coinType'] = req.body.coinType.toLowerCase();                    
-                        jsonData['price'] = req.body.mach;
-                        jsonData['fromAddress'] = req.body.fromAddress;
+                        jsonData['price'] = amount;
+                        jsonData['fromAddress'] = getCoinHistory._doc.fromAddress;
                         scheduler.ontJob(jsonData);
                     } 
 
@@ -135,7 +142,7 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
     });
 });
 
-//ONT wallet 입금 요청 처리
+//ONT wallet 재입금 요청 처리
 router.post('/ontwallet/retry/deposit', token.checkInternalToken, async function(req, res, next) {
     var bitwebResponse = new BitwebResponse();
     
