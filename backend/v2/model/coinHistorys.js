@@ -3,6 +3,7 @@ mongoose.Promise = global.Promise;
 var Schema = mongoose.Schema;
 var coinHistorysSchema = new Schema({
     txHash: String,
+    fromAddress:String,
     extType: String,
     coinId: String,
     category: String,          
