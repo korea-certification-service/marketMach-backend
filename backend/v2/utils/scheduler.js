@@ -37,13 +37,6 @@ function ontJob(data) {
             if(resBody.Error == 0) {
                 let txnList = resBody.Result.TxnList;
                 if(txnList == 0) {
-                    if (jobCount == endJobCount) {
-                        console.log('End jobCount==>', jobCount);
-                        //등록된 coinHistory 삭제
-                        // serviceCoinHistorys.remove(country,{"_id": historyId});
-                        job.cancel();
-                        return;
-                    }
                     //regDate = currentDate;
                     jobCount++;
                 } else {
@@ -114,6 +107,14 @@ function ontJob(data) {
                             })
                         }
                     }
+                    if (jobCount >= endJobCount) {
+                        console.log('End jobCount==>', jobCount);
+                        //등록된 coinHistory 삭제
+                        // serviceCoinHistorys.remove(country,{"_id": historyId});
+                        job.cancel();
+                        return;
+                    }
+                    
                     jobCount++;
                 }
             } else {
