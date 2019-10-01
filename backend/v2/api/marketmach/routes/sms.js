@@ -16,7 +16,7 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
     let authCode = util.makeNumber();
     
     let reqData = {
-        'country': country,
+        'country': req.body.country,
         'countryCode':req.body.countryCode,
         'phone': req.body.phone,
         'authCode': authCode,
