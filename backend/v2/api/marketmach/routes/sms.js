@@ -114,4 +114,42 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
     })     
 })
 
+router.post('/notification/point', token.checkInternalToken, function(req,res,next) {
+    var bitwebResponse = new BitwebResponse();
+    let country = dbconfig.country;
+    let body = req.body;
+    let fee_rate = parseInt((body.amount * dbconfig.fee.point.deposit).toFixed());
+    let user_amount = parseInt((body.amount - fee_rate).toFixed());
+    
+    let coinReqType = " 입금요청:";
+    if(body.type == "withdraw") {
+        coinReqType = " 출금요청:";
+    }
+
+    let notification = body.username + coinReqType + user_amount + "원";
+    let managerList = dbconfig.smsNotification.pointManager;
+    try {
+        for(var i=0;i<managerList.length;i++) {
+            serviceSms.sendSms(managerList[i], notification);
+        }
+
+        let resData = {
+            "pointSendSms": notification    
+        }
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, body, resData);
+
+        bitwebResponse.code = 200;
+        bitwebResponse.data = resData;
+        res.status(200).send(bitwebResponse.create())
+    } catch(err) {
+        console.error('err=>', err);
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, body, err);
+        bitwebResponse.code = 500;
+        bitwebResponse.message = err;
+        res.status(500).send(bitwebResponse.create())
+    }
+});
+
 module.exports = router;
