@@ -106,16 +106,16 @@ function ontJob(data) {
                                 } 
                             })
                         }
-                    }
-                    if (jobCount >= endJobCount) {
-                        console.log('End jobCount==>', jobCount);
-                        //등록된 coinHistory 삭제
-                        // serviceCoinHistorys.remove(country,{"_id": historyId});
-                        job.cancel();
-                        return;
-                    }
-                    
+                    }                    
                     jobCount++;
+                }
+
+                if (jobCount >= endJobCount) {
+                    console.log('End jobCount==>', jobCount);
+                    //등록된 coinHistory 삭제
+                    // serviceCoinHistorys.remove(country,{"_id": historyId});
+                    job.cancel();
+                    return;
                 }
             } else {
                 console.log("can't find block information in ontology!")
