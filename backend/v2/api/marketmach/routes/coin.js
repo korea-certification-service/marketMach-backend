@@ -676,11 +676,11 @@ router.post('/bitberry/withdraw', token.checkInternalToken, function (req, res, 
                                         let update_data = {
                                             "total_mach": parseFloat((coin._doc.total_mach - req.body.amount).toFixed(8))
                                         }
-                                        if(result.currency_code == "BTC") {
+                                        if(result.items[findIndex].currency_code == "BTC") {
                                             update_data = {
                                                 "total_btc": parseFloat((coin._doc.total_btc - req.body.amount).toFixed(8))
                                             }
-                                        } else if(result.currency_code == "ETH") {
+                                        } else if(result.items[findIndex].currency_code == "ETH") {
                                             update_data = {
                                                 "total_ether":  parseFloat((coin._doc.total_ether - req.body.amount).toFixed(8))
                                             }
