@@ -243,7 +243,8 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                         transactionAmount = parseFloat((amount - fee_rate).toFixed(8));
                     } else if(coinType == "ONG") {
                         fee_rate = parseFloat((amount * dbconfig.fee.coin.ong.withdraw).toFixed(8));
-                        amount = parseFloat((amount - fee_rate).toFixed(8)) - parseFloat((dbconfig.ontology.gasPrice * dbconfig.ontology.gasLimit) / 1e9).toFixed(2);
+                        // amount = parseFloat((amount - fee_rate).toFixed(8)) - parseFloat((dbconfig.ontology.gasPrice * dbconfig.ontology.gasLimit) / 1e9).toFixed(2);
+                        amount = parseFloat((amount - fee_rate).toFixed(8));
                         transactionAmount = parseFloat(amount * 1e9);
                     } 
 
