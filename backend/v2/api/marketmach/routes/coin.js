@@ -670,98 +670,98 @@ router.post('/bitberry/withdraw', token.checkInternalToken, function (req, res, 
                                     //     let fee_rate = parseFloat((total_amount * req.body.fee).toFixed(8));
                                     //     amount = total_amount - fee_rate;
                                     // }
+        
+                                    serviceCoins.detail(country, {"_id":user._doc.coinId})
+                                    .then(coin => {
+                                        let update_data = {
+                                            "total_mach": parseFloat((coin._doc.total_mach - req.body.amount).toFixed(8))
+                                        }
+                                        if(result.currency_code == "BTC") {
+                                            update_data = {
+                                                "total_btc": parseFloat((coin._doc.total_btc - req.body.amount).toFixed(8))
+                                            }
+                                        } else if(result.currency_code == "ETH") {
+                                            update_data = {
+                                                "total_ether":  parseFloat((coin._doc.total_ether - req.body.amount).toFixed(8))
+                                            }
+                                        }
+                                        
+                                        serviceCoins.modify(country, {"_id":user._doc.coinId}, update_data)
+                                        .then(u_coin => {
+                                            let phone = (user._doc.phone.substring(0,1) == "0") ? user._doc.phone.substr(1) : user._doc.phone;
+                                            let param = {
+                                                'amount': amount,
+                                                'memo':'withdraw from mach',
+                                                'phone_number': user._doc.countryCode + phone
+                                            };
 
-                                    let result = JSON.parse(body);
-                                    console.log('success : ', body);
-        
-                                    let data = {
-                                        "extType": "bitberry",
-                                        "coinId": user._doc.coinId,
-                                        "category": "withdraw",          
-                                        "status": result.status,
-                                        "currencyCode": result.currency_code,
-                                        "amount": req.body.amount,
-                                        "price": req.body.amount,
-                                        "regDate": util.formatDate(new Date().toString())  
-                                    }
-        
-                                    serviceCoinHistorys.add(country, data)
-                                    .then(coinHistory => {
-                                        serviceCoins.detail(country, {"_id":user._doc.coinId})
-                                            .then(coin => {
-                                                let update_data = {
-                                                    "total_mach": parseFloat((coin._doc.total_mach - req.body.amount).toFixed(8))
-                                                }
-                                                if(result.currency_code == "BTC") {
-                                                    update_data = {
-                                                        "total_btc": parseFloat((coin._doc.total_btc - req.body.amount).toFixed(8))
-                                                    }
-                                                } else if(result.currency_code == "ETH") {
-                                                    update_data = {
-                                                        "total_ether":  parseFloat((coin._doc.total_ether - req.body.amount).toFixed(8))
-                                                    }
-                                                }
-                                                
-                                                serviceCoins.modify(country, {"_id":user._doc.coinId}, update_data)
-                                                    .then(u_coin => {
-                                                        let phone = (user._doc.phone.substring(0,1) == "0") ? user._doc.phone.substr(1) : user._doc.phone;
-                                                        let param = {
-                                                            'amount': amount,
-                                                            'memo':'withdraw from mach',
-                                                            'phone_number': user._doc.countryCode + phone
-                                                        };
-                                    
-                                                        request({uri: url, 
-                                                                method:'POST',
-                                                                form: param, 
-                                                                headers: header}, function (error, response, body) {
-                                                            if (!error && response.statusCode == 201) {
-                                                                if(coinType != "MACH") {
-                                                                    let feePercentage = (coinType == "BTC" ? dbconfig.fee.coin.btc.withdraw : dbconfig.fee.coin.ether.withdraw) 
-                                                                    let feeHistory = {
-                                                                        userId: user._doc._id,
-                                                                        currency: coinType,
-                                                                        type: "withdraw",
-                                                                        amount: fee_rate,
-                                                                        fee: feePercentage,
-                                                                        regDate: util.formatDate(new Date().toString())  
-                                                                    }
-                                                                    serviceFeeHistorys.add(country, feeHistory);
-                                                                }
-                                                                bitwebResponse.code = 200;
-                                                                let resData = {
-                                                                    "depositBitberry":result,
-                                                                    "coinHistory": coinHistory,
-                                                                    "updateCoin": u_coin
-                                                                }
-                                                                //API 처리 결과 별도 LOG로 남김
-                                                                logger.addLog(country, req.originalUrl, req.body, resData);
-                                                                bitwebResponse.data = u_coin;
-                                                                res.status(200).send(bitwebResponse.create())
-                                                            } else {
-                                                                console.log('error = ' + response.statusCode);
-                                                                bitwebResponse.code = 500;
-                                                                //API 처리 결과 별도 LOG로 남김
-                                                                logger.addLog(country, req.originalUrl, req.body, error);
-                                                                bitwebResponse.message = error;
-                                                                res.status(500).send(bitwebResponse.create())    
+                                            let data = {
+                                                "extType": "bitberry",
+                                                "coinId": user._doc.coinId,
+                                                "category": "withdraw",          
+                                                "status": "success",
+                                                "currencyCode": result.items[findIndex].currency_code,
+                                                "amount": req.body.amount,
+                                                "price": req.body.amount,
+                                                "regDate": util.formatDate(new Date().toString())  
+                                            }
+
+                                            serviceCoinHistorys.add(country, data)
+                                            .then(coinHistory => {                                                
+                                                request({uri: url, 
+                                                        method:'POST',
+                                                        form: param, 
+                                                        headers: header}, function (error, response, body) {
+                                                    if (!error && response.statusCode == 201) {
+                                                        let result = JSON.parse(body);
+                                                        console.log('success : ', body);
+
+                                                        if(coinType != "MACH") {
+                                                            let feePercentage = (coinType == "BTC" ? dbconfig.fee.coin.btc.withdraw : dbconfig.fee.coin.ether.withdraw) 
+                                                            let feeHistory = {
+                                                                userId: user._doc._id,
+                                                                currency: coinType,
+                                                                type: "withdraw",
+                                                                amount: fee_rate,
+                                                                fee: feePercentage,
+                                                                regDate: util.formatDate(new Date().toString())  
                                                             }
-                                                        });
-                                                    }).catch(err => {
+                                                            serviceFeeHistorys.add(country, feeHistory);
+                                                        }
+                                                        bitwebResponse.code = 200;
+                                                        let resData = {
+                                                            "depositBitberry":result,
+                                                            "coinHistory": coinHistory,
+                                                            "updateCoin": u_coin
+                                                        }
+                                                        //API 처리 결과 별도 LOG로 남김
+                                                        logger.addLog(country, req.originalUrl, req.body, resData);
+                                                        bitwebResponse.data = u_coin;
+                                                        res.status(200).send(bitwebResponse.create())
+                                                    } else {
+                                                        console.log('error = ' + response.statusCode);
                                                         bitwebResponse.code = 500;
                                                         //API 처리 결과 별도 LOG로 남김
-                                                        logger.addLog(country, req.originalUrl, req.body, err);
-                                                        bitwebResponse.message = err;
-                                                        res.status(500).send(bitwebResponse.create());
-                                                    });
-                                            }) .catch(err => {
+                                                        logger.addLog(country, req.originalUrl, req.body, error);
+                                                        bitwebResponse.message = error;
+                                                        res.status(500).send(bitwebResponse.create())    
+                                                    }
+                                                });
+                                            }).catch(err => {
                                                 bitwebResponse.code = 500;
                                                 //API 처리 결과 별도 LOG로 남김
                                                 logger.addLog(country, req.originalUrl, req.body, err);
                                                 bitwebResponse.message = err;
                                                 res.status(500).send(bitwebResponse.create());
                                             });
-                                    }).catch(err => {
+                                        }).catch(err => {
+                                            bitwebResponse.code = 500;
+                                            //API 처리 결과 별도 LOG로 남김
+                                            logger.addLog(country, req.originalUrl, req.body, err);
+                                            bitwebResponse.message = err;
+                                            res.status(500).send(bitwebResponse.create());
+                                        });
+                                    }) .catch(err => {
                                         bitwebResponse.code = 500;
                                         //API 처리 결과 별도 LOG로 남김
                                         logger.addLog(country, req.originalUrl, req.body, err);
