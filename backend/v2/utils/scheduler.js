@@ -42,7 +42,7 @@ function ontJob(data) {
                 } else {
                     for(var i=0;i<txnList.length; i++) {
                         if(txnList[i].TransferList[0].FromAddress == fromAddress) {
-                            let amount = parseInt(txnList[0].TransferList[0].Amount);
+                            let amount = parseFloat(txnList[0].TransferList[0].Amount);
                             let txnHash = txnList[0].TxnHash;
                             serviceCoinHistorys.detail(country, {"txHash":txnHash})
                             .then(getCoinHistory => {
