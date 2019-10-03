@@ -152,24 +152,32 @@ router.post('/ontwallet/retry/deposit', token.checkInternalToken, async function
     }
     
     try {
-        let getCoinHistory = await serviceCoinHistorys.detail(country, condition);
-        serviceCoinHistorys.modify(country, {"_id":getCoinHistory._doc._id}, {"reqDate": util.formatDate(new Date().toString())});
-        let jsonData = {}
-        jsonData['coinId'] = getCoinHistory._doc.coinId;
-        jsonData['historyId'] = getCoinHistory._doc._id;                    
-        jsonData['regDate'] = util.getUnixTime(getCoinHistory._doc.regDate);
-        jsonData['coinType'] = getCoinHistory._doc.currencyCode.toLowerCase();                    
-        jsonData['price'] = getCoinHistory._doc.mach;
-        jsonData['fromAddress'] = getCoinHistory._doc.fromAddress;
-        scheduler.ontJob(jsonData);
+        let getCoinHistory = await serviceCoinHistorys.detail(country, condition);        
+        let startDate = new Date(getCoinHistory._doc.reqDate);
+        let endDate = new Date();
+        var tmpMin = (endDate.getTime() - startDate.getTime()) / 60000;
+        let ontJob = "Skip.";
+        if(tmpMin >= 3) {
+            ontJob = "Start.";
+            getCoinHistory = await serviceCoinHistorys.modify(country, {"_id":getCoinHistory._doc._id}, {"reqDate": util.formatDate(new Date().toString())});
+            let jsonData = {}
+            jsonData['coinId'] = getCoinHistory._doc.coinId;
+            jsonData['historyId'] = getCoinHistory._doc._id;                    
+            jsonData['regDate'] = util.getUnixTime(getCoinHistory._doc.regDate);
+            jsonData['coinType'] = getCoinHistory._doc.currencyCode.toLowerCase();                    
+            jsonData['price'] = getCoinHistory._doc.mach;
+            jsonData['fromAddress'] = getCoinHistory._doc.fromAddress;
+            scheduler.ontJob(jsonData);
+        }
 
-        bitwebResponse.code = 200;
         let resData = {
             "coinHistory": getCoinHistory,
-            "ontJob": "start"
+            "ontJob": ontJob
         }
         //API 처리 결과 별도 LOG로 남김
         logger.addLog(country, req.originalUrl, req.body, resData);
+
+        bitwebResponse.code = 200;
         bitwebResponse.data = getCoinHistory;
         res.status(200).send(bitwebResponse.create());
     } catch (err) {
