@@ -448,6 +448,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                 fromDate = util.formatDatePerDay(fromDate);
                                 let toDate = util.formatDate(new Date().toString());
                                 let condition2 = {
+                                    "userTag": user._doc.userTag, 
                                     "type":"coinWithdraw",
                                     "regDate":{"$gte": fromDate,"$lte": toDate}
                                 }
@@ -457,13 +458,14 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                         //관리자에게 noti 보냄
                                         let managerList = dbconfig.smsNotification.manager;
                                         let reqDate = {
+                                            userTag: user._doc.userTag, 
                                             type: "coinWithdraw",
                                             phones: managerList,
                                             regDate: util.formatDate(new Date().toString())
                                         }
                                         occurpancyNotifications.add(country, reqDate);
                                         
-                                        let notification = "["+withdrawCount+"건]" + smsContent.manageWithdrawNotification;
+                                        let notification = "코인출금:["+user._doc.userTag + ":" + withdrawCount+"건]" + smsContent.manageWithdrawNotification;
                                         for(var i=0;i<managerList.length;i++) {
                                             serviceSms.sendSms(managerList[i], notification);
                                         }

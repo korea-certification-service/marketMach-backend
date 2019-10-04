@@ -5,6 +5,7 @@ var Mixed = Schema.Types.Mixed;
 var occupancyNotificationsSchema = new Schema({
     type: String,
     phones: Mixed,
+    userTag: String,
     regDate: String
 });
 
