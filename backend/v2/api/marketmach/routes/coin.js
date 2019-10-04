@@ -207,7 +207,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                 let country = dbconfig.country;
                 
                 serviceCoins.detail(country, {"_id": user._doc.coinId})
-                .then(async (coin) => {
+                .then(coin => {
                     let total_price = coin._doc.total_ont == undefined ? 0 : coin._doc.total_ont;
                     if(coinType == "ETH") {
                         total_price = coin._doc.total_ether == undefined ? 0 : coin._doc.total_ether;
@@ -223,8 +223,23 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                         if(req.body.country == "EN") {
                             message = "Your coin is less than withdrawal amount.";
                         }
-                        bitwebResponse.message = {
+                        bitwebResponse.data = {
                             "code": "E001",
+                            "msg": message
+                        };
+                        res.status(200).send(bitwebResponse.create());
+                        return;
+                    }
+
+                    //lock기능 추가
+                    if(coin._doc.lock == "on") {
+                        bitwebResponse.code = 200;
+                        let message = "해당 사용자는 출금 제한되었습니다. 관리자에게 문의하세요.";
+                        if(req.body.country == "EN") {
+                            message = "You have been withdrawn. Please contact your administrator.";
+                        }
+                        bitwebResponse.data = {
+                            "code": "E003",
                             "msg": message
                         };
                         res.status(200).send(bitwebResponse.create());
@@ -264,17 +279,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                             "total_ong":  parseFloat((coin._doc.total_ong - req.body.amount).toFixed(8))
                         }
                     }
-                    
-                    let withdrawReqData = {
-                        userTag: user._doc.userTag,
-                        address: req.body.toAddress,
-                        cryptoCurrencyCode: coinType,
-                        amount: amount,
-                        status: "fail",
-                        regDate: util.formatDate(new Date().toString())
-                    }
-                    let addCoinWithdraws = await serviceCoinWithdraws.add(country, withdrawReqData);
-                    
+                                        
                     let coinWithdrawCondition = {
                         "userTag": user._doc.userTag, 
                         "cryptoCurrencyCode":coinType, 
@@ -285,7 +290,16 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                     .then(withdrawCount => {
                         // coinWithdrawCondition["status"] = "success";
                         serviceCoinWithdraws.count(country, coinWithdrawCondition)
-                        .then(withdrawSuccessCount => {
+                        .then(async (withdrawSuccessCount) => {
+                            let withdrawReqData = {
+                                userTag: user._doc.userTag,
+                                address: req.body.toAddress,
+                                cryptoCurrencyCode: coinType,
+                                amount: amount,
+                                status: "fail",
+                                regDate: util.formatDate(new Date().toString())
+                            }
+                            let addCoinWithdraws = await serviceCoinWithdraws.add(country, withdrawReqData);
                             // if(withdrawCount < dbconfig.ontology.withdrawreqLimit) {
                                 if(withdrawSuccessCount < dbconfig.ontology.withdrawSuccessLimit) {
                                     serviceCoins.modify(country, {"_id":user._doc.coinId}, update_data)
@@ -351,7 +365,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                                 //     regDate: util.formatDate(new Date().toString())
                                                 // }
                                                 // serviceCoinWithdraws.add(country, withdrawReqData);
-                                                serviceCoinWithdraws.modify(country, addCoinWithdraws._doc._id,{status:"success"});
+                                                serviceCoinWithdraws.modify(country, {"_id": addCoinWithdraws._doc._id},{status:"success"});
                                                 
                                                 bitwebResponse.code = 200;
                                                 let resData = {
@@ -467,7 +481,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                 }
                                 occurpancyNotifications.count(country, condition2)
                                 .then(notiCount => {
-                                    if(withdrawCount >= dbconfig.smsNotification.coinWithdraw.count.day && notiCount == 0) {
+                                    if(withdrawSuccessCount >= dbconfig.smsNotification.coinWithdraw.count.day && notiCount == 0) {
                                         //관리자에게 noti 보냄
                                         let managerList = dbconfig.smsNotification.manager;
                                         let reqDate = {
@@ -478,7 +492,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                         }
                                         occurpancyNotifications.add(country, reqDate);
                                         
-                                        let notification = "코인출금:["+user._doc.userTag + ":" + withdrawCount+"건]" + smsContent.manageWithdrawNotification;
+                                        let notification = "코인출금:["+user._doc.userTag + ":" + withdrawSuccessCount+"건]" + smsContent.manageWithdrawNotification;
                                         for(var i=0;i<managerList.length;i++) {
                                             serviceSms.sendSms(managerList[i], notification);
                                         }
@@ -730,91 +744,160 @@ router.post('/bitberry/withdraw', token.checkInternalToken, function (req, res, 
                                             }
                                         }
                                         
-                                        serviceCoins.modify(country, {"_id":user._doc.coinId}, update_data)
-                                        .then(u_coin => {
-                                            let phone = (user._doc.phone.substring(0,1) == "0") ? user._doc.phone.substr(1) : user._doc.phone;
-                                            let param = {
-                                                'amount': amount,
-                                                'memo':'withdraw from mach',
-                                                'phone_number': user._doc.countryCode + phone
-                                            };
-
-                                            let data = {
-                                                "extType": "bitberry",
-                                                "coinId": user._doc.coinId,
-                                                "category": "withdraw",          
-                                                "status": "success",
-                                                "currencyCode": result.items[findIndex].currency_code,
-                                                "amount": req.body.amount,
-                                                "price": req.body.amount,
-                                                "regDate": util.formatDate(new Date().toString())  
+                                        let coinWithdrawCondition = {
+                                            "userTag": user._doc.userTag, 
+                                            "cryptoCurrencyCode":coinType, 
+                                            "regDate": {"$gte": util.formatDatePerDay(util.formatDate(new Date().toString())), "$lte": util.formatDate(new Date().toString())}
+                                        }
+                                        
+                                        serviceCoinWithdraws.count(country, coinWithdrawCondition)
+                                        .then(async (withdrawSuccessCount) => {
+                                            let withdrawReqData = {
+                                                userTag: user._doc.userTag,
+                                                address: req.body.toAddress,
+                                                cryptoCurrencyCode: coinType,
+                                                amount: amount,
+                                                status: "fail",
+                                                regDate: util.formatDate(new Date().toString())
                                             }
+                                            let addCoinWithdraws = await serviceCoinWithdraws.add(country, withdrawReqData);
+                                            if(withdrawSuccessCount < dbconfig.ontology.withdrawSuccessLimit) {                                                
+                                                serviceCoins.modify(country, {"_id":user._doc.coinId}, update_data)
+                                                .then(u_coin => {
+                                                    let phone = (user._doc.phone.substring(0,1) == "0") ? user._doc.phone.substr(1) : user._doc.phone;
+                                                    let param = {
+                                                        'amount': amount,
+                                                        'memo':'withdraw from mach',
+                                                        'phone_number': user._doc.countryCode + phone
+                                                    };
+        
+                                                    let data = {
+                                                        "extType": "bitberry",
+                                                        "coinId": user._doc.coinId,
+                                                        "category": "withdraw",          
+                                                        "status": "success",
+                                                        "currencyCode": result.items[findIndex].currency_code,
+                                                        "amount": req.body.amount,
+                                                        "price": req.body.amount,
+                                                        "regDate": util.formatDate(new Date().toString())  
+                                                    }
+        
+                                                    serviceCoinHistorys.add(country, data)
+                                                    .then(coinHistory => {                                                
+                                                        request({uri: url, 
+                                                                method:'POST',
+                                                                form: param, 
+                                                                headers: header}, function (error, response, body) {
+                                                            if (!error && response.statusCode == 201) {
+                                                                let result = JSON.parse(body);
+                                                                console.log('success : ', body);
+        
+                                                                if(coinType != "MACH") {
+                                                                    let feePercentage = (coinType == "BTC" ? dbconfig.fee.coin.btc.withdraw : dbconfig.fee.coin.ether.withdraw) 
+                                                                    let feeHistory = {
+                                                                        userId: user._doc._id,
+                                                                        currency: coinType,
+                                                                        type: "withdraw",
+                                                                        amount: fee_rate,
+                                                                        fee: feePercentage,
+                                                                        regDate: util.formatDate(new Date().toString())  
+                                                                    }
+                                                                    serviceFeeHistorys.add(country, feeHistory);
+                                                                }
+                                                                bitwebResponse.code = 200;
+                                                                let resData = {
+                                                                    "depositBitberry":result,
+                                                                    "coinHistory": coinHistory,
+                                                                    "updateCoin": u_coin
+                                                                }
 
-                                            serviceCoinHistorys.add(country, data)
-                                            .then(coinHistory => {                                                
-                                                request({uri: url, 
-                                                        method:'POST',
-                                                        form: param, 
-                                                        headers: header}, function (error, response, body) {
-                                                    if (!error && response.statusCode == 201) {
-                                                        let result = JSON.parse(body);
-                                                        console.log('success : ', body);
-
-                                                        if(coinType != "MACH") {
-                                                            let feePercentage = (coinType == "BTC" ? dbconfig.fee.coin.btc.withdraw : dbconfig.fee.coin.ether.withdraw) 
-                                                            let feeHistory = {
-                                                                userId: user._doc._id,
-                                                                currency: coinType,
-                                                                type: "withdraw",
-                                                                amount: fee_rate,
-                                                                fee: feePercentage,
-                                                                regDate: util.formatDate(new Date().toString())  
+                                                                serviceCoinWithdraws.modify(country, {"_id": addCoinWithdraws._doc._id},{status:"success"});
+                                                                
+                                                                //API 처리 결과 별도 LOG로 남김
+                                                                logger.addLog(country, req.originalUrl, req.body, resData);
+                                                                bitwebResponse.data = u_coin;
+                                                                res.status(200).send(bitwebResponse.create())
+        
+                                                                //성공 시 sms 전송
+                                                                //관리자에게 noti 보냄
+                                                                let managerList = dbconfig.smsNotification.withdrawCheckManager;
+                                                                let reqDate = {
+                                                                    userTag: user._doc.userTag, 
+                                                                    type: "coinWithdrawSuccess",
+                                                                    phones: managerList,
+                                                                    regDate: util.formatDate(new Date().toString())
+                                                                }
+                                                                occurpancyNotifications.add(country, reqDate);
+                                                                
+                                                                let notification = user._doc.userTag + " 출금:" + amount + " " + coinType;
+                                                                for(var i=0;i<managerList.length;i++) {
+                                                                    serviceSms.sendSms(managerList[i], notification);
+                                                                }
+                                                            } else {
+                                                                console.log('error = ' + response.statusCode);
+                                                                bitwebResponse.code = 500;
+                                                                //API 처리 결과 별도 LOG로 남김
+                                                                logger.addLog(country, req.originalUrl, req.body, error);
+                                                                bitwebResponse.message = error;
+                                                                res.status(500).send(bitwebResponse.create())    
                                                             }
-                                                            serviceFeeHistorys.add(country, feeHistory);
-                                                        }
-                                                        bitwebResponse.code = 200;
-                                                        let resData = {
-                                                            "depositBitberry":result,
-                                                            "coinHistory": coinHistory,
-                                                            "updateCoin": u_coin
-                                                        }
-                                                        
+                                                        });
+                                                    }).catch(err => {
+                                                        bitwebResponse.code = 500;
                                                         //API 처리 결과 별도 LOG로 남김
-                                                        logger.addLog(country, req.originalUrl, req.body, resData);
-                                                        bitwebResponse.data = u_coin;
-                                                        res.status(200).send(bitwebResponse.create())
-
-                                                        //성공 시 sms 전송
+                                                        logger.addLog(country, req.originalUrl, req.body, err);
+                                                        bitwebResponse.message = err;
+                                                        res.status(500).send(bitwebResponse.create());
+                                                    });
+                                                }).catch(err => {
+                                                    bitwebResponse.code = 500;
+                                                    //API 처리 결과 별도 LOG로 남김
+                                                    logger.addLog(country, req.originalUrl, req.body, err);
+                                                    bitwebResponse.message = err;
+                                                    res.status(500).send(bitwebResponse.create());
+                                                });
+                                            } else {
+                                                let fromDate = new Date();
+                                                fromDate = util.formatDatePerDay(fromDate);
+                                                let toDate = util.formatDate(new Date().toString());
+                                                let condition2 = {
+                                                    "userTag": user._doc.userTag, 
+                                                    "type":"coinWithdraw",
+                                                    "regDate":{"$gte": fromDate,"$lte": toDate}
+                                                }
+                                                occurpancyNotifications.count(country, condition2)
+                                                .then(notiCount => {
+                                                    if(withdrawSuccessCount >= dbconfig.smsNotification.coinWithdraw.count.day && notiCount == 0) {
                                                         //관리자에게 noti 보냄
-                                                        let managerList = dbconfig.smsNotification.withdrawCheckManager;
+                                                        let managerList = dbconfig.smsNotification.manager;
                                                         let reqDate = {
                                                             userTag: user._doc.userTag, 
-                                                            type: "coinWithdrawSuccess",
+                                                            type: "coinWithdraw",
                                                             phones: managerList,
                                                             regDate: util.formatDate(new Date().toString())
                                                         }
                                                         occurpancyNotifications.add(country, reqDate);
                                                         
-                                                        let notification = user._doc.userTag + " 출금:" + amount + " " + coinType;
+                                                        let notification = "코인출금:["+user._doc.userTag + ":" + withdrawSuccessCount+"건]" + smsContent.manageWithdrawNotification;
                                                         for(var i=0;i<managerList.length;i++) {
                                                             serviceSms.sendSms(managerList[i], notification);
                                                         }
-                                                    } else {
-                                                        console.log('error = ' + response.statusCode);
-                                                        bitwebResponse.code = 500;
-                                                        //API 처리 결과 별도 LOG로 남김
-                                                        logger.addLog(country, req.originalUrl, req.body, error);
-                                                        bitwebResponse.message = error;
-                                                        res.status(500).send(bitwebResponse.create())    
                                                     }
                                                 });
-                                            }).catch(err => {
-                                                bitwebResponse.code = 500;
+                
+                                                bitwebResponse.code = 200;
+                                                let message = "해당 사용자의 출금 요청 횟수를 초과하였습니다. 자세한 문의는 관리자에게 문의하세요.";
+                                                if(req.body.country == "EN") {
+                                                    message = "The number of withdrawal requests from the user has been exceeded. For more information, please contact the administrator.";
+                                                }
                                                 //API 처리 결과 별도 LOG로 남김
-                                                logger.addLog(country, req.originalUrl, req.body, err);
-                                                bitwebResponse.message = err;
-                                                res.status(500).send(bitwebResponse.create());
-                                            });
+                                                logger.addLog(country, req.originalUrl, req.body, message);
+                                                bitwebResponse.data = {
+                                                    "code": "N",
+                                                    "msg": message
+                                                };
+                                                res.status(200).send(bitwebResponse.create());
+                                            }
                                         }).catch(err => {
                                             bitwebResponse.code = 500;
                                             //API 처리 결과 별도 LOG로 남김
