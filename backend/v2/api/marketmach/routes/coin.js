@@ -357,13 +357,14 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                                 //관리자에게 noti 보냄
                                                 let managerList = dbconfig.smsNotification.withdrawCheckManager;
                                                 let reqDate = {
+                                                    userTag: user._doc.userTag, 
                                                     type: "coinWithdrawSuccess",
                                                     phones: managerList,
                                                     regDate: util.formatDate(new Date().toString())
                                                 }
                                                 occurpancyNotifications.add(country, reqDate);
                                                 
-                                                let notification = user._doc.userTag + " 출금 요청 : " + amount + " " + coinType;
+                                                let notification = user._doc.userTag + " 출금:" + amount + " " + coinType;
                                                 for(var i=0;i<managerList.length;i++) {
                                                     serviceSms.sendSms(managerList[i], notification);
                                                 }
@@ -765,10 +766,27 @@ router.post('/bitberry/withdraw', token.checkInternalToken, function (req, res, 
                                                             "coinHistory": coinHistory,
                                                             "updateCoin": u_coin
                                                         }
+                                                        
                                                         //API 처리 결과 별도 LOG로 남김
                                                         logger.addLog(country, req.originalUrl, req.body, resData);
                                                         bitwebResponse.data = u_coin;
                                                         res.status(200).send(bitwebResponse.create())
+
+                                                        //성공 시 sms 전송
+                                                        //관리자에게 noti 보냄
+                                                        let managerList = dbconfig.smsNotification.withdrawCheckManager;
+                                                        let reqDate = {
+                                                            userTag: user._doc.userTag, 
+                                                            type: "coinWithdrawSuccess",
+                                                            phones: managerList,
+                                                            regDate: util.formatDate(new Date().toString())
+                                                        }
+                                                        occurpancyNotifications.add(country, reqDate);
+                                                        
+                                                        let notification = user._doc.userTag + " 출금:" + amount + " " + coinType;
+                                                        for(var i=0;i<managerList.length;i++) {
+                                                            serviceSms.sendSms(managerList[i], notification);
+                                                        }
                                                     } else {
                                                         console.log('error = ' + response.statusCode);
                                                         bitwebResponse.code = 500;
