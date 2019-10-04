@@ -190,7 +190,7 @@ router.post('/ontwallet/retry/deposit', token.checkInternalToken, async function
 });
 
 //ont wallet 출금 처리
-router.post('/ontwallet/withdraw', token.checkInternalToken, async function (req, res, next) {
+router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res, next) {
     var bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;
     
@@ -207,7 +207,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, async function (req
                 let country = dbconfig.country;
                 
                 serviceCoins.detail(country, {"_id": user._doc.coinId})
-                .then(coin => {
+                .then(async (coin) => {
                     let total_price = coin._doc.total_ont == undefined ? 0 : coin._doc.total_ont;
                     if(coinType == "ETH") {
                         total_price = coin._doc.total_ether == undefined ? 0 : coin._doc.total_ether;
