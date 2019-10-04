@@ -190,7 +190,7 @@ router.post('/ontwallet/retry/deposit', token.checkInternalToken, async function
 });
 
 //ont wallet 출금 처리
-router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res, next) {
+router.post('/ontwallet/withdraw', token.checkInternalToken, async function (req, res, next) {
     var bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;
     
@@ -265,17 +265,28 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                         }
                     }
                     
+                    let withdrawReqData = {
+                        userTag: user._doc.userTag,
+                        address: req.body.toAddress,
+                        cryptoCurrencyCode: coinType,
+                        amount: amount,
+                        status: "fail",
+                        regDate: util.formatDate(new Date().toString())
+                    }
+                    let addCoinWithdraws = await serviceCoinWithdraws.add(country, withdrawReqData);
+                    
                     let coinWithdrawCondition = {
                         "userTag": user._doc.userTag, 
                         "cryptoCurrencyCode":coinType, 
                         "regDate": {"$gte": util.formatDatePerDay(util.formatDate(new Date().toString())), "$lte": util.formatDate(new Date().toString())}
                     }
+                    
                     serviceCoinWithdraws.count(country, coinWithdrawCondition)
                     .then(withdrawCount => {
-                        coinWithdrawCondition["status"] = "success";
+                        // coinWithdrawCondition["status"] = "success";
                         serviceCoinWithdraws.count(country, coinWithdrawCondition)
                         .then(withdrawSuccessCount => {
-                            if(withdrawCount < dbconfig.ontology.withdrawreqLimit) {
+                            // if(withdrawCount < dbconfig.ontology.withdrawreqLimit) {
                                 if(withdrawSuccessCount < dbconfig.ontology.withdrawSuccessLimit) {
                                     serviceCoins.modify(country, {"_id":user._doc.coinId}, update_data)
                                     .then(u_coin => {                        
@@ -331,15 +342,16 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                                 }
                                                 serviceFeeHistorys.add(country, feeHistory);
 
-                                                let withdrawReqData = {
-                                                    userTag: user._doc.userTag,
-                                                    address: req.body.toAddress,
-                                                    cryptoCurrencyCode: coinType,
-                                                    amount: amount,
-                                                    status: "success",
-                                                    regDate: util.formatDate(new Date().toString())
-                                                }
-                                                serviceCoinWithdraws.add(country, withdrawReqData);
+                                                // let withdrawReqData = {
+                                                //     userTag: user._doc.userTag,
+                                                //     address: req.body.toAddress,
+                                                //     cryptoCurrencyCode: coinType,
+                                                //     amount: amount,
+                                                //     status: "success",
+                                                //     regDate: util.formatDate(new Date().toString())
+                                                // }
+                                                // serviceCoinWithdraws.add(country, withdrawReqData);
+                                                serviceCoinWithdraws.modify(country, addCoinWithdraws._doc._id,{status:"success"});
                                                 
                                                 bitwebResponse.code = 200;
                                                 let resData = {
@@ -419,31 +431,31 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                         bitwebResponse.message = err;
                                         res.status(500).send(bitwebResponse.create());
                                     });   
-                                } else {
-                                    bitwebResponse.code = 200;
-                                    let message = "해당 사용자의 출금 요청 횟수를 초과하였습니다. 자세한 문의는 관리자에게 문의하세요.";
-                                    if(req.body.country == "EN") {
-                                        message = "The number of withdrawal requests from the user has been exceeded. For more information, please contact the administrator.";
-                                    }
+                                // } else {
+                                //     bitwebResponse.code = 200;
+                                //     let message = "해당 사용자의 출금 요청 횟수를 초과하였습니다. 자세한 문의는 관리자에게 문의하세요.";
+                                //     if(req.body.country == "EN") {
+                                //         message = "The number of withdrawal requests from the user has been exceeded. For more information, please contact the administrator.";
+                                //     }
 
-                                    let withdrawReqData = {
-                                        userTag: user._doc.userTag,
-                                        address: req.body.toAddress,
-                                        cryptoCurrencyCode: coinType,
-                                        amount: amount,
-                                        status: "fail",
-                                        regDate: util.formatDate(new Date().toString())
-                                    }
-                                    serviceCoinWithdraws.add(country, withdrawReqData);
+                                //     let withdrawReqData = {
+                                //         userTag: user._doc.userTag,
+                                //         address: req.body.toAddress,
+                                //         cryptoCurrencyCode: coinType,
+                                //         amount: amount,
+                                //         status: "fail",
+                                //         regDate: util.formatDate(new Date().toString())
+                                //     }
+                                //     serviceCoinWithdraws.add(country, withdrawReqData);
                                     
-                                    //API 처리 결과 별도 LOG로 남김
-                                    logger.addLog(country, req.originalUrl, req.body, message);
-                                    bitwebResponse.data = {
-                                        "code": "N",
-                                        "msg": message
-                                    };
-                                    res.status(200).send(bitwebResponse.create());
-                                }
+                                //     //API 처리 결과 별도 LOG로 남김
+                                //     logger.addLog(country, req.originalUrl, req.body, message);
+                                //     bitwebResponse.data = {
+                                //         "code": "N",
+                                //         "msg": message
+                                //     };
+                                //     res.status(200).send(bitwebResponse.create());
+                                // }
                             } else {
                                 let fromDate = new Date();
                                 fromDate = util.formatDatePerDay(fromDate);
