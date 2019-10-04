@@ -15,7 +15,8 @@ var coinsSchema = new Schema({
     total_ont: Number,
     firstItem: Boolean,
     firstReply: Boolean,
-    firstVtr: Boolean
+    firstVtr: Boolean,
+    lock: String
 });
 
 module.exports = mongoose.model('Coins', coinsSchema);

@@ -130,9 +130,31 @@ function remove(country, condition) {
     })
 }
 
+function removeAll(country, condition) {
+    return new Promise((resolve, reject) => {
+        setTimeout(_ => {
+            db.connectDB(country)
+            .then(() => {
+                CoinWithdraw.remove(
+                    condition,
+                    function(err, user) {
+                        if (err) {
+                            reject(err)
+                        }
+                        resolve(user)
+                    }
+                )
+            }).catch((err) => {
+                reject(err)
+            })
+        });
+    })
+}
+
 exports.count = count;
 exports.list = list;
 exports.detail = detail;
 exports.add = add;
 exports.modify = modify;
 exports.remove = remove;
+exports.removeAll = removeAll;
