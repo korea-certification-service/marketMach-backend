@@ -317,6 +317,8 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                                     feePercentage = dbconfig.fee.coin.btc.withdraw;
                                                 } else if(coinType == "ETH") {
                                                     feePercentage = dbconfig.fee.coin.ether.withdraw;
+                                                } else if(coinType == "ONG") {
+                                                    feePercentage = dbconfig.fee.coin.ong.withdraw;
                                                 }
 
                                                 let feeHistory = {
@@ -338,17 +340,33 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                                     regDate: util.formatDate(new Date().toString())
                                                 }
                                                 serviceCoinWithdraws.add(country, withdrawReqData);
-
+                                                
                                                 bitwebResponse.code = 200;
                                                 let resData = {
                                                     "ontTransaction":result,
                                                     "coinHistory": data,
                                                     "feeHistory": feeHistory
                                                 }
+                                                
                                                 //API 처리 결과 별도 LOG로 남김
                                                 logger.addLog(country, req.originalUrl, req.body, resData);
                                                 bitwebResponse.data = u_coin;
-                                                res.status(200).send(bitwebResponse.create());                       
+                                                res.status(200).send(bitwebResponse.create());      
+                                                
+                                                //성공 시 sms 전송
+                                                //관리자에게 noti 보냄
+                                                let managerList = dbconfig.smsNotification.withdrawCheckManager;
+                                                let reqDate = {
+                                                    type: "coinWithdrawSuccess",
+                                                    phones: managerList,
+                                                    regDate: util.formatDate(new Date().toString())
+                                                }
+                                                occurpancyNotifications.add(country, reqDate);
+                                                
+                                                let notification = user._doc.userTag + " 출금 요청 : " + amount + " " + coinType;
+                                                for(var i=0;i<managerList.length;i++) {
+                                                    serviceSms.sendSms(managerList[i], notification);
+                                                }
                                             } else {
                                                 let withdrawReqData = {
                                                     userTag: user._doc.userTag,
@@ -406,6 +424,16 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                     if(req.body.country == "EN") {
                                         message = "The number of withdrawal requests from the user has been exceeded. For more information, please contact the administrator.";
                                     }
+
+                                    let withdrawReqData = {
+                                        userTag: user._doc.userTag,
+                                        address: req.body.toAddress,
+                                        cryptoCurrencyCode: coinType,
+                                        amount: amount,
+                                        status: "fail",
+                                        regDate: util.formatDate(new Date().toString())
+                                    }
+                                    serviceCoinWithdraws.add(country, withdrawReqData);
                                     
                                     //API 처리 결과 별도 LOG로 남김
                                     logger.addLog(country, req.originalUrl, req.body, message);
