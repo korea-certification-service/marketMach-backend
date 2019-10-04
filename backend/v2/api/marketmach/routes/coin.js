@@ -706,6 +706,21 @@ router.post('/bitberry/withdraw', token.checkInternalToken, function (req, res, 
                                         return;
                                     }
 
+                                    //lock기능 추가
+                                    if(coin._doc.lock == "on") {
+                                        bitwebResponse.code = 200;
+                                        let message = "해당 사용자는 출금 제한되었습니다. 관리자에게 문의하세요.";
+                                        if(req.body.country == "EN") {
+                                            message = "You have been withdrawn. Please contact your administrator.";
+                                        }
+                                        bitwebResponse.data = {
+                                            "code": "E003",
+                                            "msg": message
+                                        };
+                                        res.status(200).send(bitwebResponse.create());
+                                        return;
+                                    }
+
                                     let amount = req.body.amount;
                                     let fee_rate = parseFloat((amount * dbconfig.fee.coin.mach.withdraw).toFixed(8));
                                     amount = parseFloat((amount - fee_rate).toFixed(8));
