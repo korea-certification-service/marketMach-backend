@@ -27,6 +27,15 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
     let condition = {
         'userTag': userTag
     }
+
+    if(req.body.fromAddress.trim() == dbconfig.ontology.address) {
+        bitwebResponse.code = 500;
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, "error => same address.");
+        bitwebResponse.message = "error";
+        res.status(500).send(bitwebResponse.create());
+        return;
+    }
     
     serviceUsers.detail(country, condition)
         .then(async (user) => {
@@ -35,7 +44,7 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
                 "category": 'deposit',
                 "status": false,
                 "currencyCode": req.body.coinType,
-                "fromAddress": req.body.fromAddress
+                "fromAddress": req.body.fromAddress.trim()
             };
             let getCoinHistory = await serviceCoinHistorys.detail(country, condition);
 
@@ -44,7 +53,7 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
                 let amount = req.body.mach;
                 let currentTime = util.formatDate(new Date().toString());
                 let data = {
-                    "fromAddress": req.body.fromAddress,
+                    "fromAddress": req.body.fromAddress.trim(),
                     "extType":"ontwallet",
                     "coinId": user._doc.coinId,
                     "category": 'deposit',          
@@ -65,7 +74,7 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
                     jsonData['regDate'] = util.getUnixTime(coinHistory._doc.regDate);
                     jsonData['coinType'] = req.body.coinType.toLowerCase();                    
                     jsonData['price'] = amount;
-                    jsonData['fromAddress'] = req.body.fromAddress;
+                    jsonData['fromAddress'] = req.body.fromAddress.trim();
                     scheduler.ontJob(jsonData);
 
                     bitwebResponse.code = 200;
@@ -142,7 +151,7 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
     });
 });
 
-//ONT wallet 재입금 요청 처리
+//ONT wallet 재입금 요청 처리(현재 사용 안함)
 router.post('/ontwallet/retry/deposit', token.checkInternalToken, async function(req, res, next) {
     var bitwebResponse = new BitwebResponse();
     
@@ -193,6 +202,15 @@ router.post('/ontwallet/retry/deposit', token.checkInternalToken, async function
 router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res, next) {
     var bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;
+
+    if(req.body.toAddress.trim() == dbconfig.ontology.address) {
+        bitwebResponse.code = 500;
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, "error => same address.");
+        bitwebResponse.message = "error";
+        res.status(500).send(bitwebResponse.create());
+        return;
+    }
     
     serviceUsers.detail(country, {"_id": req.body.userId})
     .then(user => {
@@ -293,7 +311,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                         .then(async (withdrawSuccessCount) => {
                             let withdrawReqData = {
                                 userTag: user._doc.userTag,
-                                address: req.body.toAddress,
+                                address: req.body.toAddress.trim(),
                                 cryptoCurrencyCode: coinType,
                                 amount: amount,
                                 status: "fail",
@@ -308,7 +326,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                         //Sender's address
                                         const from = new Ont.Crypto.Address(dbconfig.ontology.address);
                                         //Receiver's address
-                                        const to = new Ont.Crypto.Address(req.body.toAddress);
+                                        const to = new Ont.Crypto.Address(req.body.toAddress.trim());
                                         //Asset type
                                         const assetType = coinType;
                                         //Gas price and gas limit are to compute the gas costs of the transaction.
@@ -371,7 +389,8 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                                 let resData = {
                                                     "ontTransaction":result,
                                                     "coinHistory": data,
-                                                    "feeHistory": feeHistory
+                                                    "feeHistory": feeHistory,
+                                                    "updateCoin":u_coin
                                                 }
                                                 
                                                 //API 처리 결과 별도 LOG로 남김
@@ -397,7 +416,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
                                             } else {
                                                 let withdrawReqData = {
                                                     userTag: user._doc.userTag,
-                                                    address: req.body.toAddress,
+                                                    address: req.body.toAddress.trim(),
                                                     cryptoCurrencyCode: coinType,
                                                     amount: amount,
                                                     status: "fail",
