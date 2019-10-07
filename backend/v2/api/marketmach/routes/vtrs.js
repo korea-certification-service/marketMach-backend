@@ -598,10 +598,14 @@ function _reqBuy(req, res, bitwebResponse) {
                 }
 
                 if (user_price < 0 || user_price < vtr._doc.price) {
+                    let message = "거래할 금액이 부족합니다. [나의페이지-코인입금]에서 코인을 먼저 충전하세요.";
+                    if(req.body.country != "KR") {
+                        message = "Your balance is not enough to trade. You can deposit on [My page - Deposit Coin].";
+                    }
                     let msg = {
                         "successYn": "N",
                         "code" : "E001",
-                        "msg" : "거래금액이 구매자의 보유 금액보다 클 수 없습니다."
+                        "msg" : message
                     };
                     //API 처리 결과 별도 LOG로 남김
                     logger.addLog(country, req.originalUrl, req.body, msg);
@@ -1579,9 +1583,9 @@ function _buynow(req, res, bitwebResponse) {
                     }
 
                     if (user_price < 0 || user_price < body.price) {
-                        let message = "거래금액이 구매자의 보유 금액보다 클 수 없습니다.";
+                        let message = "거래할 금액이 부족합니다. [나의페이지-코인입금]에서 코인을 먼저 충전하세요.";
                         if(req.body.country != "KR") {
-                            message = "Trading amount cannot be greater than the buyer's amount.";
+                            message = "Your balance is not enough to trade. You can deposit on [My page - Deposit Coin].";
                         }
                         let msg = {
                             "successYn": "N",
