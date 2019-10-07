@@ -3,6 +3,7 @@ var router = express.Router();
 let dbconfig = require('../../../../config/dbconfig');
 let BitwebResponse = require('../../utils/BitwebResponse');
 let serviceCoins = require('../../service/coins');
+let serviceCoinsBak = require('../../service/coinsbak');
 let serviceUsers = require('../../service/users');
 let serviceCoinWithdraws = require('../../service/coinwithdraw');
 let serviceCoinHistorys = require('../../service/coinHistorys');
@@ -189,6 +190,37 @@ router.post("/swap", token.checkInternalToken, async (req, res) => {
         bitwebResponse.data = {
             "successYn":"Y",
             "msg": getUsers.length + "건 처리완료."
+        };
+        res.status(200).send(bitwebResponse.create());
+    } catch (err) {
+        console.error('data error => ', err);
+        let resErr = "error.";
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create());
+        return;
+    }
+});
+
+//coin backup api 기능 추가
+router.post("/backup", token.checkInternalToken, async (req, res) => {
+    let country = dbconfig.country;
+    let bitwebResponse = new BitwebResponse();
+    try {
+        let getCoins = await serviceCoins.list(country, {});
+        for(var i in getCoins) {
+            delete getCoins[i]._doc['_id'];
+            let addUserBackup = await serviceCoinsBak.add(country, getCoins[i]._doc);
+            let resData = {
+                "addUserBackup": addUserBackup
+            }
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, req.body, resData);
+        }
+        bitwebResponse.code = 200;
+        bitwebResponse.data = {
+            "successYn":"Y",
+            "msg": getCoins.length + "건 처리완료."
         };
         res.status(200).send(bitwebResponse.create());
     } catch (err) {

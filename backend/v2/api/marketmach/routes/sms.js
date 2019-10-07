@@ -121,12 +121,14 @@ router.post('/notification/point', token.checkInternalToken, function(req,res,ne
     let fee_rate = parseInt((body.amount * dbconfig.fee.point.deposit).toFixed());
     let user_amount = parseInt((body.amount - fee_rate).toFixed());
     
-    let coinReqType = " 입금요청:";
+    let coinReqType = " 입금요청";
+    let bank_account = "";
     if(body.type == "withdraw") {
-        coinReqType = " 출금요청:";
+        coinReqType = " 출금요청";
+        bank_account = "/" + body.bankAccountType + " " + body.bankAccount;
     }
 
-    let notification = body.username + coinReqType + user_amount + "원";
+    let notification = body.userTag + "/" + body.name + "/" + body.username + "/" + user_amount + "원/" + coinReqType + bank_account;
     let managerList = dbconfig.smsNotification.pointManager;
     try {
         for(var i=0;i<managerList.length;i++) {
