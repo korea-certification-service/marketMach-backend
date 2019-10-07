@@ -5,8 +5,10 @@ let BitwebResponse = require('../../utils/BitwebResponse');
 let serviceCoins = require('../../service/coins');
 let serviceUsers = require('../../service/users');
 let serviceCoinWithdraws = require('../../service/coinwithdraw');
+let serviceCoinHistorys = require('../../service/coinHistorys');
 let logger = require('../../utils/log');
 let util = require('../../utils/util');
+let token = require('../../utils/token');
 
 /*GET Coin List*/
 router.get("/list", (req, res) => {
@@ -139,6 +141,54 @@ router.get("/coinWithdraw/initalize/:userTag/:coinType", async (req, res) => {
         bitwebResponse.data = {
             "successYn":"Y",
             "msg":req.params.coinType + " 요청횟수를 초기화 하였습니다."
+        };
+        res.status(200).send(bitwebResponse.create());
+    } catch (err) {
+        console.error('data error => ', err);
+        let resErr = "error.";
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create());
+        return;
+    }
+});
+
+//coin swap 시 10% api 기능 추가
+router.post("/swap", token.checkInternalToken, async (req, res) => {
+    let country = dbconfig.country;
+    let bitwebResponse = new BitwebResponse();
+    let bonusRate = req.body.bonusRate == undefined ? 0 : req.body.bonusRate;
+    try {
+        let getUsers = await serviceUsers.list(country, {}, false);
+        for(var i in getUsers) {
+            let getCoinInfo = await serviceCoins.detail(country, {"_id":getUsers[i]._doc.coinId});
+            let total_mach = getCoinInfo._doc.total_mach == undefined ? 0 : getCoinInfo._doc.total_mach;
+            let bonus = parseFloat((total_mach * bonusRate).toFixed(8));
+            let updateMach = parseFloat((total_mach + bonus).toFixed(8));            
+            let data = {
+                "extType":"mach",
+                "coinId": getUsers[i]._doc.coinId,
+                "category": 'deposit',          
+                "status": "success",
+                "currencyCode": "MACH",
+                "amount": updateMach,
+                "price": updateMach,
+                "regDate": util.formatDate(new Date().toString())
+            }
+            let addCoinHistory = await serviceCoinHistorys.add(country, data);
+            let updateData = {"total_mach": updateMach};
+            let updatedCoin = await serviceCoins.modify(country, {"_id":getUsers[i]._doc.coinId}, updateData);
+            let resData = {
+                "addCoinHistory": addCoinHistory,
+                "updatedCoin": updatedCoin
+            }
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, req.body, resData);
+        }
+        bitwebResponse.code = 200;
+        bitwebResponse.data = {
+            "successYn":"Y",
+            "msg": getUsers.length + "건 처리완료."
         };
         res.status(200).send(bitwebResponse.create());
     } catch (err) {
