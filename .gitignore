@@ -155,3 +155,6 @@ aws-credentials.js
 
 #bin/www
 bin/www
+
+#api document
+api.yaml
