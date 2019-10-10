@@ -209,8 +209,11 @@ router.post("/backup", token.checkInternalToken, async (req, res) => {
     try {
         let getCoins = await serviceCoins.list(country, {});
         for(var i in getCoins) {
+            let assignData = Object.assign({},getCoins[i]._doc);
+            assignData['coinId'] = assignData._id;
+            delete assignData._id;
             delete getCoins[i]._doc['_id'];
-            let addUserBackup = await serviceCoinsBak.add(country, getCoins[i]._doc);
+            let addUserBackup = await serviceCoinsBak.add(country, assignData);
             let resData = {
                 "addUserBackup": addUserBackup
             }

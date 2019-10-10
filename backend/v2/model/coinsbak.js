@@ -3,6 +3,7 @@ mongoose.Promise = global.Promise;
 var Schema = mongoose.Schema;
 var coinsbakSchema = new Schema({
     userId: String,
+    coinId: String,
     mach_address: String,               //bitweb block chain address
     btc_address: String,                //user block chain address
     ether_address: String,
