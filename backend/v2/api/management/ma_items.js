@@ -7,19 +7,39 @@ var express = require('express');
 var router = express.Router();
 var dbconfig = require('../../../../config/dbconfig');
 var BitwebResponse = require('../../utils/BitwebResponse');
+var Items_model = require('../../model/items');
 var Items = require("../../service/items");
+let pagination = require('../../service/_pagination');
 
 //구매/판매 작성 게시물 조회 API
 router.get("/list", (req, res) => {
     let country = dbconfig.country;
     let condition = { }
     let bitwebResponse = new BitwebResponse();
-    Items.list(country, condition)
+    // Items.list(country, condition)
+    // .then(data => {
+    //     res.status(200).send(data);
+    // }).catch(err => {
+    //     console.error('data error =>', err);
+    //     let resErr = "escrow 탐색 실패";
+    //     bitwebResponse.code = 500;
+    //     bitwebResponse.message = resErr;
+    //     res.status(500).send(bitwebResponse.create())
+    // })
+    pagination.paging({
+        model: Items_model,
+        condition: condition,
+        limit: req.query.limit,
+        skip: req.query.skip,
+        // search: {'type': req.query.search}
+        search: { key: req.query.key, val: req.query.val }
+    })
     .then(data => {
         res.status(200).send(data);
-    }).catch(err => {
+    })
+    .catch(err => {
         console.error('data error =>', err);
-        let resErr = "escrow 탐색 실패";
+        let resErr = "there is no data";
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
         res.status(500).send(bitwebResponse.create())

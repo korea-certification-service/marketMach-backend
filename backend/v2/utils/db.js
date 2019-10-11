@@ -51,4 +51,3 @@ exports.connectDB = function (country) {
 exports.close = function () {
     mongoose.connection.close()
 }
-
