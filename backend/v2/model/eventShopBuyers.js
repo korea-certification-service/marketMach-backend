@@ -6,6 +6,7 @@ var eventShopBuyerSchema = new Schema({
     eventShopId: String,
     productType: String,
     productName: String,
+    country: String,
     userTag: String,
     receiver: String,
     countryCode: String,

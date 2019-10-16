@@ -94,10 +94,13 @@ router.get('/product/:shopId', token.checkInternalToken, async function (req, re
 });
 
 //이벤트 상품 구매 API
-router.post('/buy', token.checkInternalToken, async function(req, res, next) {
+router.post('/product/buy', token.checkInternalToken, async function(req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;
     let data = req.body;
+    if(req.body.country == "KR") {
+        delete req.body['country'];
+    }
     
     try {
         let shop = await serviceShops.detail(country, {"_id":data.eventShopId});
@@ -259,6 +262,48 @@ router.post('/buy', token.checkInternalToken, async function(req, res, next) {
         let resErr = "처리중 에러 발생";
         //API 처리 결과 별도 LOG로 남김
         logger.addLog(country, req.originalUrl, req.body, err.message);
+
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    }
+});
+
+//이벤트 상품 구매 API
+router.post('/buyer/list', token.checkInternalToken, async function(req, res, next) {
+    let bitwebResponse = new BitwebResponse();
+    let country = dbconfig.country;
+    let condition = req.body.param;
+    if(req.body.param.country == "KR") {
+        condition['country'] = {$exists:false};        
+    }    
+    let option = req.body.option;
+
+    try {
+        let count = await serviceShopBuyers.count(country, condition, option);
+        let list = await serviceShopBuyers.list(country, condition, option);
+
+        bitwebResponse.code = 200;
+        let resData = {
+            "successYn": "Y",
+            "count": count,
+            "list": list
+        }
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, resData);
+        bitwebResponse.data = resData;
+
+        let jsonResult = bitwebResponse.create();
+
+        jsonResult['pageIdx'] = option.pageIdx;
+        jsonResult['perPage'] = option.perPage;
+
+        res.status(200).send(jsonResult);
+    } catch(err) {
+        console.error('list shop error =>', err);
+        let resErr = "처리중 에러 발생";
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, condition, err.message);
 
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
