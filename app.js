@@ -18,6 +18,7 @@ var smsRouter = require('./backend/v2/api/marketmach/routes/sms');
 var coinRouter = require('./backend/v2/api/marketmach/routes/coin');
 var gameStationRouter = require('./backend/v2/api/marketmach/routes/gameStation');
 var mainRouter = require('./backend/v2/api/marketmach/routes/main');
+var shopsRouter = require('./backend/v2/api/marketmach/routes/shops');
 var commonRouter = require('./backend/v2/api/marketmach/routes/common');
 
 //management
@@ -83,6 +84,7 @@ app.use(version + '/sms', smsRouter);
 app.use(version + '/coin', coinRouter);
 app.use(version + '/gamestation', gameStationRouter);
 app.use(version + '/main', mainRouter);
+app.use(version + '/shops', shopsRouter);
 
 
 //management API

@@ -11,11 +11,13 @@ var coinHistorysSchema = new Schema({
     currencyCode: String,
     amountCurrency: String,
     amount: Number,
-    mach: Number,
+    price: Number,
     fee: Number,
     regDate: String,
     reqDate: String,
-    totalAmount: Number
+    totalAmount: Number,
+    memo: String,
+    game: String
 });
 
 module.exports = mongoose.model('CoinHistorys', coinHistorysSchema);
