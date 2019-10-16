@@ -11,7 +11,7 @@ var eventShopSchema = new Schema({
     originalPrice: Number,
     price: Number,
     percentage: Number,
-    imageTitle: [Mixed],
+    thumnail: [Mixed],
     imageDetail: [Mixed],
     deliveryType: String,
     deliveryPrice: Number,
