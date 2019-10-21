@@ -52,7 +52,7 @@ router.post('/product/list', token.checkInternalToken, async function (req, res,
         console.error('list shop error =>', err);
         let resErr = "처리중 에러 발생";
         //API 처리 결과 별도 LOG로 남김
-        logger.addLog(country, req.originalUrl, condition, err.message);
+        logger.addLog(country, req.originalUrl, req.body, err.message);
 
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
@@ -180,7 +180,7 @@ router.post('/product/buy', token.checkInternalToken, async function(req, res, n
                     let updatedShop = await serviceShops.modify(country, {"_id":data.eventShopId}, updateShopData);
                     //구매자 추가
                     let addShopBuyer = await serviceShopBuyers.add(country, data);
-                    
+                    addShopBuyer._doc['successYn'] = "Y";
                     bitwebResponse.code = 200;
                     let resData = {
                         "successYn": "Y",
