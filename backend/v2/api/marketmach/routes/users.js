@@ -98,5 +98,8 @@ router.post('/login', function (req, res, next) {
 });
 
 
+//ontology 로그인 API
+router.post('/login', function (req, res, next) {
+
 
 module.exports = router;
