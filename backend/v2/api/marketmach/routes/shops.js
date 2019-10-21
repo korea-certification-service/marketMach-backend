@@ -240,7 +240,7 @@ router.post('/product/buy', token.checkInternalToken, async function(req, res, n
                     let updatedShop = await serviceShops.modify(country, {"_id":data.eventShopId}, updateShopData);
                     //구매자 추가
                     let addShopBuyer = await serviceShopBuyers.add(country, data);
-                    
+                    addShopBuyer._doc['successYn'] = "Y";
                     bitwebResponse.code = 200;
                     let resData = {
                         "successYn": "Y",
