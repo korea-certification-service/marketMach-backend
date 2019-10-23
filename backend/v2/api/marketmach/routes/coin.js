@@ -151,6 +151,90 @@ router.post('/ontwallet/deposit', token.checkInternalToken, function(req, res, n
     });
 });
 
+//ONT wallet 입금 요청 처리(Ontology 전용)
+router.post('/ontwallet/deposit/onto', token.checkInternalToken, async function(req, res, next) {
+    var bitwebResponse = new BitwebResponse();
+    
+    let country = dbconfig.country;
+    let userTag = req.body.userTag;
+    let condition = {
+        'userTag': userTag
+    }
+
+    if(req.body.fromAddress.trim() == dbconfig.ontology.address) {
+        bitwebResponse.code = 500;
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, "error => same address.");
+        bitwebResponse.message = "error";
+        res.status(500).send(bitwebResponse.create());
+        return;
+    }
+    
+    try {
+        let user = await serviceUsers.detail(country, condition)
+        //history add
+        let amount = req.body.mach;
+        let currentTime = util.formatDate(new Date().toString());
+        let data = {
+            "fromAddress": req.body.fromAddress.trim(),
+            "extType":"ontwallet",
+            "coinId": user._doc.coinId,
+            "category": 'deposit',          
+            "status": "success",
+            "currencyCode": req.body.coinType,
+            "amount": amount,
+            "price": amount,
+            "regDate": currentTime,
+            "reqDate": currentTime,
+            "txHash": req.body.txHash
+        }
+        
+        let coin = await serviceCoins.detail(country, {"_id": user._doc.coinId})
+        let total_ont = coin._doc.total_ont == undefined ? 0 :  coin._doc.total_ont;
+        let update_data = {
+            "total_ont": parseFloat((total_ont + amount).toFixed(8)),
+            "ont_address": req.body.fromAddress
+        }
+        if(req.body.coinType == "btc") {
+            let total_btc = coin._doc.total_btc == undefined ? 0 :  coin._doc.total_btc;
+            update_data = {
+                "total_btc": parseFloat((total_btc + amount).toFixed(8))
+            }
+        } else if(req.body.coinType== "eth") {
+            let total_ether = coin._doc.total_ether == undefined ? 0 :  coin._doc.total_ether;
+            update_data = {
+                "total_ether":  parseFloat((total_ether + amount).toFixed(8))
+            }
+        } else if(req.body.coinType== "ong") {
+            let total_ong = coin._doc.total_ong == undefined ? 0 :  coin._doc.total_ong;
+            update_data = {
+                "total_ong":  parseFloat((total_ong + amount).toFixed(8))
+            }
+        }
+            
+        let updatedCoin = await serviceCoins.modify(country, {"_id": user._doc.coinId}, update_data);
+        let addCoinHistory = await serviceCoinHistorys.add(country, data);
+        bitwebResponse.code = 200;
+        let resData = {
+            "getUser": user,
+            "getCoin": coin,
+            "updatedCoin": updatedCoin,
+            "addCoinHistory": addCoinHistory
+        }
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, resData);
+
+        bitwebResponse.data = coinHistory;
+        res.status(200).send(bitwebResponse.create());
+    } catch(err) {
+        bitwebResponse.code = 500;
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, err.message);
+        bitwebResponse.message = err;
+        res.status(500).send(bitwebResponse.create());
+    };
+});
+
 //ONT wallet 재입금 요청 처리(현재 사용 안함)
 router.post('/ontwallet/retry/deposit', token.checkInternalToken, async function(req, res, next) {
     var bitwebResponse = new BitwebResponse();

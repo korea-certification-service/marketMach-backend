@@ -32,7 +32,8 @@ var usersSchema = new Schema({
     birth: String,
     sex: String,
     commId: String, 
-    foreigner: String
+    foreigner: String,
+    ontId:String
 });
 
 module.exports = usersSchema;

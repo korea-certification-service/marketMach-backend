@@ -71,7 +71,7 @@ router.post('/login', function (req, res, next) {
             }).catch((err) => {        
                 console.error('login token update error =>', err);
                 //API 처리 결과 별도 LOG로 남김
-                logger.addLog(country, req.originalUrl, req.body, err);
+                logger.addLog(country, req.originalUrl, req.body, err.message);
                 let resErr = "처리중 에러 발생";
                 bitwebResponse.code = 500;
                 bitwebResponse.message = resErr;
@@ -80,7 +80,7 @@ router.post('/login', function (req, res, next) {
         }).catch((err) => {        
             console.error('login token update error =>', err);
             //API 처리 결과 별도 LOG로 남김
-            logger.addLog(country, req.originalUrl, req.body, err);
+            logger.addLog(country, req.originalUrl, req.body, err.message);
             let resErr = "처리중 에러 발생";
             bitwebResponse.code = 500;
             bitwebResponse.message = resErr;
@@ -89,7 +89,7 @@ router.post('/login', function (req, res, next) {
     }).catch((err) => {        
         console.error('login error =>', err);
         //API 처리 결과 별도 LOG로 남김
-        logger.addLog(country, req.originalUrl, req.body, err);
+        logger.addLog(country, req.originalUrl, req.body, err.message);
         let resErr = "Incorrect ID or password";
         bitwebResponse.code = 500;
         bitwebResponse.message = resErr;
@@ -99,8 +99,51 @@ router.post('/login', function (req, res, next) {
 
 
 //ontology 로그인 API
-router.post('/login', function (req, res, next) {
-    
+router.post('/ontId/login', async function (req, res, next) {
+    let country = dbconfig.country;
+    let bitwebResponse = new BitwebResponse();
+    let condition = {
+        'ontId': 'did:ont:' + req.body.result.user,
+    }
+
+    try{
+        let user = await serviceUsers.detail(country, condition);    
+        let agreement = null;
+        let updatedUser = null;
+
+        if(user == null) {
+            user = {
+                'exist': false,
+                'ontId':'did:ont:' + req.body.result.user
+            };
+        } else {
+            user._doc['exist'] = true;
+            agreement = await serviceAgreements.detail(country, {"_id":user._doc.agreementId});    
+            let loginToken = util.makeToken();
+            let updateData = {
+                'loginToken': loginToken
+            }
+            updatedUser = await serviceUsers.modify(country,{"_id":user._doc._id}, updateData);
+        }
+
+        let resData = {
+            "getUser": user,
+            "agreement": agreement,
+            "updatedUser": updatedUser
+        };
+        logger.addLog(country, req.originalUrl, req.body, resData);
+        bitwebResponse.code = 200;
+        bitwebResponse.data = resData;                
+        res.status(200).send(bitwebResponse.create());
+    } catch (err) {
+        console.error('login error =>', err);
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, err.message);
+        let resErr = "ontId error.";
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    }
 });
 
 module.exports = router;
