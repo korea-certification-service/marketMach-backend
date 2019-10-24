@@ -195,17 +195,17 @@ router.post('/ontwallet/deposit/onto', token.checkInternalToken, async function(
             "total_ont": parseFloat((total_ont + amount).toFixed(8)),
             "ont_address": req.body.fromAddress
         }
-        if(req.body.coinType == "btc") {
+        if(req.body.coinType == "BTC") {
             let total_btc = coin._doc.total_btc == undefined ? 0 :  coin._doc.total_btc;
             update_data = {
                 "total_btc": parseFloat((total_btc + amount).toFixed(8))
             }
-        } else if(req.body.coinType== "eth") {
+        } else if(req.body.coinType== "ETH") {
             let total_ether = coin._doc.total_ether == undefined ? 0 :  coin._doc.total_ether;
             update_data = {
                 "total_ether":  parseFloat((total_ether + amount).toFixed(8))
             }
-        } else if(req.body.coinType== "ong") {
+        } else if(req.body.coinType== "ONG") {
             let total_ong = coin._doc.total_ong == undefined ? 0 :  coin._doc.total_ong;
             update_data = {
                 "total_ong":  parseFloat((total_ong + amount).toFixed(8))
@@ -224,7 +224,7 @@ router.post('/ontwallet/deposit/onto', token.checkInternalToken, async function(
         //API 처리 결과 별도 LOG로 남김
         logger.addLog(country, req.originalUrl, req.body, resData);
 
-        bitwebResponse.data = coinHistory;
+        bitwebResponse.data = addCoinHistory;
         res.status(200).send(bitwebResponse.create());
     } catch(err) {
         bitwebResponse.code = 500;
