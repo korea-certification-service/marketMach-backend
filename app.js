@@ -10,6 +10,7 @@ let cors = require('cors');
 //marketmach 
 var usersRouter = require('./backend/v2/api/marketmach/routes/users');
 var vtrsRouter = require('./backend/v2/api/marketmach/routes/vtrs');
+var pointTradesRouter = require('./backend/v2/api/marketmach/routes/pointTrades');
 var itemsRouter = require('./backend/v2/api/marketmach/routes/items');
 var communityRouter = require('./backend/v2/api/marketmach/routes/communitys');
 var kycRouter = require('./backend/v2/api/marketmach/routes/kyc');
@@ -77,6 +78,7 @@ let version = "/v2";
 app.use(version + '/items', itemsRouter);
 app.use(version + '/users', usersRouter);
 app.use(version + '/vtrs', vtrsRouter);
+app.use(version + '/pointTrades', pointTradesRouter);
 app.use(version + '/kycs', kycRouter);
 app.use(version + '/community', communityRouter);
 app.use(version + '/faq', faqRouter);

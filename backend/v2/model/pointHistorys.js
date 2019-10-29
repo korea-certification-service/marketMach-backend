@@ -6,7 +6,7 @@ var pointHistorysSchema = new Schema({
     extType: String,
     pointId: String,
     category: String,          
-    status: Boolean,
+    status: String,
     currencyCode: String,
     amountCurrency: String,
     amount: Number,

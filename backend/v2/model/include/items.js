@@ -45,7 +45,9 @@ var itemsSchema = new Schema({
     vtrTempId: String,
     clicked: Number,
     primeService: String,
-    country: String
+    country: String,
+    vtr: Mixed,
+    pointTrade: Mixed,
 });
 
 module.exports = itemsSchema;
