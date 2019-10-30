@@ -5,6 +5,7 @@ var Mixed = Schema.Types.Mixed;
 var eventShopSchema = new Schema({
     productType: {type: String, default:"0"},    //제품타입 : 0-기타, 추가 정의 가능
     productName: String,
+    productDesc: String,
     totalAmount: Number,
     leftAmount: Number,
     country: String,
