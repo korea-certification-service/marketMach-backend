@@ -17,7 +17,8 @@ var eventShopBuyerSchema = new Schema({
     totalPrice: Number,
     postcode: String,
     address: String,
-    regDate: String
+    regDate: String,
+    memo: String
 });
 
 module.exports = mongoose.model('eventShopBuyers', eventShopBuyerSchema);
