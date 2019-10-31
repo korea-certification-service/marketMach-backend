@@ -93,6 +93,43 @@ router.get('/product/:shopId', token.checkInternalToken, async function (req, re
     }
 });
 
+//이벤트 상품 구매 여부 조회 API
+router.get('/product/:shopId/buyYn/:userTag', token.checkInternalToken, async function (req, res, next) {
+    let bitwebResponse = new BitwebResponse();
+    let country = dbconfig.country;
+    let condition = {
+        "eventShopId": req.params.shopId,
+        "userTag": req.params.userTag
+    };
+
+    try {
+        let shopBuyer = await serviceShopBuyers.detail(country, condition);
+        let resData = {
+            "successYn": "Y",
+            "buyYn": "Y"
+        }        
+        if(shopBuyer != null) {
+            resData["buyYn"] = "N";
+        } 
+
+        bitwebResponse.code = 200;        
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.params, resData);
+
+        bitwebResponse.data = resData;
+        res.status(200).send(bitwebResponse.create())
+    } catch(err) {
+        console.error('buyYn error =>', err);
+        let resErr = "처리중 에러 발생";
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.params, err.message);
+
+        bitwebResponse.code = 500;
+        bitwebResponse.message = resErr;
+        res.status(500).send(bitwebResponse.create())
+    }
+});
+
 //이벤트 상품 구매 API
 router.post('/product/buy', token.checkInternalToken, async function(req, res, next) {
     let bitwebResponse = new BitwebResponse();
@@ -269,7 +306,7 @@ router.post('/product/buy', token.checkInternalToken, async function(req, res, n
     }
 });
 
-//이벤트 상품 구매 API
+//사용자 이벤트 상품 구매 조회 API
 router.post('/buyer/list', token.checkInternalToken, async function(req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;
