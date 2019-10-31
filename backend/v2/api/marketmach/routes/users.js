@@ -17,8 +17,6 @@ let tokens = require('../../../utils/token');
 let BitwebResponse = require('../../../utils/BitwebResponse')
 let serviceUsers = require('../../../service/users')
 let serviceAgreements = require('../../../service/agreements');
-// let controllerCoins = require('../service/coins');
-// let controllerPoints = require('../service/points');
 
 //로그인 API
 router.post('/login', function (req, res, next) {

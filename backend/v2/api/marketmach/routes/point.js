@@ -1,15 +1,11 @@
 var express = require('express');
 var router = express.Router();
-let request = require('request');
 let BitwebResponse = require('../../../utils/BitwebResponse')
 let dbconfig = require('../../../../../config/dbconfig');
 let util = require('../../../utils/util');
 let token = require('../../../utils/token');
 let servicePointHistorys = require('../../../service/pointHistorys');
 let logger = require('../../../utils/log');
-let smsContent = require('../../../../../config/sms');
-let serviceSms = require('../../../service/sms');
-let occurpancyNotifications = require('../../../service/occurpancyNotification');
 
 //point 입금
 router.post('/:pointId/deposit', token.checkInternalToken, function(req, res, next) {

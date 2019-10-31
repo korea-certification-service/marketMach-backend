@@ -1079,4 +1079,91 @@ router.post('/bitberry/withdraw', token.checkInternalToken, function (req, res, 
     });
 });
 
+//사용자 coin 조회 API
+router.get('/:coinId', token.checkInternalToken, async function(req, res, next) {
+    let bitwebResponse = new BitwebResponse();
+    let country = dbconfig.country;
+    let condition = {
+        "coinId": req.params.coinId
+    };
+    
+    try {
+        let coin = await serviceCoins.detail(country, condition);
+        let resData = {
+            "coin": coin
+        }
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, condition, resData);
+
+        bitwebResponse.code = 200;
+        bitwebResponse.data = coin;                
+        res.status(200).send(bitwebResponse.create());
+    } catch(err) {
+        console.error('err=>', err);
+        bitwebResponse.code = 500;
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, condition, err.message);
+        bitwebResponse.message = err;
+        res.status(500).send(bitwebResponse.create())
+    }
+});
+
+//사용자 coin 입출금 내역 조회 API
+router.post('/history/:coinId/list', token.checkInternalToken, async function(req, res, next) {
+    let bitwebResponse = new BitwebResponse();
+    let country = dbconfig.country;
+    let coinId = req.params.coinId;
+    let trade_type = req.body.param.trade_type;
+    let extType = req.body.param.extType;
+    let option = req.body.option;
+
+    if(extType == 'all') {
+        extType = ['bitberry','ontwallet'];
+    }
+
+    if(trade_type == "event") {
+        trade_type = ['deposit','event-signup','event-recommander','event-airdrop', 'exchange-deposit', 'event-etc'];
+    } else if(trade_type == "bitberry_deposit") {
+        trade_type = ['deposit'];
+    } else if(trade_type == "bitberry_withdraw") {
+        trade_type = ['withdraw'];
+    } else {
+        trade_type = ['withdraw','exchange-withdraw']
+    }
+
+    let condition = {
+        "coinId": coinId,
+        "category": trade_type
+    }
+    if(extType != undefined) {
+        condition['extType'] = extType;
+    }
+
+    try {
+        let count = await serviceCoinHistorys.count(country, condition, option);
+        let coinHistoryList = await serviceCoinHistorys.list(country, condition, option);
+
+        let resData = {
+            "list": coinHistoryList, 
+            "count": count            
+        }
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, resData);
+
+        bitwebResponse.code = 200;
+        bitwebResponse.data = resData;                
+        res.status(200).send(bitwebResponse.create());
+    } catch(err) {
+        console.error('err=>', err);
+        bitwebResponse.code = 500;
+        //API 처리 결과 별도 LOG로 남김
+        logger.addLog(country, req.originalUrl, req.body, err.message);
+        bitwebResponse.message = err;
+        res.status(500).send(bitwebResponse.create())
+    }
+});
+
+
+
+
 module.exports = router;
