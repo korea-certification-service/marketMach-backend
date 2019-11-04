@@ -103,6 +103,19 @@ router.get('/product/:shopId/buyYn/:userTag', token.checkInternalToken, async fu
     };
 
     try {
+        if(req.params.userTag == "undefined") {
+            let resData = {
+                "successYn": "Y",
+                "buyYn": "N"
+            } 
+            bitwebResponse.code = 200;        
+            //API 처리 결과 별도 LOG로 남김
+            logger.addLog(country, req.originalUrl, req.params, "no userTag.");
+            bitwebResponse.data = resData;
+            res.status(200).send(bitwebResponse.create());
+            return;
+        }
+
         let shopBuyer = await serviceShopBuyers.detail(country, condition);
         let resData = {
             "successYn": "Y",
