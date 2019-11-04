@@ -94,11 +94,12 @@ router.get('/product/:shopId', token.checkInternalToken, async function (req, re
 });
 
 //이벤트 상품 구매 여부 조회 API
-router.get('/product/:shopId/buyYn/:userTag', token.checkInternalToken, async function (req, res, next) {
+router.get('/product/:productType/buyYn/:userTag', token.checkInternalToken, async function (req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;
     let condition = {
-        "eventShopId": req.params.shopId,
+        "productType": req.params.productType,
+        //"eventShopId": req.params.shopId,
         "userTag": req.params.userTag
     };
 
@@ -154,7 +155,7 @@ router.post('/product/buy', token.checkInternalToken, async function(req, res, n
     
     try {
         let shop = await serviceShops.detail(country, {"_id":data.eventShopId});
-        
+        data['productType'] = shop._doc.productType;
         if(shop._doc.eventEnd) {
             let result = {
                 "successYn": "N",
