@@ -31,8 +31,8 @@ router.post('/item/reply/list', token.checkInternalToken, async function(req, re
                 "_사이트": item._doc.country == undefined ? "한국" : "포인트몰",
                 "_상품분류": item._doc.category,
                 "_상품제목": item._doc.title,
-                "_거래현황": item._doc.status,
-                "_가격": item._doc.country == undefined ? item._doc.price : item._doc.point,
+                "_거래현황": util.getStatus(item._doc.status).text,
+                "_가격": item._doc.country == undefined ? item._doc.price + " " + item._doc.cryptoCurrencyCode : item._doc.point + " POINT",
                 "_게시자ID": item._doc.userTag,
                 "_상품등록일시": item._doc.regDate
             })
@@ -79,8 +79,8 @@ router.post('/item/list', token.checkInternalToken, async function(req, res, nex
                 "_사이트": items[i]._doc.country == undefined ? "한국" : "포인트몰",
                 "_상품분류": items[i]._doc.category,
                 "_상품제목": items[i]._doc.title,
-                "_거래현황": items[i]._doc.status,
-                "_가격": items[i]._doc.country == undefined ? items[i]._doc.price : items[i]._doc.point,
+                "_거래현황": util.getStatus(items[i]._doc.status).text,
+                "_가격": items[i]._doc.country == undefined ? items[i]._doc.price + " " + items[i]._doc.cryptoCurrencyCode : items[i]._doc.point + " POINT",
                 "_상품등록일시": items[i]._doc.regDate
             })
         }

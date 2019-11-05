@@ -231,6 +231,65 @@ function makeNumber() {
     return text;
 }
 
+function getStatus(value) {
+    if(value == 0) {
+        return {
+            'text': '거래가능',
+            'number': 1,
+            'className': 'todo',
+            'detail': '거래가능'
+        };
+    } else if((value >= 1 && value <= 3) || (value >= 101 && value <= 103)) {
+        var detail = "거래요청";
+        if(value == 2 || value == 102) {
+            detail = "구매확인";
+        } else if(value == 3 || value == 103) {
+            detail = "판매완료";
+        } 
+        return {
+            'text': '거래중',
+            'number': 2,
+            'className': 'doing',
+            'detail': detail
+        };
+    } else if(value == 4 || value == 6 || value == 7 || value == 104 || value == 106 || value == 107) {
+        var detail = "거래완료";
+        if(value == 6 || value == 106) {
+            detail = "거래완료(관리자)";
+        } else if(value == 7 || value == 107) {
+            detail = "거래완료(시스템)";
+        } 
+        return {
+            'text': '거래완료',
+            'number': 3,
+            'className': 'done',
+            'detail': detail
+        };
+    } else if(value == 5 || value == 105) {
+        //return '이의재기';
+        return {
+            'text': '이의제기',
+            'number': 3,
+            'className': 'done',
+            'detail': '이의제기'
+        };
+    } else if(value == 50) {
+        return {
+            'text': '거래중',
+            'number': 2,
+            'className': 'doing',
+            'detail': '대화중'
+        };
+    } else {
+        return {
+            'text': '거래불가',
+            'number': 3,
+            'className': 'done',
+            'detail': '거래불가'
+        };
+    }
+}
+
 exports.formatDate = formatDate;
 exports.formatDate2 = formatDate2;
 exports.getEnvLocale = getEnvLocale;
@@ -248,3 +307,4 @@ exports.formatDatePerHour = formatDatePerHour;
 exports.formatDatePerDay = formatDatePerDay;
 exports.formatDatePerMin = formatDatePerMin;
 exports.getUnixTime = getUnixTime;
+exports.getStatus = getStatus;
