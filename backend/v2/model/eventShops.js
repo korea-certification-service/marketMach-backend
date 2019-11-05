@@ -19,7 +19,8 @@ var eventShopSchema = new Schema({
     options: [Mixed],
     eventEnd: Boolean,
     regDate: String,
-    worker: String
+    worker: String,
+    detailUrl: String
 });
 
 module.exports = mongoose.model('eventShops', eventShopSchema);
