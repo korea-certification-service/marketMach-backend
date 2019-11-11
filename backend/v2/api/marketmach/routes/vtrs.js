@@ -898,6 +898,7 @@ function _reqSell(req, res, bitwebResponse) {
 
 function _reqComplete(req, res, bitwebResponse) {
     let itemId = req.params.itemId;
+    let txId = req.body.txId == undefined ? "" : req.body.txId;
     let country = dbconfig.country;
     let conditionItem = {
         "_id": itemId
@@ -957,6 +958,7 @@ function _reqComplete(req, res, bitwebResponse) {
                 .then(modifyVtr => {
                     let reqData = {
                         'status': 4,
+                        'finalTransaction': txId,
                         'vtr': modifyVtr
                     };
 

@@ -48,6 +48,7 @@ var itemsSchema = new Schema({
     country: String,
     vtr: Mixed,
     pointTrade: Mixed,
+    finalTransaction: String
 });
 
 module.exports = itemsSchema;
