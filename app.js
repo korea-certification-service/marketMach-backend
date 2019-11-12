@@ -40,6 +40,7 @@ var session = require('express-session');
 var maItems = require('./backend/v2/api/management/ma_items');
 var maBanners = require('./backend/v2/api/management/ma_banner');
 var maBatch = require('./backend/v2/api/management/ma_batch');
+var maShop = require('./backend/v2/api/management/ma_shops');
 
 var app = express();
 
@@ -108,6 +109,7 @@ app.use('/ma_login', maLogin);
 app.use('/ma_items', maItems);
 app.use('/ma_banners', maBanners);
 app.use('/ma_batch', maBatch);
+app.use('/ma_shop', maShop);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
