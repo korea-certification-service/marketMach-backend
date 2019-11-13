@@ -952,7 +952,8 @@ function _reqComplete(req, res, bitwebResponse) {
                     "completed" : true,
                     "completed_confirm_date": util.formatDate(new Date().toString()),
                     "completed_date" : util.formatDate(new Date().toString()),
-                    "item.status": 4
+                    "item.status": 4,
+                    'item.finalTransaction': txId
                 };
                 serviceVtrs.modify(country, {"item._id": itemId}, reqVtr)
                 .then(modifyVtr => {
