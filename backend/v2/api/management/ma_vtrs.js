@@ -75,7 +75,7 @@ router.post("/list/all", token.checkInternalToken, async (req, res) => {
     let country = dbconfig.country;
     let condition = req.body.param;
     if(req.body.param.country == "KR") {
-        condition['country'] = {$exists:false};        
+        condition['$or'] = [{country:{$exists:false}},{country:"KR"}];        
     }    
     let option = req.body.option;
 
