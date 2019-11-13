@@ -962,7 +962,7 @@ function _reqComplete(req, res, bitwebResponse) {
                         'vtr': modifyVtr
                     };
 
-                    serviceVtrTemps.modify(country, {"roomToken": vtr._doc.roomToken}, {"item.status": 4})
+                    serviceVtrTemps.modify(country, {"roomToken": vtr._doc.roomToken}, {"item.status": 4, 'item.finalTransaction': txId})
                     .then(updateVtrTemp => {
                         serviceItems.modify(country, conditionItem, reqData)
                         .then((updateItem) => {              

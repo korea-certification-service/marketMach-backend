@@ -1,19 +1,40 @@
 let Vtrs = require('../model/vtrs');
 let db = require('../utils/db');
 
-function list(country, condition) {
+function count(country, condition, option) {
     return new Promise((resolve, reject) => {
         db.connectDB(country)
         .then(() => {
-            Vtrs.find(
-                condition,
-                function(err, result) {
-                    if (err) {
-                        reject(err)
-                    }
-                    resolve(result)
+            Vtrs.count(condition)
+            .limit(100)
+            .skip(option.pageIdx * option.perPage)
+            .sort({regDate:'desc'})
+            .exec(function (err, list) {
+                if (err) {
+                    reject(err)
                 }
-            )
+                resolve(list)
+            })
+        }).catch((err) => {
+            reject(err)
+        })
+    })
+}
+
+function list(country, condition, option) {
+    return new Promise((resolve, reject) => {
+        db.connectDB(country)
+        .then(() => {
+            Vtrs.find(condition)
+            .limit(option.perPage)
+            .skip(option.pageIdx * option.perPage)
+            .sort({regDate:'desc'})
+            .exec(function (err, list) {
+                if (err) {
+                    reject(err)
+                }
+                resolve(list)
+            })
         }).catch((err) => {
             reject(err)
         })
@@ -98,6 +119,7 @@ function remove(country, condition) {
     })
 }
 
+exports.count = count;
 exports.list = list;
 exports.detail = detail;
 exports.add = add;
