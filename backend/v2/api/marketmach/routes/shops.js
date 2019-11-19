@@ -150,9 +150,9 @@ router.post('/product/buy', token.checkInternalToken, async function(req, res, n
     let country = dbconfig.country;
     let data = req.body;
     data['regDate'] = util.formatDate(new Date().toString());
-    if(req.body.country == "KR") {
-        delete req.body['country'];
-    }
+    // if(req.body.country == "KR") {
+    //     delete req.body['country'];
+    // }
     
     try {
         let shop = await serviceShops.detail(country, {"_id":data.eventShopId});
