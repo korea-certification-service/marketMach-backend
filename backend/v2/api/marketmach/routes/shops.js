@@ -326,9 +326,9 @@ router.post('/buyer/list', token.checkInternalToken, async function(req, res, ne
     let bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;
     let condition = req.body.param;
-    if(req.body.param.country == "KR") {
-        condition['country'] = {$exists:false};        
-    }    
+    // if(req.body.param.country == "KR") {
+    //     condition['country'] = {$exists:false};        
+    // }    
     let option = req.body.option;
 
     try {
