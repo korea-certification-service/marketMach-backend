@@ -184,6 +184,27 @@ router.post('/product/buy', token.checkInternalToken, async function(req, res, n
             res.status(200).send(bitwebResponse.create())
             return;
         } else {
+            let condition = {
+                "productType": data.productType,
+                "country": data.country,
+                "userTag": data.userTag
+            };
+            let shopBuyer = await serviceShopBuyers.detail(country, condition);
+            if(shopBuyer != null) {
+                let result = {
+                    "successYn": "N",
+                    "code":"E005",
+                    "msg": "이미 상품을 구매하셨습니다."
+                }
+                bitwebResponse.code = 200;
+                //API 처리 결과 별도 LOG로 남김
+                logger.addLog(country, req.originalUrl, req.body, result);
+    
+                bitwebResponse.data = result;
+                res.status(200).send(bitwebResponse.create());
+                return;
+            }     
+
             let user = await serviceUsers.detail(country,{"userTag":data.userTag});
             data['countryCode']=user._doc.countryCode;
             data['phone']= (data.phone == undefined ? user._doc.phone : data.phone);
