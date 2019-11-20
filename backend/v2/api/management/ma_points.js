@@ -1,5 +1,5 @@
 /**
- * 관리자 - 포인트 API(현재 사용 안함)
+ * 관리자 - 포인트 API
  * 작성자 : Chef Kim
  * 작성일 : 2019-09-26
  */
@@ -13,7 +13,7 @@ let serviceVtrTemps = require('../../service/vtrTemps');
 let logger = require('../../utils/log');
 let token = require('../../utils/token');
 
-/*GET Points Detail*/
+/*GET Points Detail(현재 사용 안함)*/
 router.get("/detail/:pointId", (req, res) => {
     let country = dbconfig.country;
     let condition = {
@@ -33,7 +33,7 @@ router.get("/detail/:pointId", (req, res) => {
     })
 });
 
-/*PUT Point Modify */
+/*PUT Point Modify (현재 사용 안함)*/
 router.put("/modify/:pointId", (req, res) => {
     let country = dbconfig.country;
     let condition = {
@@ -56,6 +56,7 @@ router.put("/modify/:pointId", (req, res) => {
     })
 });
 
+//포인트 거래 내역 조회
 router.post("/list/all", token.checkInternalToken, async (req, res) => {
     let bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;

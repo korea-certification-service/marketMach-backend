@@ -8,7 +8,7 @@ const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
 const credentials = require('../../../config/aws-credentials');
 
-//단일 파일 업로드 함수 - 최대 5개
+//단일 파일 업로드 함수
 function upload() {
     aws.config.update({
         accessKeyId: credentials.s3.accessKeyId,
@@ -35,7 +35,7 @@ function upload() {
     return singleUpload;
 }
 
-//다중 파일 업로드 함수
+//다중 파일 업로드 함수 - 최대 5개
 function multiUpload() {
     aws.config.update({
         accessKeyId: credentials.s3.accessKeyId,
