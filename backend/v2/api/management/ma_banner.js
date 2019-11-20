@@ -1,5 +1,5 @@
 /**
- * banner API
+ * 관리자 - banner API(현재 사용 안함)
  * 작성자 : Chef Kim
  * 작성일 : 2019-09-26
  */

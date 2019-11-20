@@ -1,3 +1,8 @@
+/**
+ * 관리자 - 블랙리스트 API(현재 사용 안함)
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-09-26
+ */
 var express = require('express');
 var router = express.Router();
 let BitwebResponse = require('../../utils/BitwebResponse');

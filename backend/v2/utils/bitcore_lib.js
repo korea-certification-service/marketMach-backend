@@ -1,3 +1,8 @@
+/**
+ * 현재 사용 안함
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-11-20
+ */
 const bitcoin = require('bitcoinjs-lib')
 const request = require('request');
 const P2WSH_over_P2SH = "P2WSH-over-P2SH";

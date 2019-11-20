@@ -1,3 +1,8 @@
+/**
+ * 암호화폐 코인 API
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-09-03
+ */
 var express = require('express');
 var router = express.Router();
 let request = require('request');
@@ -663,7 +668,7 @@ router.post('/ontwallet/withdraw', token.checkInternalToken, function (req, res,
 });
 
 //비트베리 API - 사용자 입금 처리 요청 (호출 시 사용자의 비트베리 앱으로 승인 요청)
-//callback함수는 marketMACH 백앤드에 있음
+//callback함수는 marketMACH에 있음
 router.post('/bitberry/deposit', token.checkInternalToken, function (req, res, next) {
     var bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;
@@ -1079,7 +1084,7 @@ router.post('/bitberry/withdraw', token.checkInternalToken, function (req, res, 
     });
 });
 
-//사용자 coin 조회 API
+//사용자 암포화폐 조회 API
 router.get('/:coinId', token.checkInternalToken, async function(req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;
@@ -1108,7 +1113,7 @@ router.get('/:coinId', token.checkInternalToken, async function(req, res, next) 
     }
 });
 
-//사용자 coin 입출금 내역 조회 API
+//사용자 암호화폐 입출금 내역 조회 API
 router.post('/history/:coinId/list', token.checkInternalToken, async function(req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;

@@ -1,5 +1,5 @@
 /**
- * KYC API
+ * 관리자 - KYC API
  * 작성자 : Chef Kim
  * 작성일 : 2019-07-11
  */
@@ -109,7 +109,7 @@ router.get('/:userId', tokens.checkInternalToken, function(req, res, next){
     }) 
 });
 
-//kyc 수정 API
+//kyc 수정 또는 승인/거부 API
 router.put('/:userId', tokens.checkInternalToken, function(req, res, next){
     let bitwebResponse = new BitwebResponse();
     let condition = {

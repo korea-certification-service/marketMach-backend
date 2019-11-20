@@ -1,5 +1,5 @@
 /**
- * Token 생성 및 체크 모듈
+ * Login Token 생성 및 내부 API Token 체크 모듈
  * - Login Token 
  * 작성자 : Chef Kim
  * 작성일 : 2019-07-11
@@ -12,14 +12,14 @@ let serviceAgreements = require('../service/agreements');
 let BitwebResponse = require('./BitwebResponse');
 let logger = require('./log');
 
-//로그인 토큰 생성
+//로그인 토큰 생성(현재 사용 안함)
 function makeLoginToken(value) {
     let passphrase = dbconfig.cryptoJS.passphrase;
     let encryptValue = CryptoJS.AES.encrypt(value, passphrase);
     return encryptValue.toString();
 }
 
-//로그인 토큰 체크
+//로그인 토큰 체크(현재 사용 안함)
 function checkLoginToken(req, res, next) {
     let country = dbconfig.country;
     let passphrase = dbconfig.cryptoJS.passphrase;
@@ -85,6 +85,7 @@ function checkLoginToken(req, res, next) {
     }
 }
 
+//API 내부 토큰 체크
 function checkInternalToken(req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let header = req.headers;

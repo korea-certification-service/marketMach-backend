@@ -1,3 +1,8 @@
+/**
+ * Ontology 입금 처리 모듈 (node-schedule라는 crontab으로 동작)
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-07-11
+ */
 let dbconfig = require('../../../config/dbconfig');
 let schedule = require('node-schedule');
 let request = require('request');
@@ -23,7 +28,7 @@ function ontJob(data) {
         console.log('polling jobCount==>', jobCount)
         console.log('answer time =>', time);        
         let currentDate = Math.floor(new Date().getTime() / 1000);
-
+        //Ontology explorer API를 호출하여 입금 여부 조회
         let url = explorerUrl + '/api/v1/explorer/address/time/'+address+'/'+coinType+'/'+regDate+'/'+currentDate;
         console.log(url);
         request.get(url, function (err, res, body) {

@@ -1,3 +1,8 @@
+/**
+ * 관리자 - 내부 작업 시 사용하는 API
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-11-20
+ */
 var express = require('express');
 var router = express.Router();
 let request = require('request');

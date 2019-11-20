@@ -1,3 +1,8 @@
+/**
+ * 현재 사용 안함
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-11-20
+ */
 const fs = require('fs');
 const HookedWeb3Provider = require("hooked-web3-provider");
 const EthJS = require('ethereumjs-tx')

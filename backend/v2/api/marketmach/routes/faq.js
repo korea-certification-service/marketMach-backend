@@ -1,5 +1,5 @@
 /**
- * 사용자 API
+ * FAQ API
  * 작성자 : Chef Kim
  * 작성일 : 2019-09-03
  */
@@ -12,6 +12,7 @@ let token = require('../../../utils/token');
 let BitwebResponse = require('../../../utils/BitwebResponse')
 let serviceFaq = require('../../../service/faq');
 
+//FAQ 목록 조회 API
 router.post('/list', token.checkInternalToken, function (req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let condition = {};
@@ -63,6 +64,7 @@ router.post('/list', token.checkInternalToken, function (req, res, next) {
     });
 });
 
+//FAQ 상세 조회 API
 router.get('/detail/:faqId', token.checkInternalToken, function (req, res, next) {
     let country = dbconfig.country;
     let bitwebResponse = new BitwebResponse();

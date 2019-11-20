@@ -1,3 +1,8 @@
+/**
+ * SMS 전송 API
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-09-03
+ */
 let express = require('express');
 let router = express.Router();
 var BitwebResponse = require('../../../utils/BitwebResponse')
@@ -10,6 +15,7 @@ const util = require('../../../utils/util');
 let token = require('../../../utils/token');
 let logger = require('../../../utils/log');
 
+//회원 가입 시 SMS로 인증번호 전송 API
 router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next) {
     var bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;
@@ -23,7 +29,7 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
         'regDate': util.formatDate(new Date().toString())
     }
 
-    //긴급 패치
+    //긴급 패치(러시아 지역에서 SMS을 과도하게 요청하여 해당 지역은 SMS를 전송하지않도록 하였음)
     if(req.body.countryCode == "+7") {
         bitwebResponse.code = 200;
         //API 처리 결과 별도 LOG로 남김
@@ -114,6 +120,7 @@ router.post('/user/checkMobile', token.checkInternalToken, function(req,res,next
     })     
 })
 
+//포인트 입출금 시 관리자에게 SMS 전송
 router.post('/notification/point', token.checkInternalToken, function(req,res,next) {
     var bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;

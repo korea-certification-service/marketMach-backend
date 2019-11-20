@@ -1,3 +1,8 @@
+/**
+ * 현재 사용 안함
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-07-11
+ */
 let config = require('../../config/dbconfig')
 let mqtt = require('mqtt');
 let mqtt_url = config.mqtt.url;

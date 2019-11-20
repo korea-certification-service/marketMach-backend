@@ -1,3 +1,8 @@
+/**
+ * API Response 모듈
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-11-20
+ */
 var Response = require('./Response');
 
 class BitwebResponse {

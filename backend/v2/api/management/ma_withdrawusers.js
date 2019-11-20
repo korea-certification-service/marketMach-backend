@@ -1,3 +1,8 @@
+/**
+ * 관리자 - 탈퇴 회원 API(현재 사용 안함)
+ * 작성자 : Jini Seo
+ * 작성일 : 2019-08-19
+ */
 var express = require('express');
 var router = express.Router();
 let BitwebResponse = require('../../utils/BitwebResponse');

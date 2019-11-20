@@ -1,3 +1,10 @@
+/**
+ * Util 모듈
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-11-20
+ */
+
+ //Date format 변환 함수(YYYY/MM/DD HH:MI:SS)
 function formatDate (date) {
     var d = new Date(date),
         month = '' + (d.getMonth() + 1),
@@ -18,6 +25,7 @@ function formatDate (date) {
     return getDate + " " + getTime;
 }
 
+//Date format 변환 함수(YYYYMMDDHHMISS)
 function formatDate2 (date) {
     var d = new Date(date),
         month = '' + (d.getMonth() + 1),
@@ -38,11 +46,13 @@ function formatDate2 (date) {
     return getDate + getTime;
 }
 
+//Date를 unixtime으로 변환 함수
 function getUnixTime(date) {
     var d = new Date(date);
     return d.getTime() / 1000;
 }
 
+//분 단위 계산 함수
 function formatDatePerMin (date, min) {
     var d = new Date(date),
         month = '' + (d.getMonth() + 1),
@@ -61,6 +71,7 @@ function formatDatePerMin (date, min) {
     return getDate + " " + getTime;
 }
 
+//시간 단위 계산 함수
 function formatDatePerHour (date) {
     var d = new Date(date),
         month = '' + (d.getMonth() + 1),
@@ -79,6 +90,7 @@ function formatDatePerHour (date) {
     return getDate + " " + getTime;
 }
 
+//일 단위 계산 함수
 function formatDatePerDay (date) {
     var d = new Date(date),
         month = '' + (d.getMonth() + 1),
@@ -97,6 +109,7 @@ function formatDatePerDay (date) {
     return getDate + " " + getTime;
 }
 
+//성인 여부 확인 함수(현재 사용 안함)
 function checkAdult (start_date, to_date) {
     var s_d = new Date(start_date);
     var e_d = new Date(to_date);
@@ -109,6 +122,7 @@ function checkAdult (start_date, to_date) {
     return diff;
 }
 
+//언어 설정 함수(현재 사용 안함)
 function getEnvLocale(env) {
     env = env || process.env;
 
@@ -116,6 +130,7 @@ function getEnvLocale(env) {
     // return env.LC_ALL || env.LC_MESSAGES || env.LANG || env.LANGUAGE;
 }
 
+//날짜 계산
 function calculateDate (date, interval_type, interval) {
     var d = new Date(date),
         month = (interval_type == "M" ? '' + (d.getMonth() + 1 + interval) :  '' + (d.getMonth() + 1)),
@@ -136,10 +151,12 @@ function calculateDate (date, interval_type, interval) {
     return getDate + ' ' + getTime;
 }
 
+//금액에 콤마 표시 함수
 function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
+//Token 생성 함수
 function makeToken()
 {
     var text = "";
@@ -151,6 +168,7 @@ function makeToken()
     return text;
 }
 
+//validation - Null 체크
 function isNull(value) {
     if(value == "") {
         return false;
@@ -158,6 +176,7 @@ function isNull(value) {
     return true;
 }
 
+//validation - 숫자/문자 체크
 function checkStrNum(value) {
     let idReg = /^[A-Za-z0-9]{4,12}$/g;
     if( !idReg.test( value ) ) {
@@ -166,6 +185,7 @@ function checkStrNum(value) {
     return true;
 }
 
+//validation - 패스워드 체크
 function checkPassword(value) {
     let idReg = /^.*(?=.{8,16})(?=.*[0-9])(?=.*[a-zA-Z]).*$/;
     if( !idReg.test( value ) ) {
@@ -174,6 +194,7 @@ function checkPassword(value) {
     return true;
 }
 
+//validation - 이메일 체크
 function checkEmail(value) {
     let idReg = /^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-Za-z0-9\-]+/;
     if( !idReg.test( value ) ) {
@@ -182,6 +203,7 @@ function checkEmail(value) {
     return true;
 }
 
+//파일 업로드 (현재 사용 안함)
 function fileUpload(req, res, callback) {
     let awsS3 = require('../utils/awsS3');
     let multiUpload = awsS3.multiUpload();
@@ -221,6 +243,7 @@ function fileUpload(req, res, callback) {
     });
 }
 
+//랜덤한 번호 6자리 생성(인증번호 사용 중)
 function makeNumber() {
     var text = "";
     var possible = "0123456789";
@@ -231,6 +254,7 @@ function makeNumber() {
     return text;
 }
 
+//거래 상태 표시 함수
 function getStatus(value) {
     if(value == 0) {
         return {

@@ -1,3 +1,8 @@
+/**
+ * 현재 사용 안함
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-07-11
+ */
 var sessionChecker = (req, res, next) => {
     console.log('sessionID =>', req.sessionID);
     console.log('session.userTag =>', req.session.userTag);

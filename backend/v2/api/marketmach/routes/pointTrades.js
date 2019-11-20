@@ -69,6 +69,7 @@ router.post('/:itemId/step/:stepValue', token.checkInternalToken, function (req,
     }
 });
 
+//판매완료
 async function _reqSell(req, res, bitwebResponse) {
     let itemId = req.params.itemId;
     let country = dbconfig.country;
@@ -138,6 +139,7 @@ async function _reqSell(req, res, bitwebResponse) {
     }
 }
 
+//거래 완료
 async function _reqComplete(req, res, bitwebResponse) {
     let itemId = req.params.itemId;
     let country = dbconfig.country;
@@ -255,6 +257,7 @@ async function _reqComplete(req, res, bitwebResponse) {
     }
 }
 
+//바로 구매
 async function _buynow(req, res, bitwebResponse) {
     let itemId = req.params.itemId;
     let body = req.body;
@@ -535,6 +538,7 @@ async function _buynow(req, res, bitwebResponse) {
     }
 }
 
+//구매 취소
 async function _reqCancelBuyNow(req, res, bitwebResponse) {
     let itemId = req.params.itemId;
     let country = dbconfig.country;

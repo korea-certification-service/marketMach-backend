@@ -1,5 +1,5 @@
 /**
- * coin history API
+ * 관리자 - 암호화폐 내역 API(현재 사용안함)
  * 작성자 : Jini Seo
  * 작성일 : 2019-08-16
  */
@@ -11,7 +11,7 @@ let pagination = require('../../service/_pagination');
 let db = require('../../utils/db');
 let dbconfig = require('../../../../config/dbconfig');
 
-//coin history 조회 API
+//암호화폐 내역 조회 API
 router.get("/list/:coinId", (req, res) => {
 
     let bitwebResponse = new BitwebResponse();

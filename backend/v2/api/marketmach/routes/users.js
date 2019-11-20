@@ -18,7 +18,7 @@ let BitwebResponse = require('../../../utils/BitwebResponse')
 let serviceUsers = require('../../../service/users')
 let serviceAgreements = require('../../../service/agreements');
 
-//로그인 API
+//로그인 API(사용 안함)
 router.post('/login', function (req, res, next) {
     let country = dbconfig.country;
     let password = crypto.createHash('sha256').update(req.body.password).digest('base64');

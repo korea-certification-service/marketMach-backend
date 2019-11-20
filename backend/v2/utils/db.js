@@ -1,3 +1,8 @@
+/**
+ * MongoDB Connection 모듈
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-11-20
+ */
 var Promise = require('promise');
 var mongoose = require('mongoose');
 var config = require('../../../config/dbconfig')

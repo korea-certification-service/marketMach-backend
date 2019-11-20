@@ -1,5 +1,5 @@
 /**
- * pint bank history API
+ * 관리자 - 포인트 bank history API(현재 사용 안함)
  * 작성자 : Jini Seo
  * 작성일 : 2019-08-19
  */

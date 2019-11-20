@@ -1,5 +1,5 @@
 /**
- * 사용자 API
+ * 이벤트 상품 API
  * 작성자 : Chef Kim
  * 작성일 : 2019-09-03
  */
@@ -18,7 +18,7 @@ let serviceCoinHistorys = require('../../../service/coinHistorys');
 let servicePoints = require('../../../service/points');
 let servicePointHistorys = require('../../../service/pointHistorys');
 
-//이벤트 상품 목록 API
+//이벤트 상품 목록 조회 API
 router.post('/product/list', token.checkInternalToken, async function (req, res, next) {
     let bitwebResponse = new BitwebResponse();
     let country = dbconfig.country;

@@ -1,5 +1,5 @@
 /**
- * VTR API
+ * VTR(암호화폐 거래) API
  * 작성자 : Chef Kim
  * 작성일 : 2019-07-11
  */
@@ -69,6 +69,7 @@ router.post('/:itemId/step/:stepValue', token.checkInternalToken, function (req,
     }
 });
 
+//VTR 생성
 function _createVTR(req, res, bitwebResponse) {
     let itemId = req.params.itemId;
     let body = req.body;
@@ -409,6 +410,7 @@ function _createVTR(req, res, bitwebResponse) {
     })
 }
 
+//거래시작
 function _startTrade(req, res, bitwebResponse) {
     let country = dbconfig.country;
     let itemId = req.params.itemId;
@@ -548,6 +550,7 @@ function _startTrade(req, res, bitwebResponse) {
     })
 }
 
+//구매확인
 function _reqBuy(req, res, bitwebResponse) {
     let itemId = req.params.itemId;
     let country = dbconfig.country;
@@ -794,6 +797,7 @@ function _reqBuy(req, res, bitwebResponse) {
     })  
 }
 
+//판매 완료
 function _reqSell(req, res, bitwebResponse) {
     let itemId = req.params.itemId;
     let country = dbconfig.country;
@@ -896,6 +900,7 @@ function _reqSell(req, res, bitwebResponse) {
     }) 
 }
 
+//거래 완료
 function _reqComplete(req, res, bitwebResponse) {
     let itemId = req.params.itemId;
     let txId = req.body.txId == undefined ? "" : req.body.txId;
@@ -1123,6 +1128,7 @@ function _reqComplete(req, res, bitwebResponse) {
     })  
 }
 
+//VTR 거래 취소
 function _reqCancel(req, res, bitwebResponse) {
     let itemId = req.params.itemId;
     let country = dbconfig.country;
@@ -1516,6 +1522,7 @@ function _reqCancel(req, res, bitwebResponse) {
     }) 
 }
 
+//바로구매
 function _buynow(req, res, bitwebResponse) {
     let itemId = req.params.itemId;
     let body = req.body;
@@ -1950,6 +1957,7 @@ function _buynow(req, res, bitwebResponse) {
     })
 }
 
+//바로구매 거래 취소
 function _reqCancelBuyNow(req, res, bitwebResponse) {
     let itemId = req.params.itemId;
     let country = dbconfig.country;
@@ -2656,6 +2664,7 @@ function _reqCancelBuyNow(req, res, bitwebResponse) {
     }) 
 }
 
+//VTR 존재 여부 체크 API
 router.get('/room/:roomToken', token.checkInternalToken, function(req, res, next) {
     let roomToken = req.params.roomToken;
     let bitwebResponse = new BitwebResponse();

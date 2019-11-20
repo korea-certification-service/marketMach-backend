@@ -1,7 +1,12 @@
+/**
+ * Validation 모듈
+ * 작성자 : Chef Kim
+ * 작성일 : 2019-11-20
+ */
 const util = require('../utils/util');
 const BitwebResponse = require('../utils/BitwebResponse');
 
-
+//사용자 validation
 var userValidate = (req, res, next) => {
     let body = req. body;
     let valid = true;
