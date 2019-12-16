@@ -59,7 +59,7 @@ async function _manualTransfer(req, res, bitwebResponse) {
             "type":body.type,
             "extType":body.extType,
             "amountCurrency": body.amountCurrency,
-            "amount":body.amount,
+            "amount":body.amount - (body.amount * fee_rate),
             "point":body.amount,
             "fee": fee_rate,
             "status": false,
