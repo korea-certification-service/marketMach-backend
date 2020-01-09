@@ -171,6 +171,15 @@ function _createVTR(req, res, bitwebResponse) {
                                     }
         
                                     let url = dbconfig.smsUrlCommon + category + '/vtr/' + itemId;
+                                    
+                                    if(body.country == "EN") {
+                                        url = dbconfig.smsEnUrlCommon + category + '/vtr/' + itemId;
+                                    }
+                                    else if(body.country != "KR" && body.country != "EN") {
+                                        url = dbconfig.smsOntUrlCommon + category + '/vtr/' + itemId;
+                                    }
+
+
                                     if(updateItem._doc.trade_type == "buy") {
                                         whoReqUser = body.sellerTag;
                                         phone = userInfo.buyer_phone;
