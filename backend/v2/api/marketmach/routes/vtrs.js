@@ -1748,7 +1748,18 @@ function _buynow(req, res, bitwebResponse) {
                                                     }
                                                 }
 
-                                                let url = dbconfig.smsUrlCommon + category + '/detail/' + itemId;
+                                                let url = '';
+
+                                                if(body.country == 'ONTOLOGY'){
+                                                    url = dbconfig.smsOntUrlCommon + category + '/detail/' + itemId;
+                                                }
+                                                else if(body.country == 'KR'){
+                                                    url = dbconfig.smsUrlCommon + category + '/detail/' + itemId;
+                                                }
+                                                else {
+                                                    url = dbconfig.smsEnUrlCommon + category + '/detail/' + itemId;
+                                                }
+
                                                 if(updateItem._doc.trade_type == "buy") {
                                                     whoReqUser = sellerTag;
                                                     phone = userInfo.buyer_phone;
