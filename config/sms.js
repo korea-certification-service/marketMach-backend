@@ -22,4 +22,14 @@ module.exports = {
     manageNotification: "시간단위 sms요청이 과도하게 발생.",
     //관리자에게 보내는 알림 문구
     manageWithdrawNotification : "일단위 코인출금이 과도하게 발생.",
+    //Naver ACCESS ID
+    naverAccessId : "J79uozc9Q6zYedW11a1y",
+    //Naver API SecretKey
+    naverAPISecretKey : "S6nUYXjNgsiRj1aZ1NAcvZlDDRIf91yjuXTOJh3E",
+    //Naver SMS SecretKey
+    naverSMSSecretKey : "08fd9c0e844b47229e2e3377d5e4ca68",
+    //Naver SMS API
+    naverSMSAPI : "https://sens.apigw.ntruss.com/sms/v2/services/ncp:sms:kr:258192697454:marketmach_sms/messages",
+    //Naver SMS Sender Num
+    naverSMSSenderPhoneNumber : "18998696"
 };
