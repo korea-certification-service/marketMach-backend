@@ -64,7 +64,7 @@ function sendSms(phone, message) {
 
             // message send
             request(option, function(err, res, body){
-                console.log("SMS Send fail : " + body);
+                console.log("SMS Send fail : " + body.error);
                 resolve('fail');
             });
         });
