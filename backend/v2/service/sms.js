@@ -39,24 +39,16 @@ function sendSms(phone, message) {
                 "countryCode":"82",
                 "from":config.naverSMSSenderPhoneNumber,
                 "content":message,
-                "messages":[
-                    {
-                        "to":phone,
-                        "content":message,
-                    }
-                ]
+                "to":phone
             };
-
-            var signature = makeSignature(body);
 
             let option = {
                 uri:config.naverSMSAPI,
                 method:"POST",
                 headers:{
                     "Content-Type":"application/json; charset-utf-8",
-                    "x-ncp-apigw-timestamp":Date.now(),
-                    "x-ncp-iam-access-key":config.naverAccessId,
-                    "x-ncp-apigw-signature-v2":signature
+                    "x-ncp-auth-key":config.naverAccessId,
+                    "x-ncp-service-secret":config.naverSMSSecretKey
                 },
                 body:body,
                 json:true

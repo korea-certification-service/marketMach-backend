@@ -29,7 +29,7 @@ module.exports = {
     //Naver SMS SecretKey
     naverSMSSecretKey : "08fd9c0e844b47229e2e3377d5e4ca68",
     //Naver SMS API
-    naverSMSAPI : "https://sens.apigw.ntruss.com/sms/v2/services/ncp:sms:kr:258192697454:marketmach_sms/messages",
+    naverSMSAPI : "https://api-sens.ncloud.com/v1/sms/services/ncp:sms:kr:258192697454:marketmach_sms/messages",
     //Naver SMS Sender Num
     naverSMSSenderPhoneNumber : "18998696"
 };
