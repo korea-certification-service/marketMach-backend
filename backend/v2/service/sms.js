@@ -38,6 +38,7 @@ function sendSms(phone, message) {
                 "contentType":"COMM",
                 "countryCode":"82",
                 "from":config.naverSMSSenderPhoneNumber,
+                "subject":"",
                 "content":message,
                 "to":phone
             };
