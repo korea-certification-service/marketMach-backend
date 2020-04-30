@@ -49,7 +49,7 @@ function sendSms(phone, message) {
 
             var signature = makeSignature(body);
 
-            var option = {
+            let option = {
                 uri:config.naverSMSAPI,
                 method:"POST",
                 headers:{
@@ -63,17 +63,10 @@ function sendSms(phone, message) {
             }
 
             // message send
-            request(option).then(
-                    // (data) => {
-                    //     console.log("Request ID : " + body.requestId);
-                    //     resolve('success');
-                // }
-                ).catch(
-                    (err) => function(){
-                        console.log("SMS Send fail : " + err);
-                        resolve('fail');
-                    }
-                );
+            request(option, function(err, res, body){
+                console.log("SMS Send fail : " + body);
+                resolve('fail');
+            });
         });
     });
 }
