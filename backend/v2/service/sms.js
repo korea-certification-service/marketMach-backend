@@ -33,14 +33,10 @@ function sendSms(phone, message) {
             // });
 
             /* Naver SMS service */
+            var phoneList = new Array();
+            phoneList.push(phone);
+
             var body = {
-                "type":"SMS",
-                "contentType":"COMM",
-                "countryCode":"82",
-                "from":config.naverSMSSenderPhoneNumber,
-                "subject":"",
-                "content":message,
-                "to":[phone]
             };
 
             let option = {
@@ -51,7 +47,15 @@ function sendSms(phone, message) {
                     "x-ncp-auth-key":config.naverAccessId,
                     "x-ncp-service-secret":config.naverSMSSecretKey
                 },
-                body:body,
+                body:{
+                    "type":"sms",
+                    "contentType":"COMM",
+                    "countryCode":"82",
+                    "from":config.naverSMSSenderPhoneNumber,
+                    "subject":"",
+                    "content":message,
+                    "to":phoneList
+                },
                 json:true
             }
 
