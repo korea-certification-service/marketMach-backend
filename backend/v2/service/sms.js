@@ -1,7 +1,7 @@
 let AWS = require('aws-sdk');
 let credentials = require('../../../config/aws-credentials');
 
-let request = require('request');
+let request = require('request-promise-native');
 let config = require('../../../config/sms');
 let CryptoJS = require('crypto-js');
 
