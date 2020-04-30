@@ -33,8 +33,21 @@ function sendSms(phone, message) {
             // });
 
             /* Naver SMS service */
+            var body = {
+                "type":"SMS",
+                "contentType":"COMM",
+                "countryCode":"82",
+                "from":config.naverSMSSenderPhoneNumber,
+                "content":message,
+                "messages":[
+                    {
+                        "to":phone,
+                        "content":message,
+                    }
+                ]
+            };
 
-            var signature = makeSignature(config.naverSMSAPI);
+            var signature = makeSignature(body);
 
             var option = {
                 uri:config.naverSMSAPI,
@@ -45,19 +58,7 @@ function sendSms(phone, message) {
                     "x-ncp-iam-access-key":config.naverAccessId,
                     "x-ncp-apigw-signature-v2":signature
                 },
-                form: {
-                    "type":"SMS",
-                    "contentType":"COMM",
-                    "countryCode":"82",
-                    "from":config.naverSMSSenderPhoneNumber,
-                    "content":message,
-                    "messages":[
-                        {
-                            "to":phone,
-                            "content":message,
-                        }
-                    ]
-                },
+                form:body,
                 json:true
             }
 
@@ -78,23 +79,10 @@ function sendSms(phone, message) {
     });
 }
 
-function makeSignature(uri) {
-    var space = " ";            // one space
-    var newLine = "\n";            // new line
-    var method = "POST";            // method
-    var url = uri;   // url (include query string)
-    var timestamp = Date.now();         // current timestamp (epoch)
-    var accessKey = config.naverAccessId;         // access key id (from portal or Sub Account)
-    var secretKey = config.naverAPISecretKey;         // secret key (from portal or Sub Account)
+function makeSignature(body) {
 
     var hmac = CryptoJS.algo.HMAC.create(CryptoJS.algo.SHA256, secretKey);
-    hmac.update(method);
-    hmac.update(space);
-    hmac.update(url);
-    hmac.update(newLine);
-    hmac.update(timestamp);
-    hmac.update(newLine);
-    hmac.update(accessKey);
+    hmac.update(body);
  
     var hash = hmac.finalize();
  
