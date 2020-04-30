@@ -63,18 +63,16 @@ function sendSms(phone, message) {
             }
 
             // message send
-            request.post(option,
-                function(err, res, body){
-                    if(body.statusCode == "202"){
+            request(option).then(
+                    function(){
                         console.log("Request ID : " + body.requestId);
                         resolve('success');
-                    }
-                    else{
+                }).catch(
+                    err => function(){
                         console.log("SMS Send fail : " + body.statusCode);
                         resolve('fail');
                     }
-                }
-            );
+                );
         });
     });
 }
