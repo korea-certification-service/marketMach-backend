@@ -81,7 +81,7 @@ function sendSms(phone, message) {
 
 function makeSignature(body) {
 
-    var hmac = CryptoJS.algo.HMAC.create(CryptoJS.algo.SHA256, secretKey);
+    var hmac = CryptoJS.algo.HMAC.create(CryptoJS.algo.SHA256, config.naverAPISecretKey);
     hmac.update(body);
  
     var hash = hmac.finalize();
