@@ -40,7 +40,7 @@ function sendSms(phone, message) {
                 "from":config.naverSMSSenderPhoneNumber,
                 "subject":"",
                 "content":message,
-                "to":phone
+                "to":[phone]
             };
 
             let option = {
