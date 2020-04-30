@@ -3,8 +3,7 @@ let credentials = require('../../../config/aws-credentials');
 
 let request = require('request');
 let config = require('../../../config/sms');
-// let crytpJsHMAC = require('https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/hmac-sha256.min.js');
-// let crytpJsENC = require('https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/enc-base64.min.js');
+let CryptoJS = require('crypto-js');
 
 function sendSms(phone, message) {
     return new Promise((resolve, reject) => {
