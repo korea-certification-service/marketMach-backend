@@ -34,7 +34,7 @@ function sendSms(phone, message) {
 
             /* Naver SMS service */
             var phoneList = new Array();
-            phoneList.push(phone);
+            phoneList.push(phone.substring(3));
 
             var body = {
             };
