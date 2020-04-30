@@ -58,7 +58,7 @@ function sendSms(phone, message) {
                     "x-ncp-iam-access-key":config.naverAccessId,
                     "x-ncp-apigw-signature-v2":signature
                 },
-                form:body,
+                body:body,
                 json:true
             }
 
