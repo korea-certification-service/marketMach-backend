@@ -64,11 +64,11 @@ function sendSms(phone, message) {
 
             // message send
             request(option).then(
-                    function(){
+                    (data) => {
                         console.log("Request ID : " + body.requestId);
                         resolve('success');
                 }).catch(
-                    err => function(){
+                    (err) => function(){
                         console.log("SMS Send fail : " + body.statusCode);
                         resolve('fail');
                     }
