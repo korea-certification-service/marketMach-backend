@@ -64,12 +64,13 @@ function sendSms(phone, message) {
 
             // message send
             request(option).then(
-                    (data) => {
-                        console.log("Request ID : " + body.requestId);
-                        resolve('success');
-                }).catch(
+                    // (data) => {
+                    //     console.log("Request ID : " + body.requestId);
+                    //     resolve('success');
+                // }
+                ).catch(
                     (err) => function(){
-                        console.log("SMS Send fail : " + body.statusCode);
+                        console.log("SMS Send fail : " + err);
                         resolve('fail');
                     }
                 );
